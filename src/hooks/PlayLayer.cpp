@@ -14,7 +14,9 @@
 #include "Geode/utils/string.hpp"
 #include "trajectory/trajectory.hpp"
 #include "ui/manager.hpp"
+#ifdef GEODE_IS_WINDOWS
 #include "util/midhook.hpp"
+#endif
 #include "util/profile.hpp"
 #include "ui/touch_overlay.hpp"
 

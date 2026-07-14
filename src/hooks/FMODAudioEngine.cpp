@@ -6,10 +6,14 @@
 using namespace geode::prelude;
 
 #include <Geode/modify/FMODAudioEngine.hpp>
+#ifdef GEODE_IS_WINDOWS
 #include <safetyhook.hpp>
+#endif
 #include <string>
 
+#ifdef GEODE_IS_WINDOWS
 SafetyHookMid g_hook_meteringIntervalFix;
+#endif
 
 bool shouldUpdateAudio() {
     auto audio = AudioRecorder::get();

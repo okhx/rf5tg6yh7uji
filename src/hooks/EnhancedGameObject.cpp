@@ -1,6 +1,8 @@
 #include <Geode/Geode.hpp>
 #include <bot/updater.hpp>
+#ifdef GEODE_IS_WINDOWS
 #include <safetyhook.hpp>
+#endif
 
 #include "bot/bot.hpp"
 #include "physics/collisions.hpp"

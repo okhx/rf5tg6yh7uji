@@ -1,0 +1,84 @@
+-- Setting up grape
+-- Mod okhx.grape is compiling for Geode version 5.7.1
+-- Mod okhx.grape is compiling for Geometry Dash version 2.2081
+| Info | Fetching dependency from index
+| Info | Dependency found: geode.node-ids, version 1.23.3
+| Info | Downloading dependency
+| Info | Success
+| Info | Writing dependency to temp file
+| Info | Dependency 'geode.node-ids' found on the index, installing (version '1.23.3')
+| Done | All dependencies resolved
+-- Skipping installing grape
+-- Configuring done (33.2s)
+-- Generating done (0.2s)
+-- Build files have been written to: /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build
+[0/2] Re-checking globbed directories...
+[1/118] Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.o
+[2/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/API/Memory.c.o
+[3/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/API/Process.c.o
+[4/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/API/Synchronization.c.o
+[5/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/API/Terminal.c.o
+[6/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/API/Thread.c.o
+[7/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/Allocator.c.o
+[8/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/ArgParse.c.o
+[9/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/Bitset.c.o
+[10/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/Format.c.o
+[11/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/List.c.o
+[12/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/String.c.o
+[13/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/Vector.c.o
+[14/118] Building C object _deps/zydis-build/zycore/CMakeFiles/Zycore.dir/src/Zycore.c.o
+[15/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/MetaInfo.c.o
+[16/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/Mnemonic.c.o
+[17/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/Register.c.o
+[18/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/SharedData.c.o
+[19/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/String.c.o
+[20/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/Utils.c.o
+[21/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/Zydis.c.o
+[22/118] Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/format.cc.o
+[23/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/Decoder.c.o
+[24/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/DecoderData.c.o
+[25/118] Building CXX object _deps/qsox-build/CMakeFiles/qsox.dir/Unity/unity_0_cxx.cxx.o
+[26/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/EncoderData.c.o
+[27/118] Building CXX object _deps/asp2-build/CMakeFiles/asp.dir/Unity/unity_0_cxx.cxx.o
+[28/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/Disassembler.c.o
+[29/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/Encoder.c.o
+[30/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/Formatter.c.o
+[31/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/FormatterBuffer.c.o
+[32/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/FormatterATT.c.o
+[33/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/FormatterIntel.c.o
+[34/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/Segment.c.o
+[35/118] Building C object _deps/zydis-build/CMakeFiles/Zydis.dir/src/FormatterBase.c.o
+[36/118] Building CXX object _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/easy.cpp.o
+FAILED: [code=1] _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/easy.cpp.o 
+/usr/bin/clang++ -DZYCORE_STATIC_BUILD -DZYDIS_STATIC_BUILD -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/zydis/8cc5/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/_deps/zydis-build -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/zydis/8cc5/dependencies/zycore/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/_deps/zydis-build/zycore -O3 -DNDEBUG -std=c++23 -flto=thin -arch arm64 -isysroot /Applications/Xcode_26.5.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -miphoneos-version-min=14.0 -fvisibility=hidden -Wall -Wextra -Wpedantic -Werror -MD -MT _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/easy.cpp.o -MF _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/easy.cpp.o.d -o _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/easy.cpp.o -c /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/src/easy.cpp
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/src/easy.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include/safetyhook/easy.hpp:6:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include/safetyhook/common.hpp:45:2: error: "Unsupported architecture"
+   45 | #error "Unsupported architecture"
+      |  ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include/safetyhook/common.hpp:56:2: error: "Unsupported OS"
+   56 | #error "Unsupported OS"
+      |  ^
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/src/easy.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include/safetyhook/easy.hpp:8:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include/safetyhook/mid_hook.hpp:22:28: error: unknown type name 'Context'
+   22 | using MidHookFn = void (*)(Context& ctx);
+      |                            ^
+3 errors generated.
+[37/118] Building CXX object _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/allocator.cpp.o
+FAILED: [code=1] _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/allocator.cpp.o 
+/usr/bin/clang++ -DZYCORE_STATIC_BUILD -DZYDIS_STATIC_BUILD -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/zydis/8cc5/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/_deps/zydis-build -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/zydis/8cc5/dependencies/zycore/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/_deps/zydis-build/zycore -O3 -DNDEBUG -std=c++23 -flto=thin -arch arm64 -isysroot /Applications/Xcode_26.5.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -miphoneos-version-min=14.0 -fvisibility=hidden -Wall -Wextra -Wpedantic -Werror -MD -MT _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/allocator.cpp.o -MF _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/allocator.cpp.o.d -o _deps/safetyhook-build/src/CMakeFiles/safetyhook.dir/allocator.cpp.o -c /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/src/allocator.cpp
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/src/allocator.cpp:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include/safetyhook/os.hpp:12:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include/safetyhook/common.hpp:45:2: error: "Unsupported architecture"
+   45 | #error "Unsupported architecture"
+      |  ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/safetyhook/a37d/include/safetyhook/common.hpp:56:2: error: "Unsupported OS"
+   56 | #error "Unsupported OS"
+      |  ^
+2 errors generated.
+[38/118] Linking CXX static library _deps/fmt-build/libfmt.a
+[39/118] Linking C static library _deps/zydis-build/zycore/libZycore.a
+[40/118] Building CXX object _deps/arc-build/CMakeFiles/arc.dir/Unity/unity_0_cxx.cxx.o
+ninja: build stopped: subcommand failed.
+Error: Process completed with exit code 1.

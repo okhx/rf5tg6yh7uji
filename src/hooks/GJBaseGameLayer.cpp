@@ -1,12 +1,16 @@
 #include "Geode/binding/GJBaseGameLayer.hpp"
 
+#ifdef GEODE_IS_WINDOWS
 #include <Zydis/Zydis.h>
+#endif
 
 #include <Geode/Geode.hpp>
 #include <Geode/binding/AdvancedFollowInstance.hpp>
 #include <Geode/binding/GJGroundLayer.hpp>
 #include <Geode/binding/LevelEditorLayer.hpp>
+#ifdef GEODE_IS_WINDOWS
 #include <safetyhook.hpp>
+#endif
 #include <vector>
 
 #include "bot/bot.hpp"
@@ -16,7 +20,9 @@
 #include "physics/gjbasegamelayer.hpp"
 #include "replay/system.hpp"
 #include "trajectory/trajectory.hpp"
+#ifdef GEODE_IS_WINDOWS
 #include "util/midhook.hpp"
+#endif
 
 using namespace geode::prelude;
 
@@ -683,6 +689,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 };
 
+#ifdef GEODE_IS_WINDOWS
 static void shakeRandomOverride(SafetyHookContext& ctx) {
     uint64_t& state = Bot::get()->replaySystem().m_shakeRandomState;
     state = (int)((214013 * state + 2531011) >> 16) & 0x7FFF;
@@ -706,7 +713,10 @@ $execute {
                   shakeRandomOverride);
     util::midhook(geode::base::get() + 0x3A3657, "checkpointPlacement",
                   overrideCheckpointPlacement);
+}
+#endif
 
+$execute {
     Bot::get()->updater().m_lockDelta->handle(
         [](bool&) { Bot::get()->updater().m_tpsOverflow = 0.0; });
 }

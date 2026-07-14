@@ -1,8 +1,10 @@
 #include "renderer.hpp"
 #include "util/paths.hpp"
 
+#ifdef GEODE_IS_WINDOWS
 #include <Zydis/Zydis.h>
 #include <immintrin.h>
+#endif
 
 #include <Geode/Geode.hpp>
 #include <Geode/modify/CCDirector.hpp>
@@ -12,7 +14,9 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/ShaderLayer.hpp>
 #include <iostream>
+#ifdef GEODE_IS_WINDOWS
 #include <safetyhook.hpp>
+#endif
 #include <string>
 #include <thread>
 
@@ -79,6 +83,7 @@ enum class GPUVendor {
 };
 
 static GPUVendor getGPUVendor() {
+#ifdef GEODE_IS_WINDOWS
     HKEY hKey;
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
                       "SYSTEM\\CurrentControlSet\\Enum\\PCI", 0, KEY_READ,
@@ -123,6 +128,10 @@ static GPUVendor getGPUVendor() {
 
     geode::log::info("Detected no GPU - defaulting to libx264 (CPU)");
     return GPUVendor::OTHER;
+#else
+    geode::log::info("Detected non-Windows platform - defaulting to libx264 (CPU)");
+    return GPUVendor::OTHER;
+#endif
 }
 
 static std::string getDefaultCodec() {

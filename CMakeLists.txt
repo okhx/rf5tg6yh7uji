@@ -116,11 +116,13 @@ add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 CPMAddPackage("gh:stephenberry/glaze#main")
 target_link_libraries(${PROJECT_NAME} glaze::glaze)
 
-CPMAddPackage("gh:zyantific/zydis#bffbb61")
-target_link_libraries(${PROJECT_NAME} Zydis)
+if (WIN32)
+    CPMAddPackage("gh:zyantific/zydis#bffbb61")
+    target_link_libraries(${PROJECT_NAME} Zydis)
 
-CPMAddPackage("gh:cursey/safetyhook#main")
-target_link_libraries(${PROJECT_NAME} safetyhook)
+    CPMAddPackage("gh:cursey/safetyhook#main")
+    target_link_libraries(${PROJECT_NAME} safetyhook)
+endif()
 
 CPMAddPackage("gh:peonii/slc#main")
 
