@@ -76,6 +76,8 @@ add_library(${PROJECT_NAME} SHARED
     src/render/dsp.cpp
     src/render/pass.cpp
 
+    src/util/crash_log.cpp
+
     src/hooks/GJEffectManager.cpp
     src/ui/touch_overlay.cpp
 )
@@ -84,7 +86,6 @@ if (WIN32)
     target_sources(${PROJECT_NAME} PRIVATE
         ${IMGUI_VENDOR_DIR}/backends/imgui_impl_win32.cpp
         src/util/midhook.cpp
-        src/util/crash_log.cpp
     )
 endif()
 
