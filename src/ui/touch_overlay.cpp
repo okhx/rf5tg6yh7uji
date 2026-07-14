@@ -53,9 +53,10 @@ bool TouchOverlay::init() {
     m_menu->setPosition(winSize / 2.f);
     this->addChild(m_menu);
 
-    this->setTouchEnabled(true);
-    // Highest priority so it gets touches before game layer
-    CCTouchDispatcher::get()->addTargetedDelegate(this, -500, true);
+    // Do not register this full-screen layer as a targeted touch delegate.
+    // A swallowing delegate intercepts the game's pause button and PauseLayer
+    // controls even while this overlay is hidden. The CCMenu registers its
+    // own hit-tested touch handler for the two visible arrows.
 
     this->setVisible(false);
 
