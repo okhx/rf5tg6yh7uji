@@ -997,6 +997,7 @@ void UIManager::draw() {
     cfg.fittedWindowHeight = tabHeights[static_cast<int>(m_state.m_currentTab)];
 
     if (!m_state.m_visible->inner()) {
+#ifndef GEODE_IS_IOS
         auto view = CCEGLView::get();
 
         auto pl = PlayLayer::get();
@@ -1007,10 +1008,13 @@ void UIManager::draw() {
         }
 
         view->showCursor(!shouldHide);
+#endif
         return;
     }
 
+#ifndef GEODE_IS_IOS
     CCEGLView::get()->showCursor(true);
+#endif
 
     slui::ScopedFont s(m_font);
     
