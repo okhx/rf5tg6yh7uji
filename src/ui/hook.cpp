@@ -23,10 +23,10 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
     HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif
 
+#ifdef GEODE_IS_WINDOWS
 constexpr int KEY_MW_UP = 0x97;
 constexpr int KEY_MW_DOWN = 0x98;
 
-#ifdef GEODE_IS_WINDOWS
 LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     bool shiftHeld = GetKeyState(VK_SHIFT) & 0x8000;
     bool ctrlHeld = GetKeyState(VK_CONTROL) & 0x8000;
