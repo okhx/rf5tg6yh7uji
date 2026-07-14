@@ -1,5 +1,7 @@
 #include "hook.hpp"
 
+#include <algorithm>
+
 #ifdef GEODE_IS_WINDOWS
 #include <winuser.h>
 #include "Geode/cocos/platform/win32/CCGL.h"
@@ -474,6 +476,18 @@ void ImGuiHookCtx::postSampleBlur() {
 
 void ImGuiHookCtx::draw() {
     init(CCEGLView::get());
+
+#ifndef GEODE_IS_WINDOWS
+    // The Win32 backend normally supplies these values before ImGui::NewFrame.
+    // iOS has no corresponding platform backend in this mod, so without doing
+    // it here ImGui retains its default invalid display size and produces no
+    // visible draw data even when the pause-menu button has opened the UI.
+    auto& io = ImGui::GetIO();
+    const auto frameSize = CCEGLView::get()->getFrameSize();
+    io.DisplaySize = ImVec2(frameSize.width, frameSize.height);
+    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+    io.DeltaTime = std::max(CCDirector::get()->getDeltaTime(), 1.0f / 1000.0f);
+#endif
 
     ImGui_ImplOpenGL3_NewFrame();
 #ifdef GEODE_IS_WINDOWS
