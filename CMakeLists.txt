@@ -142,4 +142,18 @@ if (APPLE)
     target_compile_options(${PROJECT_NAME} PRIVATE
         -Wno-error=dollar-in-identifier-extension
     )
+
+    # Dear ImGui is vendored source. Apple Clang diagnoses a few declarations
+    # that are conditionally unused in its upstream implementation; do not
+    # let Geode's global -Werror reject those third-party translation units.
+    set_source_files_properties(
+        ${IMGUI_VENDOR_DIR}/imgui.cpp
+        ${IMGUI_VENDOR_DIR}/imgui_draw.cpp
+        ${IMGUI_VENDOR_DIR}/imgui_tables.cpp
+        ${IMGUI_VENDOR_DIR}/imgui_widgets.cpp
+        ${IMGUI_VENDOR_DIR}/misc/cpp/imgui_stdlib.cpp
+        ${IMGUI_VENDOR_DIR}/backends/imgui_impl_opengl3.cpp
+        PROPERTIES COMPILE_OPTIONS
+        "-Wno-error=unused-variable;-Wno-error=unused-parameter"
+    )
 endif()
