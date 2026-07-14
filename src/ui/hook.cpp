@@ -501,9 +501,16 @@ void ImGuiHookCtx::draw() {
 
 struct SLEGLView : Modify<SLEGLView, CCEGLView> {
     void swapBuffers() {
-        ImGuiHookCtx::get().draw();
-
+#ifdef GEODE_IS_IOS
+        // Geometry Dash uses an ES2 Cocos renderer on iOS. Dear ImGui's raw
+        // OpenGL backend corrupts the driver's vertex state after the frame
+        // has been presented, which crashes the following Cocos sprite draw.
+        // Keep the bot functional on iOS, but do not run that unsupported
+        // desktop overlay renderer until it has a dedicated Cocos/iOS backend.
         CCEGLView::swapBuffers();
-
+#else
+        ImGuiHookCtx::get().draw();
+        CCEGLView::swapBuffers();
+#endif
     }
 };
