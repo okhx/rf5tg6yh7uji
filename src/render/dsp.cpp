@@ -2,6 +2,7 @@
 
 #include <Geode/binding/FMODAudioEngine.hpp>
 #include <Geode/fmod/fmod.hpp>
+#include <cstring>
 
 #include "bot/bot.hpp"
 #include "renderer.hpp"
@@ -75,7 +76,7 @@ void AudioRecorder::haltWithData(float* data, unsigned int length) {
 
 void AudioRecorder::init() {
     FMOD_DSP_DESCRIPTION desc = {};
-    strcpy_s(desc.name, "silly dsp");
+    std::strncpy(desc.name, "silly dsp", sizeof(desc.name) - 1);
     desc.version = 0x00020000;
     desc.numinputbuffers = 1;
     desc.numoutputbuffers = 1;

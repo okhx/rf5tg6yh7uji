@@ -155,8 +155,14 @@ bool RenderTexture::capture(uint8_t** data) {
     if (m_inflightSlot >= 0) {
         const int p = m_inflightSlot;
         glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo[p]);
+#ifdef GEODE_IS_IOS
+        auto* pixelData = static_cast<uint8_t*>(glMapBufferRange(
+            GL_PIXEL_PACK_BUFFER, 0, static_cast<GLsizeiptr>(m_bufferSize),
+            GL_MAP_READ_BIT));
+#else
         auto* pixelData = static_cast<uint8_t*>(
             glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+#endif
         m_slotMapped[p] = (pixelData != nullptr);
 
         if (pixelData) {
