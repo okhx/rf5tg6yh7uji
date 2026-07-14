@@ -136,6 +136,13 @@ target_compile_options(GeodeBindings PRIVATE -Wno-overloaded-virtual -Wno-unused
 
 setup_geode_mod(${PROJECT_NAME})
 
+# Geometry Dash's iOS Cocos view uses an OpenGL ES 2 context. Dear ImGui
+# otherwise auto-selects its ES3 backend merely from the iOS target, which
+# compiles successfully but cannot render in that context.
+if (IOS OR CMAKE_OSX_SYSROOT MATCHES "iPhoneOS")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_IMPL_OPENGL_ES2)
+endif()
+
 # Geode enables -Wpedantic and -Werror as part of setup_geode_mod. Its
 # lifecycle helpers intentionally use '$' in their macro names, which Apple
 # Clang diagnoses as an extension when compiling iOS targets.

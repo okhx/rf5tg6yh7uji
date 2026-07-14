@@ -290,7 +290,7 @@ void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
     ImGui_ImplWin32_InitForOpenGL(m_hWnd);
 #endif
 #ifdef GEODE_IS_IOS
-    ImGui_ImplOpenGL3_Init("#version 300 es");
+    ImGui_ImplOpenGL3_Init("#version 100");
 #else
     ImGui_ImplOpenGL3_Init("#version 130");
 #endif
