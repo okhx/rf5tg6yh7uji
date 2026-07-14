@@ -1,0 +1,51 @@
+{
+  "geode": "5.7.1",
+  "gd": {
+    "win": "2.2081",
+    "android": "2.2081",
+    "mac": "2.2081",
+    "ios": "2.2081"
+  },
+  "id": "okhx.grape",
+  "name": "Grape",
+  "version": "v1.0.0",
+  "developer": "okhx",
+  "description": "A precise Geometry Dash macro bot.",
+  "issues": {
+    "info": "Please report all issues to the #bugs channel in the Grape Discord server.",
+    "url": "https://discord.gg/y7xagk3C2m"
+  },
+  "tags": ["cheat", "gameplay", "utility"],
+  "links": {
+    "community": "https://discord.gg/y7xagk3C2m",
+    "source": "https://git.puppy.lgbt/silicate/silicate"
+  },
+  "resources": {
+    "files": [
+      "resources/fonts/font_main.ttf",
+      "resources/fonts/font_bold.ttf",
+      "resources/fonts/font_medium.ttf",
+      "resources/fonts/font_symbols.ttf",
+      "resources/title.png",
+      "resources/title_gay.png",
+      "resources/title_new.png",
+      "resources/title_gay_new.png",
+      "resources/title_trans_new.png",
+      "resources/title_jolly_new.png",
+      "resources/img/logo.png"
+    ],
+    "sprites": [
+      "resources/silicate-button.png"
+    ]
+  },
+  "incompatibilities": {
+    "zilko.xdbot": "2.4.0",
+    "chagh.tcbot": "0.1.0",
+    "fig.zbot": "3.0.0-beta.10",
+    "kepe.ybot": "0.1.0",
+    "sabe.platformersaves": "1.1.2"
+  },
+  "dependencies": {
+    "geode.node-ids": ">=1.22.0"
+  }
+}

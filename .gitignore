@@ -1,0 +1,4 @@
+build*/
+bindings/
+.geode/
+.DS_Store

@@ -1,0 +1,155 @@
+name: Build (Win64)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-win64:
+    runs-on: debian
+
+    env:
+      CPM_SOURCE_CACHE: ${{ github.workspace }}/.cpm-cache
+      SCCACHE_DIR: ${{ github.workspace }}/.sccache
+      GEODE_SDK: ${{ github.workspace }}/geode-sdk
+
+    # NOTE on GITHUB_TOKEN: Forgejo auto-injects its own repo-scoped (instance)
+    # GITHUB_TOKEN into every step, and a job/workflow-level `env: GITHUB_TOKEN`
+    # is ignored (the GITHUB_ name prefix is reserved). To authenticate against
+    # api.github.com -- which `geode sdk install-binaries`, the xwin download and
+    # the CLI download all hit, and which rate-limits unauthenticated CI IPs --
+    # a github.com Personal Access Token (no scopes needed for public repos) is
+    # supplied as the Forgejo secret GH_API_TOKEN and overridden PER STEP below.
+
+    steps:
+      # A bare Debian image has no Node.js, which the JavaScript-based actions
+      # below (checkout, cache, upload-artifact) require. A `run:` step only
+      # needs a shell, so install Node and git before the first JS action.
+      - name: Bootstrap Node.js and git
+        run: |
+          set -euxo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y --no-install-recommends nodejs git ca-certificates curl
+
+      - name: Checkout
+        uses: https://data.forgejo.org/actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # The Windows SDK splat (built by xwin) is large, so cache the whole
+      # cross-tools dir. `geode sdk install-linux` skips re-downloading when the
+      # splat/xwin/clang-msvc-sdk are already present.
+      - name: Cache cross-compilation tools
+        uses: https://data.forgejo.org/actions/cache@v4
+        with:
+          path: ~/.local/share/Geode/cross-tools
+          key: geode-cross-tools-v1
+
+      - name: Cache CPM sources
+        uses: https://data.forgejo.org/actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.cpm-cache
+          key: cpm-win64-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake', 'mod.json') }}
+          restore-keys: |
+            cpm-win64-
+
+      - name: Cache sccache
+        uses: https://data.forgejo.org/actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.sccache
+          key: sccache-win64-${{ github.run_id }}
+          restore-keys: |
+            sccache-win64-
+
+      - name: Install build dependencies
+        run: |
+          set -euxo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          # Debian trixie ships CMake 3.31 (Geode mods need >= 3.29) and Clang 19,
+          # which provides clang-cl / lld-link / llvm-lib|mt|rc|nm under
+          # /usr/lib/llvm-19/bin (the clang-cl-msvc.cmake toolchain finds them by
+          # unversioned name).
+          apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build just sccache jq unzip \
+            clang-19 clang-tools-19 lld-19 llvm-19
+          echo "/usr/lib/llvm-19/bin" >> "$GITHUB_PATH"
+          mkdir -p "$CPM_SOURCE_CACHE" "$SCCACHE_DIR"
+          just --version
+          sccache --version
+
+      - name: Install Geode CLI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}  # github.com PAT; overrides Forgejo's instance token
+        run: |
+          set -euxo pipefail
+          # Build the auth header with xtrace off so the token never reaches the
+          # log (defense in depth on top of Forgejo's secret masking).
+          set +x
+          auth=(); [ -n "${GITHUB_TOKEN:-}" ] && auth=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+          CLI_URL="$(curl -fsSL "${auth[@]}" https://api.github.com/repos/geode-sdk/cli/releases/latest \
+            | jq -r '.assets[] | select(.name | endswith("-linux.zip")) | .browser_download_url' \
+            | head -n1)"
+          set -x
+          curl -fsSL "$CLI_URL" -o /tmp/geode-cli.zip
+          unzip -o /tmp/geode-cli.zip -d /tmp/geode-cli
+          install -m755 /tmp/geode-cli/geode /usr/local/bin/geode
+          geode --version
+
+      - name: Set up Windows cross-compilation tools
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}  # github.com PAT; overrides Forgejo's instance token
+        run: |
+          set -euxo pipefail
+          # Clones geode-sdk/clang-msvc-sdk and builds the xwin splat into
+          # ~/.local/share/Geode/cross-tools (the paths just _configure-linux uses).
+          geode sdk install-linux
+
+      - name: Install Geode SDK
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}  # github.com PAT; overrides Forgejo's instance token
+        run: |
+          set -euxo pipefail
+          # The CLI requires at least one profile to operate; the path is only
+          # recorded, it does not need to point at a real install.
+          mkdir -p "$HOME/gd"
+          # it expects a mods folder cuz ofc
+          mkdir -p "$HOME/gd/geode/mods"
+          geode profile add --name CI "$HOME/gd/GeometryDash.exe" win
+          # Pin the SDK + prebuilt loader binaries to the version in mod.json.
+          # $GEODE_SDK is provided by the job-level env above.
+          GEODE_VERSION="$(jq -r '.geode' mod.json)"
+          geode sdk install "$GEODE_SDK"
+          geode sdk update "$GEODE_VERSION"
+          geode sdk install-binaries --platform win --version "$GEODE_VERSION"
+
+      - name: Build
+        run: |
+          cmake -S . -B build -G "Ninja" \
+            -DCMAKE_TOOLCHAIN_FILE=$HOME/.local/share/Geode/cross-tools/clang-msvc-sdk/clang-cl-msvc.cmake \
+            -DSPLAT_DIR=$HOME/.local/share/Geode/cross-tools/splat \
+            -DHOST_ARCH=x64 \
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DGEODE_DONT_INSTALL_MODS=ON
+          cmake --build build --config RelWithDebInfo --parallel
+
+      - name: Collect .geode package
+        run: |
+          set -euxo pipefail
+          mkdir -p output
+          find build -name '*.geode' -exec cp {} output/ \;
+          ls -l output
+
+      - name: Upload artifact
+        uses: https://data.forgejo.org/forgejo/upload-artifact@v4
+        with:
+          name: grape-win64
+          path: output/*.geode
+          if-no-files-found: error
