@@ -9,7 +9,6 @@
 #endif
 
 #include "Geode/cocos/CCDirector.h"
-#include "Geode/cocos/shaders/ccGLStateCache.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
 #include "render/renderer.hpp"
@@ -498,13 +497,6 @@ void ImGuiHookCtx::draw() {
     Bot::get()->ui().draw();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    // Cocos2d caches its GL program, texture, and vertex-array state. ImGui
-    // uses raw GL calls (including its first-frame font texture upload), so
-    // tell Cocos to rebuild that cache before it draws the next sprite batch.
-    // Without this, iOS's GL driver receives Cocos's stale batch state and
-    // crashes in CCTextureAtlas::drawNumberOfQuads.
-    cocos2d::ccGLInvalidateStateCache();
 }
 
 struct SLEGLView : Modify<SLEGLView, CCEGLView> {

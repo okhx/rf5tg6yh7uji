@@ -1021,6 +1021,14 @@ void UIManager::draw() {
     static GLuint logoTex = 0;
     static int logoWidth = 1, logoHeight = 1;
     if (logoTex == 0) {
+        GLint oldActiveTexture;
+        GLint oldTexture;
+        GLint oldUnpackAlignment;
+        glGetIntegerv(GL_ACTIVE_TEXTURE, &oldActiveTexture);
+        glActiveTexture(GL_TEXTURE0);
+        glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
+        glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldUnpackAlignment);
+
         int channels;
         auto logoPath = geode::Mod::get()->getResourcesDir() / "img" / "logo.png";
         if (!std::filesystem::exists(logoPath)) {
@@ -1041,6 +1049,13 @@ void UIManager::draw() {
         } else {
             logoTex = (GLuint)-1;
         }
+
+        // Texture uploads use raw GL, whereas Cocos2d tracks texture state in
+        // its own cache. Restore every state we touched before returning to
+        // Cocos so the next sprite draw still sees its own atlas texture.
+        glPixelStorei(GL_UNPACK_ALIGNMENT, oldUnpackAlignment);
+        glBindTexture(GL_TEXTURE_2D, oldTexture);
+        glActiveTexture(oldActiveTexture);
     }
 
     ImTextureID tex = (logoTex != 0 && logoTex != (GLuint)-1) ? (ImTextureID)(intptr_t)logoTex : (ImTextureID)(intptr_t)0;

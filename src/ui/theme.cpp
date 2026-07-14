@@ -34,6 +34,14 @@ void Theme::initialize() {
         return;
     }
 
+    GLint oldActiveTexture;
+    GLint oldTexture;
+    GLint oldUnpackAlignment;
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &oldActiveTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldUnpackAlignment);
+
     glGenTextures(1, &m_texture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -47,6 +55,12 @@ void Theme::initialize() {
                      GL_UNSIGNED_BYTE, data);
     }
     stbi_image_free(data);
+
+    // Cocos2d caches the current texture binding. Do not leave a theme icon
+    // bound (or leave a custom unpack alignment) after this raw GL upload.
+    glPixelStorei(GL_UNPACK_ALIGNMENT, oldUnpackAlignment);
+    glBindTexture(GL_TEXTURE_2D, oldTexture);
+    glActiveTexture(oldActiveTexture);
 
 #ifdef GEODE_IS_IOS
     // iOS uses the solid UI background; the desktop postprocess shaders use

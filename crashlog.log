@@ -1,4 +1,4 @@
-2026-07-14T14:26:12.152451+0000
+2026-07-14T14:48:21.567573+0000
 Whoopsies! An unhandled exception has occurred.
 
 == Geode Information ==
@@ -12,17 +12,17 @@ Failed to load: 0
 == Exception Information ==
 Faulty Lib: /System/Library/Frameworks/OpenGLES.framework/GLEngine.bundle/GLEngine
 Faulty Mod: <Unknown>
-Instruction Address: 0x24c099374 (GLEngine + 0x96374)
+Instruction Address: 0x24c099120 (GLEngine + 0x96120)
 Signal Code: 0xb (SIGSEGV: Segmentation Fault)
 Signal Detail: Could not access memory at 0x8 (invalid permissions for mapped object)
 
 == Stack Trace (the most important part) ==
-- GLEngine + 0x96374 (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0x96374)
+- GLEngine + 0x96120 (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0x96120)
 - GLEngine + 0x93df8 (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0x93df8)
 - GLEngine + 0xbed6c (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0xbed6c)
-- GLEngine + 0x581e4 (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0x581e4)
-- GeometryJump + 0x26a5a4 (cocos2d::CCTextureAtlas::drawNumberOfQuads + 0xc4)
-- GeometryJump + 0x1d7348 (cocos2d::CCSpriteBatchNode::visit + 0x7c)
+- GLEngine + 0x57f00 (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0x57f00)
+- GeometryJump + 0x23863c (cocos2d::CCSprite::draw + 0xec)
+- GeometryJump + 0x23bf8c (cocos2d::CCNode::visit + 0xc8)
 - GeometryJump + 0x23bff0 (cocos2d::CCNode::visit + 0x12c)
 - GeometryJump + 0x23bff0 (cocos2d::CCNode::visit + 0x12c)
 - GeometryJump + 0x175670 (cocos2d::CCDirector::drawScene + 0x74)
@@ -50,28 +50,28 @@ Signal Detail: Could not access memory at 0x8 (invalid permissions for mapped ob
 - libdyld.dylib + 0x34e28 (8ACDB580-8AB7-38C0-A586-E667ADB1C11C + 0x4e28)
 
 == Register States ==
-x0: 0x10f320000
+x0: 0x135b20000
 x1: 0x3
-x2: 0x130aa4f68
+x2: 0x139c1d9c8
 x3: 0x2921bc180
 x4: 0x0
-x5: 0x130aa4f40
+x5: 0x139c1d9a0
 x6: 0x2
 x7: 0x0
 x8: 0x8
-x9: 0x0
-x10: 0x10eb9c002
-x11: 0x16d40be20
-x12: 0x10a32c900
-x13: 0x16d40be28
-x14: 0x0
-x15: 0x16d40be20
-x16: 0x16d40be28
+x9: 0x1c
+x10: 0x0
+x11: 0x16b13fe10
+x12: 0x10ddd4000
+x13: 0x16b13fe18
+x14: 0x2
+x15: 0x16b13fe10
+x16: 0x16b13fe18
 x17: 0x282
 x18: 0x0
-x19: 0x300
-x20: 0x10f3223f8
-x21: 0x16d40be68
+x19: 0x200
+x20: 0x135b223f8
+x21: 0x16b13fe58
 x22: 0x2921bb700
 x23: 0xa000000000
 x24: 0x0
@@ -79,10 +79,10 @@ x25: 0xc
 x26: 0x18
 x27: 0x1c
 x28: 0x10
-fp: 0x16d40c020
+fp: 0x16b140010
 lr: 0x0
-sp: 0x16d40bdf0
-pc: 0x24c099374
+sp: 0x16b13fde0
+pc: 0x24c099120
 cpsr: 0x80000000
 
 == Installed Mods ==
