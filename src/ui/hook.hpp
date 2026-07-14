@@ -13,6 +13,7 @@
 // #include "backends/imgui_impl_opengl3.h"
 #include <Geode/Geode.hpp>
 #include <Geode/modify/CCEGLView.hpp>
+#include "render/gl.hpp"
 #include "backends/imgui_impl_opengl3.h"
 #ifdef GEODE_IS_WINDOWS
 #include "backends/imgui_impl_win32.h"

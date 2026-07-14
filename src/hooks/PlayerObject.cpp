@@ -58,6 +58,7 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
         }
     }
 
+#ifndef GEODE_IS_IOS
     bool levelFlipping() {
         if (LevelEditorLayer::get()) {
             return false;
@@ -65,6 +66,7 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
 
         return PlayerObject::levelFlipping();
     }
+#endif
 
     void incrementJumps() {
         auto bot = Bot::get();

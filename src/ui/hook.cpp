@@ -150,6 +150,7 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 #endif
 
+#ifndef GEODE_IS_IOS
 const char* BLUR_VERT = R"(#version 130
 #extension GL_ARB_explicit_attrib_location : require
 
@@ -240,6 +241,7 @@ void main() {
     fragColor = sampleColor(v_texCoord);
 }
 )";
+#endif
 
 void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
     if (m_inited) {
@@ -287,7 +289,11 @@ void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
 #ifdef GEODE_IS_WINDOWS
     ImGui_ImplWin32_InitForOpenGL(m_hWnd);
 #endif
+#ifdef GEODE_IS_IOS
+    ImGui_ImplOpenGL3_Init("#version 300 es");
+#else
     ImGui_ImplOpenGL3_Init("#version 130");
+#endif
 
     float width = view->getFrameSize().width / BLUR_DOWNSCALING_FACTOR;
     float height = view->getFrameSize().height / BLUR_DOWNSCALING_FACTOR;
@@ -297,6 +303,7 @@ void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
 
     Bot::get()->ui().setup();
 
+#ifndef GEODE_IS_IOS
     m_blurPass = RenderPass{.m_width = (unsigned int)width,
                             .m_height = (unsigned int)height,
                             .m_vertexShader = BLUR_VERT,
@@ -325,6 +332,7 @@ void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
                            m_inputTex, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, oldFbo);
+#endif
 
     geode::log::info("Initialized ImGUI");
     m_inited = true;
@@ -339,6 +347,7 @@ void ImGuiHookCtx::handleResize(float width, float height) {
     m_width = width * BLUR_DOWNSCALING_FACTOR;
     m_height = height * BLUR_DOWNSCALING_FACTOR;
 
+#ifndef GEODE_IS_IOS
     m_blurPass.m_width = (unsigned int)width;
     m_blurPass.m_height = (unsigned int)height;
     m_blurPass.resize();
@@ -348,8 +357,16 @@ void ImGuiHookCtx::handleResize(float width, float height) {
     glBindTexture(GL_TEXTURE_2D, m_inputTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_blurPass.m_width,
                  m_blurPass.m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+#endif
 }
 
+#ifdef GEODE_IS_IOS
+void ImGuiHookCtx::preSampleBlur(ImVec4) {}
+void ImGuiHookCtx::sampleBlurFirstPass() {}
+void ImGuiHookCtx::sampleBlurSecondPass() {}
+void ImGuiHookCtx::sampleBlurPostprocess() {}
+void ImGuiHookCtx::postSampleBlur() {}
+#else
 void ImGuiHookCtx::preSampleBlur(ImVec4 window) {
     if (!m_inited) return;
 
@@ -453,6 +470,7 @@ void ImGuiHookCtx::postSampleBlur() {
 
     glViewport(0, 0, frameSize.width, frameSize.height);
 }
+#endif
 
 void ImGuiHookCtx::draw() {
     init(CCEGLView::get());

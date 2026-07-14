@@ -1,5 +1,6 @@
 #pragma once
 #include <Geode/Geode.hpp>
+#include "gl.hpp"
 #include <functional>
 
 GLuint compileShader(GLenum type, const char* source);

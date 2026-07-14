@@ -9,6 +9,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "lib/stb_image.h"
 
+#ifndef GEODE_IS_IOS
 const char* THEME_BASE_VERT = R"(#version 130
 #extension GL_ARB_explicit_attrib_location : require
 
@@ -22,6 +23,7 @@ void main() {
     v_texCoord = a_texCoord;
 }
 )";
+#endif
 
 void Theme::initialize() {
     int width, height, channels;
@@ -41,11 +43,16 @@ void Theme::initialize() {
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     if (channels == 4) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
                      GL_UNSIGNED_BYTE, data);
     }
     stbi_image_free(data);
 
+#ifdef GEODE_IS_IOS
+    // iOS uses the solid UI background; the desktop postprocess shaders use
+    // desktop GLSL and framebuffer operations.
+    return;
+#else
     m_postprocessPass =
         RenderPass{.m_width = (unsigned int)ImGuiHookCtx::get().m_width,
                    .m_height = (unsigned int)ImGuiHookCtx::get().m_height,
@@ -53,6 +60,7 @@ void Theme::initialize() {
                    .m_fragmentShader = m_postprocessShader.c_str(),
                    .m_readPixels = [](float, float) {}};
     m_postprocessPass.initialize();
+#endif
 }
 
 void Theme::resize(uint32_t width, uint32_t height) {

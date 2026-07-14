@@ -1,6 +1,8 @@
  #include "manager.hpp"
 
+#ifdef GEODE_IS_WINDOWS
 #include <winuser.h>
+#endif
 
 #include <Geode/Geode.hpp>
 #include <algorithm>
@@ -267,9 +269,9 @@ static uint64_t fnv1aHash(const std::vector<uint8_t>& data) {
     return hash;
 }
 
+#ifdef GEODE_IS_WINDOWS
 using DpiGetterType = decltype(GetDpiForWindow)*;
 static DpiGetterType g_dpiGetter = nullptr;
-
 static float getWindowDpi() {
     if (!g_dpiGetter) return 1.0;
 
@@ -278,6 +280,9 @@ static float getWindowDpi() {
 
     return scaling;
 }
+#else
+static float getWindowDpi() { return 1.0f; }
+#endif
 
 static std::string ffmpegUrl = "https://cdn.silicate.dev/ffmpeg.zip";
 
@@ -431,8 +436,10 @@ void UIManager::setup() {
     m_state.m_playAnimations->handle(
         [](bool& play) { slui::Config::get().playAnimations = play; });
 
+#ifdef GEODE_IS_WINDOWS
     g_dpiGetter = reinterpret_cast<DpiGetterType>(reinterpret_cast<void*>(
         GetProcAddress(GetModuleHandleA("user32.dll"), "GetDpiForWindow")));
+#endif
 
     m_state.m_uiScale->handle([this](float& scale) {
         slui::Config::get().uiScale = scale * getWindowDpi();
@@ -621,6 +628,11 @@ static void postDrawBlurEffect(const ImDrawList*, const ImDrawCmd*) {
 static void renderBlurBg(float rounding = 24.0f, float borderSize = 2.5f,
                          bool useShader = true, float bgOpacity = 0.15f,
                          bool pp = false) {
+#ifdef GEODE_IS_IOS
+    // The blur renderer needs desktop framebuffer blitting APIs that are not
+    // available in Geometry Dash's iOS OpenGL ES context.
+    useShader = false;
+#endif
     rounding *= slui::Config::get().uiScale;
     borderSize *= slui::Config::get().uiScale;
 
@@ -987,7 +999,8 @@ void UIManager::draw() {
             glBindTexture(GL_TEXTURE_2D, logoTex);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, logoWidth, logoHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, logoWidth, logoHeight, 0,
+                         GL_RGBA, GL_UNSIGNED_BYTE, data);
             stbi_image_free(data);
         } else {
             logoTex = (GLuint)-1;
