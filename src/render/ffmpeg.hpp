@@ -4,7 +4,9 @@
 #pragma once
 #include "util/paths.hpp"
 
+#ifdef GEODE_IS_WINDOWS
 #include <Windows.h>
+#endif
 
 #include <Geode/Geode.hpp>
 #include <string>
@@ -95,6 +97,7 @@ static std::vector<std::string> DLL_FUNCTION_NAMES = {
     "av_frame_free",
     "avformat_free_context"};
 
+#ifdef GEODE_IS_WINDOWS
 inline void* loadFunction(HMODULE* modules, size_t moduleSize,
                           const char* name) {
     void* fn = 0;
@@ -114,10 +117,12 @@ inline void* loadFunction(HMODULE* modules, size_t moduleSize,
 
     return fn;
 }
+#endif
 
 static_assert(sizeof(ff_t) == sizeof(void*) * 33);
 
 inline bool loadFFmpegFunctions(void* ff) {
+#ifdef GEODE_IS_WINDOWS
     std::vector<HMODULE> modules;
     std::vector<std::string> dlls = {
         "avutil-60.dll",   "swresample-6.dll", "swscale-9.dll",
@@ -168,6 +173,10 @@ inline bool loadFFmpegFunctions(void* ff) {
     }
 
     return true;
+#else
+    geode::log::info("[RENDERER] FFmpeg is not supported on this platform.");
+    return false;
+#endif
 }
 
 #endif
