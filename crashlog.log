@@ -1,0 +1,114 @@
+2026-07-14T14:26:12.152451+0000
+Whoopsies! An unhandled exception has occurred.
+
+== Geode Information ==
+Loader Version: v5.8.2
+Platform: iOS arm64 26.3.1 (JIT [TXM])
+Loader Commit: 2a5fd87
+Bindings Commit: 2a8b5c48
+Installed mods: 26
+Failed to load: 0
+
+== Exception Information ==
+Faulty Lib: /System/Library/Frameworks/OpenGLES.framework/GLEngine.bundle/GLEngine
+Faulty Mod: <Unknown>
+Instruction Address: 0x24c099374 (GLEngine + 0x96374)
+Signal Code: 0xb (SIGSEGV: Segmentation Fault)
+Signal Detail: Could not access memory at 0x8 (invalid permissions for mapped object)
+
+== Stack Trace (the most important part) ==
+- GLEngine + 0x96374 (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0x96374)
+- GLEngine + 0x93df8 (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0x93df8)
+- GLEngine + 0xbed6c (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0xbed6c)
+- GLEngine + 0x581e4 (243C2AF9-86DC-3FA1-9329-065D7B08657D + 0x581e4)
+- GeometryJump + 0x26a5a4 (cocos2d::CCTextureAtlas::drawNumberOfQuads + 0xc4)
+- GeometryJump + 0x1d7348 (cocos2d::CCSpriteBatchNode::visit + 0x7c)
+- GeometryJump + 0x23bff0 (cocos2d::CCNode::visit + 0x12c)
+- GeometryJump + 0x23bff0 (cocos2d::CCNode::visit + 0x12c)
+- GeometryJump + 0x175670 (cocos2d::CCDirector::drawScene + 0x74)
+- GeometryJump + 0x8b40d0 (sub_62f900 + 0x2847d0)
+- GeometryJump + 0x8b40d0 (sub_62f900 + 0x2847d0)
+- GeometryJump + 0x176854 (cocos2d::CCDisplayLinkDirector::mainLoop + 0x2c)
+- GeometryJump + 0x21310c ([CCDirectorCaller doCaller:] + 0x5c)
+- QuartzCore + 0xbfb24 (141CB76D-89CA-3572-862A-CE1782667CFC + 0xbfb24)
+- QuartzCore + 0x9d164 (141CB76D-89CA-3572-862A-CE1782667CFC + 0x9d164)
+- QuartzCore + 0xb0980 (141CB76D-89CA-3572-862A-CE1782667CFC + 0xb0980)
+- UIKitCore + 0x7dee4 (C768F963-A0CC-3F5C-A1D3-2E06D53A2381 + 0x7dee4)
+- UIKitCore + 0x7d374 (C768F963-A0CC-3F5C-A1D3-2E06D53A2381 + 0x7d374)
+- UpdateCycle + 0x1560 (BB2C03AE-D888-3A49-8653-CA0B2C92DC42 + 0x1560)
+- CoreFoundation + 0x164cc (2F32D384-4637-3018-843E-4FC875B865C4 + 0x164cc)
+- CoreFoundation + 0x460b0 (2F32D384-4637-3018-843E-4FC875B865C4 + 0x460b0)
+- CoreFoundation + 0x45fd8 (2F32D384-4637-3018-843E-4FC875B865C4 + 0x45fd8)
+- CoreFoundation + 0x1dc1c (2F32D384-4637-3018-843E-4FC875B865C4 + 0x1dc1c)
+- CoreFoundation + 0x1ca6c (2F32D384-4637-3018-843E-4FC875B865C4 + 0x1ca6c)
+- GraphicsServices + 0x1498 (GSEventRunModal + 0x78)
+- UIKitCore + 0x9ddf8 (C768F963-A0CC-3F5C-A1D3-2E06D53A2381 + 0x9ddf8)
+- UIKitCore + 0x46e54 (UIApplicationMain + 0x150)
+- GeometryJump + 0x26a6d4 (start + 0x44)
+- Geode + 0x5e5e0 (invokeAppMain + 0x2634)
+- Geode + 0x5ae5c (GeodeMain + 0xff0)
+- libdyld.dylib + 0x34e28 (8ACDB580-8AB7-38C0-A586-E667ADB1C11C + 0x4e28)
+
+== Register States ==
+x0: 0x10f320000
+x1: 0x3
+x2: 0x130aa4f68
+x3: 0x2921bc180
+x4: 0x0
+x5: 0x130aa4f40
+x6: 0x2
+x7: 0x0
+x8: 0x8
+x9: 0x0
+x10: 0x10eb9c002
+x11: 0x16d40be20
+x12: 0x10a32c900
+x13: 0x16d40be28
+x14: 0x0
+x15: 0x16d40be20
+x16: 0x16d40be28
+x17: 0x282
+x18: 0x0
+x19: 0x300
+x20: 0x10f3223f8
+x21: 0x16d40be68
+x22: 0x2921bb700
+x23: 0xa000000000
+x24: 0x0
+x25: 0xc
+x26: 0x18
+x27: 0x1c
+x28: 0x10
+fp: 0x16d40c020
+lr: 0x0
+sp: 0x16d40bdf0
+pc: 0x24c099374
+cpsr: 0x80000000
+
+== Installed Mods ==
+x | [v1.0.11] alk.allium
+x | [v1.0.4] alk.ime-input
+x | [v1.2.5] alphalaneous.alphas_geode_utils
+x | [v2.1.12] alphalaneous.editortab_api
+x | [v2.1.11] alphalaneous.happy_textures
+x | [v2.5.3] beat.click-sound
+x | [v2.0.0] cvolton.level-id-api
+x | [v1.9.4] eclipse.eclipse-menu
+x | [v1.5.0-beta.2] firee.object-workshop
+x | [v3.6.2] fleym.nongd
+x | [v5.8.2] geode.loader
+x | [v1.23.3] geode.node-ids
+x | [v1.10.2] geode.texture-loader
+x | [v2.1.0] grian.art_importer
+x | [v6.10.0-beta.6] hjfod.betteredit
+x | [v1.6.0] hjfod.gdshare
+x | [v1.5.0] hjfod.gmd-api
+x | [v2.0.0] km7dev.gdps-switcher
+x | [v4.0.0] km7dev.server_api
+x | [v1.2.2] mat.reference-image
+x | [v1.5.6] ninkaz.editor_utils
+x | [v1.0.0] okhx.grape
+x | [v1.1.0] prevter.imageplus
+x | [v1.5.0] syzzi.click_between_frames
+x | [v2.8.6] thesillydoggo.qolmod
+x | [v1.2.0] weebify.high-graphics-android

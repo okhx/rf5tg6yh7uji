@@ -1,0 +1,1499 @@
+19:26:10 INFO  [Main] [Geode]: Running Geode v5.8.2 in Geometry Dash v2.2081 on iOS
+19:26:10 INFO  [Main] [Geode]: Loader commit: 2a5fd87, Bindings commit: 2a8b5c48
+19:26:10 INFO  [Main] [Geode]: Setting up internal mod
+19:26:10 INFO  [Main] [Geode]: Setting up loader
+19:26:10 INFO  [Main] [Geode]:   Loading launch arguments
+19:26:10 DEBUG [Main] [Geode]:     Loaded 'use-common-handler-offset' as '8c4000'
+19:26:10 INFO  [Main] [Geode]:   Using common handler offset: 8c4000
+19:26:10 INFO  [Main] [Geode]:     Disabling runtime intervening
+19:26:10 INFO  [Main] [Geode]:     Runtime intervening disabled successfully
+19:26:10 INFO  [Main] [Geode]:   Setting up crash handler
+19:26:10 INFO  [Main] [Geode]:   Loading hooks
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCFileUtils::fullPathForFilename hook at 0x10b2d52b0 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCFileUtils::sharedFileUtils hook at 0x10b3ba20c for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCDrawNode::init hook at 0x10b1c5ef8 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCMenuItem::activate hook at 0x10b1d0c4c for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCMenu::ccTouchEnded hook at 0x10b35c460 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCScene::getHighestChildZ hook at 0x10b3c4504 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled FMOD::System::init hook at 0x10b64e104 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled FMOD::ChannelControl::setVolume hook at 0x10b6872dc for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCSprite::initWithFile hook at 0x10b3bbab0 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCSprite::initWithSpriteFrame hook at 0x10b3bbb14 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCSprite::createWithSpriteFrameName hook at 0x10b3bb788 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCSprite::initWithSpriteFrameName hook at 0x10b3bbb78 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCSprite::create hook at 0x10b3bb68c for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCSpriteFrameCache::spriteFrameByName hook at 0x10b540d44 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCSpriteBatchNode::initWithTexture hook at 0x10b35afe8 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled AppDelegate::setupGLView hook at 0x10b3ed1b4 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCDirector::purgeDirector hook at 0x10b2fa384 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled GameManager::reloadAllStep5 hook at 0x10b4a1b94 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCNode::setUserObject hook at 0x10b3bf5c4 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCNode::getUserObject hook at 0x10b3bf5ac for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelPage::onPlay hook at 0x10b58792c for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled LoadingLayer::loadAssets hook at 0x10b35a7a4 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled LoadingLayer::init hook at 0x10b359ff4 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled MenuLayer::init hook at 0x10b3ea500 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled ProfilePage::getUserInfoFinished hook at 0x10b320370 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCDirector::willSwitchToScene hook at 0x10b2f9ea4 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCDirector::popToSceneStackLevel hook at 0x10b2fa244 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCDirector::popScene hook at 0x10b2fa0e8 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled AppDelegate::trySaveGame hook at 0x10b3ed718 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCScheduler::update hook at 0x10b32fb2c for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled CCTextInputNode::ccTouchBegan hook at 0x10b2f2770 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled LoadingLayer::loadAssets hook at 0x10b35a7a4 for geode.loader
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCFileUtilsIOS::isFileExist hook at 0x10b3ba2f8 for geode.loader
+19:26:10 INFO  [Main] [Geode]:   Setting up directories
+19:26:10 DEBUG [Main] [Geode]:     Creating necessary directories
+19:26:10 DEBUG [Main] [Geode]:     Removing unnecessary directories
+19:26:10 DEBUG [Main] [Geode]:     Adding search paths
+19:26:10 INFO  [Main] [Geode]:   Refreshing mod graph
+19:26:10 INFO  [Main] [Geode]:     Queueing mods
+19:26:10 DEBUG [Main] [Geode]:       Searching /var/mobile/Containers/Data/Application/0DA6CB69-A3ED-4201-AD69-49BE3E4CE30A/Documents/Data/Application/GeometryDash/Documents/game/geode/mods
+19:26:10 DEBUG [Main] [Geode]:         Found fleym.nongd.geode
+19:26:10 DEBUG [Main] [Geode]:           id: fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:           version: v3.6.2
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found weebify.high-graphics-android.geode
+19:26:10 DEBUG [Main] [Geode]:           id: weebify.high-graphics-android
+19:26:10 DEBUG [Main] [Geode]:           version: v1.2.0
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found alk.ime-input.geode
+19:26:10 DEBUG [Main] [Geode]:           id: alk.ime-input
+19:26:10 DEBUG [Main] [Geode]:           version: v1.0.4
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found alphalaneous.alphas_geode_utils.geode
+19:26:10 DEBUG [Main] [Geode]:           id: alphalaneous.alphas_geode_utils
+19:26:10 DEBUG [Main] [Geode]:           version: v1.2.5
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found alphalaneous.happy_textures.geode
+19:26:10 DEBUG [Main] [Geode]:           id: alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:           version: v2.1.11
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found thesillydoggo.qolmod.geode
+19:26:10 DEBUG [Main] [Geode]:           id: thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:           version: v2.8.6
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found alphalaneous.editortab_api.geode
+19:26:10 DEBUG [Main] [Geode]:           id: alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:           version: v2.1.12
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found mat.reference-image.geode
+19:26:10 DEBUG [Main] [Geode]:           id: mat.reference-image
+19:26:10 DEBUG [Main] [Geode]:           version: v1.2.2
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found geode.node-ids.geode
+19:26:10 DEBUG [Main] [Geode]:           id: geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:           version: v1.23.3
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found hjfod.gdshare.geode
+19:26:10 DEBUG [Main] [Geode]:           id: hjfod.gdshare
+19:26:10 DEBUG [Main] [Geode]:           version: v1.6.0
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found hjfod.betteredit.geode
+19:26:10 DEBUG [Main] [Geode]:           id: hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:           version: v6.10.0-beta.6
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found prevter.imageplus.geode
+19:26:10 DEBUG [Main] [Geode]:           id: prevter.imageplus
+19:26:10 DEBUG [Main] [Geode]:           version: v1.1.0
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found beat.click-sound.geode
+19:26:10 DEBUG [Main] [Geode]:           id: beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:           version: v2.5.3
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found okhx.grape.geode
+19:26:10 DEBUG [Main] [Geode]:           id: okhx.grape
+19:26:10 DEBUG [Main] [Geode]:           version: v1.0.0
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found eclipse.eclipse-menu.geode
+19:26:10 DEBUG [Main] [Geode]:           id: eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:           version: v1.9.4
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found ninkaz.editor_utils.geode
+19:26:10 DEBUG [Main] [Geode]:           id: ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:           version: v1.5.6
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found hjfod.gmd-api.geode
+19:26:10 DEBUG [Main] [Geode]:           id: hjfod.gmd-api
+19:26:10 DEBUG [Main] [Geode]:           version: v1.5.0
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found cvolton.level-id-api.geode
+19:26:10 DEBUG [Main] [Geode]:           id: cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:           version: v2.0.0
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found firee.object-workshop.geode
+19:26:10 DEBUG [Main] [Geode]:           id: firee.object-workshop
+19:26:10 DEBUG [Main] [Geode]:           version: v1.5.0-beta.2
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found km7dev.server_api.geode
+19:26:10 DEBUG [Main] [Geode]:           id: km7dev.server_api
+19:26:10 DEBUG [Main] [Geode]:           version: v4.0.0
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found geode.texture-loader.geode
+19:26:10 DEBUG [Main] [Geode]:           id: geode.texture-loader
+19:26:10 DEBUG [Main] [Geode]:           version: v1.10.2
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found syzzi.click_between_frames.geode
+19:26:10 DEBUG [Main] [Geode]:           id: syzzi.click_between_frames
+19:26:10 DEBUG [Main] [Geode]:           version: v1.5.0
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found km7dev.gdps-switcher.geode
+19:26:10 DEBUG [Main] [Geode]:           id: km7dev.gdps-switcher
+19:26:10 DEBUG [Main] [Geode]:           version: v2.0.0
+19:26:10 DEBUG [Main] [Geode]:           early: yes
+19:26:10 DEBUG [Main] [Geode]:         Found alk.allium.geode
+19:26:10 DEBUG [Main] [Geode]:           id: alk.allium
+19:26:10 DEBUG [Main] [Geode]:           version: v1.0.11
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 DEBUG [Main] [Geode]:         Found grian.art_importer.geode
+19:26:10 DEBUG [Main] [Geode]:           id: grian.art_importer
+19:26:10 DEBUG [Main] [Geode]:           version: v2.1.0
+19:26:10 DEBUG [Main] [Geode]:           early: no
+19:26:10 INFO  [Main] [Geode]:     Populating mod list
+19:26:10 DEBUG [Main] [Geode]:       fleym.nongd v3.6.2
+19:26:10 DEBUG [Main] [Geode]:       weebify.high-graphics-android v1.2.0
+19:26:10 DEBUG [Main] [Geode]:       alk.ime-input v1.0.4
+19:26:10 DEBUG [Main] [Geode]:       alphalaneous.alphas_geode_utils v1.2.5
+19:26:10 DEBUG [Main] [Geode]:       alphalaneous.happy_textures v2.1.11
+19:26:10 DEBUG [Main] [Geode]:       thesillydoggo.qolmod v2.8.6
+19:26:10 DEBUG [Main] [Geode]:       alphalaneous.editortab_api v2.1.12
+19:26:10 DEBUG [Main] [Geode]:       mat.reference-image v1.2.2
+19:26:10 DEBUG [Main] [Geode]:       geode.node-ids v1.23.3
+19:26:10 DEBUG [Main] [Geode]:       hjfod.gdshare v1.6.0
+19:26:10 DEBUG [Main] [Geode]:       hjfod.betteredit v6.10.0-beta.6
+19:26:10 ERROR [Main] [Geode]:         Unable to parse setting 'larger-color-menu' for mod hjfod.betteredit: [BoolSettingV3.default]: unexpected type object
+19:26:10 DEBUG [Main] [Geode]:       prevter.imageplus v1.1.0
+19:26:10 DEBUG [Main] [Geode]:       beat.click-sound v2.5.3
+19:26:10 WARN  [Main] [Geode]:         Failed to parse keybind "" for setting 'clicks-toggle-keybind': Invalid key ''
+19:26:10 WARN  [Main] [Geode]:         Failed to parse keybind "" for setting 'sounds-everywhere-toggle-keybind': Invalid key ''
+19:26:10 WARN  [Main] [Geode]:         Failed to parse keybind "" for setting 'releases-toggle-keybind': Invalid key ''
+19:26:10 DEBUG [Main] [Geode]:       okhx.grape v1.0.0
+19:26:10 DEBUG [Main] [Geode]:       eclipse.eclipse-menu v1.9.4
+19:26:10 DEBUG [Main] [Geode]:       ninkaz.editor_utils v1.5.6
+19:26:10 DEBUG [Main] [Geode]:       hjfod.gmd-api v1.5.0
+19:26:10 DEBUG [Main] [Geode]:       cvolton.level-id-api v2.0.0
+19:26:10 DEBUG [Main] [Geode]:       firee.object-workshop v1.5.0-beta.2
+19:26:10 DEBUG [Main] [Geode]:       km7dev.server_api v4.0.0
+19:26:10 DEBUG [Main] [Geode]:       geode.texture-loader v1.10.2
+19:26:10 DEBUG [Main] [Geode]:       syzzi.click_between_frames v1.5.0
+19:26:10 DEBUG [Main] [Geode]:       km7dev.gdps-switcher v2.0.0
+19:26:10 DEBUG [Main] [Geode]:       alk.allium v1.0.11
+19:26:10 DEBUG [Main] [Geode]:       grian.art_importer v2.1.0
+19:26:10 INFO  [Main] [Geode]:     Building mod graph
+19:26:10 DEBUG [Main] [Geode]:       alk.allium
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:         alk.ime-input
+19:26:10 DEBUG [Main] [Geode]:       geode.texture-loader
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:       cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         eclipse.ffmpeg-api
+19:26:10 DEBUG [Main] [Geode]:         dankmeme.globed2
+19:26:10 DEBUG [Main] [Geode]:       beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:       prevter.imageplus
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         hjfod.gmd-api
+19:26:10 DEBUG [Main] [Geode]:         cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:       km7dev.gdps-switcher
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         km7dev.server_api
+19:26:10 DEBUG [Main] [Geode]:       syzzi.click_between_frames
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         alphalaneous.alphas_geode_utils
+19:26:10 DEBUG [Main] [Geode]:         prevter.imageplus
+19:26:10 DEBUG [Main] [Geode]:         geode.texture-loader
+19:26:10 DEBUG [Main] [Geode]:         raydeeux.pages_api
+19:26:10 DEBUG [Main] [Geode]:       mat.reference-image
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       grian.art_importer
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:       weebify.high-graphics-android
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:       alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:       hjfod.gdshare
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         hjfod.gmd-api
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:       hjfod.gmd-api
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       okhx.grape
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:       fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       alk.ime-input
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       alphalaneous.alphas_geode_utils
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       km7dev.server_api
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       firee.object-workshop
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:         alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:         geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:       thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         geode.loader
+19:26:10 DEBUG [Main] [Geode]:       geode.loader
+19:26:10 INFO  [Main] [Geode]:     Ordering mod stack
+19:26:10 DEBUG [Main] [Geode]:       alk.ime-input [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       alphalaneous.alphas_geode_utils [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       geode.node-ids [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       prevter.imageplus [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       geode.texture-loader [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       alphalaneous.happy_textures [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       cvolton.level-id-api [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       eclipse.eclipse-menu [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       km7dev.server_api [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       km7dev.gdps-switcher [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       thesillydoggo.qolmod [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       weebify.high-graphics-android [0] (early)
+19:26:10 DEBUG [Main] [Geode]:       alphalaneous.editortab_api [0]
+19:26:10 DEBUG [Main] [Geode]:       alk.allium [0]
+19:26:10 DEBUG [Main] [Geode]:       beat.click-sound [0]
+19:26:10 DEBUG [Main] [Geode]:       firee.object-workshop [0]
+19:26:10 DEBUG [Main] [Geode]:       fleym.nongd [0]
+19:26:10 DEBUG [Main] [Geode]:       grian.art_importer [0]
+19:26:10 DEBUG [Main] [Geode]:       hjfod.gmd-api [0]
+19:26:10 DEBUG [Main] [Geode]:       hjfod.betteredit [0]
+19:26:10 DEBUG [Main] [Geode]:       hjfod.gdshare [0]
+19:26:10 DEBUG [Main] [Geode]:       mat.reference-image [0]
+19:26:10 DEBUG [Main] [Geode]:       ninkaz.editor_utils [0]
+19:26:10 DEBUG [Main] [Geode]:       okhx.grape [0]
+19:26:10 DEBUG [Main] [Geode]:       syzzi.click_between_frames [0]
+19:26:10 INFO  [Main] [Geode]:     Loading early mods
+19:26:10 INFO  [Main] [Geode]:       Loading mod alk.ime-input v1.0.4
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod alk.ime-input
+19:26:10 INFO  [Main] [Geode]:       Loading mod alphalaneous.alphas_geode_utils v1.2.5
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod alphalaneous.alphas_geode_utils
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCObject::autorelease hook at 0x10b2089b0 for alphalaneous.alphas_geode_utils
+19:26:10 INFO  [Main] [Geode]:       Loading mod geode.node-ids v1.23.3
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled ChallengeNode::init hook at 0x10b1b6e3c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled ChallengesPage::createChallengeNode hook at 0x10b1b6510 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled ChallengesPage::init hook at 0x10b1b5ba8 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled CharacterColorPage::init hook at 0x10b2acce4 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled CommentCell::loadFromComment hook at 0x10b289c94 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled ConfigureHSVWidget::init hook at 0x10b2830e8 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled CreatorLayer::init hook at 0x10b239078 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled CustomSongWidget::init hook at 0x10b27d928 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled CustomizeObjectLayer::toggleVisible hook at 0x10b1d486c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled CustomizeObjectLayer::init hook at 0x10b1d1548 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled DailyLevelNode::init hook at 0x10b33ee04 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled DailyLevelPage::init hook at 0x10b33cf8c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled DemonFilterSelectLayer::init hook at 0x10b1db210 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled DemonInfoPopup::init hook at 0x10b321030 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditLevelLayer::init hook at 0x10b26cdc4 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorPauseLayer::init hook at 0x10b51fb9c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::init hook at 0x10b548e74 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled EndLevelLayer::showLayer hook at 0x10b47b714 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled EndLevelLayer::customSetup hook at 0x10b47989c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled FLAlertLayer::init hook at 0x10b42ff7c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled FRequestProfilePage::init hook at 0x10b339fa4 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled FriendRequestPopup::init hook at 0x10b45cc04 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled FriendsProfilePage::init hook at 0x10b35cd90 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJCommentListLayer::init hook at 0x10b458c18 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJDropDownLayer::init hook at 0x10b5361f4 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJGarageLayer::setupPage hook at 0x10b488b8c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJGarageLayer::init hook at 0x10b485b48 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJGroundLayer::init hook at 0x10b1afa0c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJLevelScoreCell::loadFromScore hook at 0x10b28cc54 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJListLayer::init hook at 0x10b2039f8 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJMessageCell::loadFromMessage hook at 0x10b28e830 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJRequestCell::loadFromScore hook at 0x10b28e0cc for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJScoreCell::loadFromScore hook at 0x10b28b7fc for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJUserCell::loadFromScore hook at 0x10b28d8cc for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameToolbox::addRThumbScrollButton hook at 0x10b1c8b64 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameToolbox::addBackButton hook at 0x10b1c8a80 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GauntletLayer::init hook at 0x10b3b6338 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GauntletLayer::loadLevelsFinished hook at 0x10b3b783c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GauntletNode::generateNode hook at 0x10b344d4c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GauntletSelectLayer::setupGauntlets hook at 0x10b343244 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled GauntletSelectLayer::init hook at 0x10b342670 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled InfoLayer::setupCommentsBrowser hook at 0x10b4d61f4 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled InfoLayer::init hook at 0x10b4d3994 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled ItemInfoPopup::init hook at 0x10b48c1a0 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LeaderboardsLayer::init hook at 0x10b534580 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelAreaInnerLayer::init hook at 0x10b4c9714 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelAreaLayer::init hook at 0x10b4c7b7c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelBrowserLayer::init hook at 0x10b598284 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelCell::loadLocalLevelCell hook at 0x10b290158 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelCell::loadFromLevel hook at 0x10b286c10 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelCell::loadCustomLevelCell hook at 0x10b290a64 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::init hook at 0x10b4dabb4 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::updateLabelValues hook at 0x10b1ad4a4 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::setupProgressBars hook at 0x10b1abb98 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::setupPlatformerStats hook at 0x10b1ab83c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::init hook at 0x10b1a8348 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::levelDownloadFinished hook at 0x10b1ade54 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelLeaderboard::init hook at 0x10b3d3398 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelListCell::loadFromList hook at 0x10b287970 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelListLayer::updateStatsArt hook at 0x10b3c925c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelListLayer::init hook at 0x10b3c71a0 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelPage::updateDynamicPage hook at 0x10b586430 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelPage::init hook at 0x10b587ee8 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelPage::addSecretDoor hook at 0x10b588d88 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelPage::addSecretCoin hook at 0x10b587378 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelSearchLayer::init hook at 0x10b1d53fc for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelSelectLayer::init hook at 0x10b585954 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled LikeItemLayer::init hook at 0x10b3d0b94 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled MenuGameLayer::init hook at 0x10b51e57c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled MoreOptionsLayer::init hook at 0x10b2716e0 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled MoreSearchLayer::init hook at 0x10b1d9478 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled OptionsLayer::customSetup hook at 0x10b270804 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::customSetup hook at 0x10b2c5df8 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::setupHasCompleted hook at 0x10b29a8c4 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::init hook at 0x10b39b810 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled ProfilePage::loadPageFromUserInfo hook at 0x10b31bc74 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled ProfilePage::init hook at 0x10b31aa28 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled PurchaseItemPopup::init hook at 0x10b2d1b7c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled RewardsPage::init hook at 0x10b347a94 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SecretLayer::init hook at 0x10b5410ec for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SecretLayer2::init hook at 0x10b48d760 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SecretLayer3::init hook at 0x10b491d6c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SecretLayer4::init hook at 0x10b4d7e24 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SecretRewardsLayer::init hook at 0x10b46bfb8 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SetGroupIDLayer::init hook at 0x10b1bef10 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SetIDPopup::init hook at 0x10b461d10 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SetupMoveCommandPopup::init hook at 0x10b3f78e4 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SetupObjectOptionsPopup::init hook at 0x10b1c3218 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled SetupOpacityPopup::init hook at 0x10b1a6e2c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled ShardsPage::init hook at 0x10b525c08 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled StarInfoPopup::init hook at 0x10b321a9c for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled TutorialLayer::loadPage hook at 0x10b3417f8 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled TutorialLayer::init hook at 0x10b341308 for geode.node-ids
+19:26:10 DEBUG [Main] [Geode]:         Enabled UILayer::init hook at 0x10b1ccfe8 for geode.node-ids
+19:26:10 INFO  [Main] [Geode]:       Loading mod prevter.imageplus v1.1.0
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod prevter.imageplus
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCSprite::initWithTexture hook at 0x10b3bb83c for prevter.imageplus
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCImage::initWithImageFile hook at 0x10b1af088 for prevter.imageplus
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCImage::initWithImageData hook at 0x10b1af19c for prevter.imageplus
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCTexture2D::initWithImage hook at 0x10b2b17fc for prevter.imageplus
+19:26:10 INFO  [Main] [Geode]:       Loading mod geode.texture-loader v1.10.2
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod geode.texture-loader
+19:26:10 DEBUG [Main] [Geode]:         Enabled MenuLayer::scene hook at 0x10b3ea3a4 for geode.texture-loader
+19:26:10 WARN  [Ma>] [Texture Loader]: Failed to set CCSpriteFrameCache::addSpriteFramesWithFile hook priority, texture loader might break!
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCSpriteFrameCache::addSpriteFramesWithFile hook at 0x10b5408ac for geode.texture-loader
+19:26:10 DEBUG [Main] [Geode]:         Enabled OptionsLayer::customSetup hook at 0x10b270804 for geode.texture-loader
+19:26:10 DEBUG [Main] [Geode]:         Enabled VideoOptionsLayer::init hook at 0x10b273c88 for geode.texture-loader
+19:26:10 DEBUG [Main] [Geode]:         Enabled LoadingLayer::init hook at 0x10b359ff4 for geode.texture-loader
+19:26:10 INFO  [Ma>] [Texture Loader]: Loading texture packs
+19:26:10 INFO  [Ma>] [Texture Loader]: Loaded 3 packs
+19:26:10 INFO  [Main] [Geode]:       Loading mod alphalaneous.happy_textures v2.1.11
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCDirector::willSwitchToScene hook at 0x10b2f9ea4 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCLabelBMFont::limitLabelWidth hook at 0x10b480dbc for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCLabelBMFont::setString hook at 0x10b47fdf0 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCObject::autorelease hook at 0x10b2089b0 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCPoolManager::pop hook at 0x10b33416c for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::createTextLayers hook at 0x10b366f84 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCSpriteBatchNode::initWithTexture hook at 0x10b35afe8 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCLabelBMFont::createBatched hook at 0x10b47f3d8 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCTextureCache::addImage hook at 0x10b297dec for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCDirector::willSwitchToScene hook at 0x10b2f9ea4 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled LabelGameObject::createLabel hook at 0x10b50cae0 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::extension::CCScale9Sprite::initWithFile hook at 0x10b399ad0 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::extension::CCScale9Sprite::visit hook at 0x10b39a2ec for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCSpriteFrameCache::spriteFrameByName hook at 0x10b540d44 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled CustomListView::setupList hook at 0x10b28f59c for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled ProfilePage::setupCommentsBrowser hook at 0x10b31bb30 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled ProfilePage::loadPageFromUserInfo hook at 0x10b31bc74 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled InfoLayer::setupCommentsBrowser hook at 0x10b4d61f4 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelLeaderboard::setupLeaderboard hook at 0x10b3d46f0 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled AudioAssetsBrowser::setupList hook at 0x10b356078 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled MusicBrowser::setupList hook at 0x10b5462a4 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled OptionsScrollLayer::setupList hook at 0x10b546e7c for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled MessagesProfilePage::setupCommentsBrowser hook at 0x10b351344 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled FriendsProfilePage::setupUsersBrowser hook at 0x10b35d590 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled FRequestProfilePage::setupCommentsBrowser hook at 0x10b33b474 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled SFXBrowser::setupList hook at 0x10b2edbb0 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled TextArea::setString hook at 0x10b27a9a8 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJChestSprite::switchToState hook at 0x10b34acbc for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJDropDownLayer::showLayer hook at 0x10b536708 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::loadLevelStep hook at 0x10b1ae740 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled LoadingLayer::init hook at 0x10b359ff4 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled CreatorLayer::onTreasureRoom hook at 0x10b23a6c4 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled CreatorLayer::onGauntlets hook at 0x10b23a1b8 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCDirector::replaceScene hook at 0x10b2f9fd4 for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled SecretRewardsLayer::onBack hook at 0x10b46d9ac for alphalaneous.happy_textures
+19:26:10 DEBUG [Main] [Geode]:         Enabled GauntletSelectLayer::onBack hook at 0x10b343088 for alphalaneous.happy_textures
+19:26:10 INFO  [Main] [Geode]:       Loading mod cvolton.level-id-api v2.0.0
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJGameLevel::handleStatsConflict hook at 0x10b21fc6c for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJGameLevel::dataLoaded hook at 0x10b231d44 for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJLevelList::hasMatchingLevels hook at 0x10b234f98 for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJLevelList::dataLoaded hook at 0x10b235e50 for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled LocalLevelManager::firstLoad hook at 0x10b34d26c for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled LocalLevelManager::dataLoaded hook at 0x10b34d2fc for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::dataLoaded hook at 0x10b49f408 for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::encodeDataTo hook at 0x10b4a0b0c for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameLevelManager::deleteLevelList hook at 0x10b217094 for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameLevelManager::deleteLevel hook at 0x10b216b24 for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelCell::loadLocalLevelCell hook at 0x10b290158 for cvolton.level-id-api
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelListCell::loadFromList hook at 0x10b287970 for cvolton.level-id-api
+19:26:10 INFO  [Main] [Geode]:       Loading mod eclipse.eclipse-menu v1.9.4
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCIMEDispatcher::dispatchInsertText hook at 0x10b357bf0 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCIMEDispatcher::dispatchDeleteBackward hook at 0x10b357c1c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCTouchDispatcher::touches hook at 0x10b2d32c0 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCEGLView::swapBuffers hook at 0x10b2ae7a0 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::processCommands hook at 0x10b3834f8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::levelComplete hook at 0x10b29d948 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::addObject hook at 0x10b29c854 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCTouchDispatcher::touches hook at 0x10b2d32c0 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Eclipse]:       Loaded config file
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::onQuit hook at 0x10b29d520 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::init hook at 0x10b4dabb4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::fadeOutStreak2 hook at 0x10b3abc60 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playerDestroyed hook at 0x10b3abb74 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::createFadeOutDartStreak hook at 0x10b3acf54 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled ShaderLayer::visit hook at 0x10b3f71b4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCScheduler::update hook at 0x10b32fb2c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::onQuit hook at 0x10b29d520 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::levelComplete hook at 0x10b29d948 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::reloadAllStep5 hook at 0x10b4a1b94 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled MenuLayer::init hook at 0x10b3ea500 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playSpawnEffect hook at 0x10b3ab62c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::createPlayer hook at 0x10b3618b0 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::postUpdate hook at 0x10b2a364c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::processCommands hook at 0x10b3834f8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled UILayer::init hook at 0x10b1ccfe8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::toggleGhostEffect hook at 0x10b3ab4f4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::toggleVisibility hook at 0x10b3a1b2c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playerDestroyed hook at 0x10b3abb74 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EffectGameObject::triggerObject hook at 0x10b509310 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled FMODAudioEngine::playEffect hook at 0x10b2bf7ec for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playDeathEffect hook at 0x10b1db9ec for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::addObject hook at 0x10b29c854 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::createObjectsFromSetupFinished hook at 0x10b2a0090 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::loadFromCheckpoint hook at 0x10b2a4fc8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::createCheckpoint hook at 0x10b2a3938 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::removeCheckpoint hook at 0x10b2a4e88 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::processCommands hook at 0x10b3834f8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::createObjectsFromSetupFinished hook at 0x10b2a0090 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::updateVisibility hook at 0x10b2a045c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playerDestroyed hook at 0x10b3abb74 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::init hook at 0x10b4dabb4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::updateVisibility hook at 0x10b4e286c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::onPlaytest hook at 0x10b54b880 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::addObject hook at 0x10b29c854 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::addToGroups hook at 0x10b3763f8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::addObject hook at 0x10b29c854 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::spawnParticle hook at 0x10b38817c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::playSpeedParticle hook at 0x10b388244 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::pauseGame hook at 0x10b2a67f0 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::onQuit hook at 0x10b29d520 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::onPlaytest hook at 0x10b4e6a68 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::init hook at 0x10b4dabb4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled OBB2D::calculateWithCenter hook at 0x10b2b0d40 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled UILayer::onCheck hook at 0x10b1cd58c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::customSetup hook at 0x10b2c5df8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::pushButton hook at 0x10b3abeac for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled UILayer::init hook at 0x10b1ccfe8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::hasUniqueCoin hook at 0x10b36d558 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::addObject hook at 0x10b29c854 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::levelComplete hook at 0x10b29d948 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::incrementJumps hook at 0x10b3a2110 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled RetryLevelLayer::customSetup hook at 0x10b336fe8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EndLevelLayer::customSetup hook at 0x10b47989c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelPage::onPlay hook at 0x10b58792c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditLevelLayer::onPlay hook at 0x10b26e340 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::onPlay hook at 0x10b1aa560 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCEGLView::swapBuffers hook at 0x10b2ae7a0 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCTouchDispatcher::touches hook at 0x10b2d32c0 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::getModifiedDelta hook at 0x10b382538 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::updateProgressbar hook at 0x10b29c4ec for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::levelComplete hook at 0x10b29d948 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditLevelLayer::init hook at 0x10b26cdc4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled FMODAudioEngine::update hook at 0x10b2bcdd4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::setGameVariable hook at 0x10b49cd6c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled CustomListView::create hook at 0x10b28462c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelCell::onClick hook at 0x10b293004 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelCell::loadLocalLevelCell hook at 0x10b290158 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::init hook at 0x10b548e74 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::onTryEdit hook at 0x10b2c7210 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::customSetup hook at 0x10b2c5df8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::onSettings hook at 0x10b5685f4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorPauseLayer::customSetup hook at 0x10b520134 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelTools::verifyLevelIntegrity hook at 0x10b32d2c8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditLevelLayer::onShare hook at 0x10b26e448 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled SliderTouchLogic::ccTouchMoved hook at 0x10b473288 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJScaleControl::ccTouchMoved hook at 0x10b57f398 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::scaleObjects hook at 0x10b5738b4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::postUpdate hook at 0x10b4e765c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::isIconUnlocked hook at 0x10b496a48 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::isColorUnlocked hook at 0x10b496e58 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::isItemUnlocked hook at 0x10b4b3c38 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameLevelManager::getMainLevel hook at 0x10b2161f8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::getUGV hook at 0x10b49cfe8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::getUGV hook at 0x10b49cfe8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::isItemUnlocked hook at 0x10b4b3c38 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::getStat hook at 0x10b4b0098 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled CreatorLayer::onTreasureRoom hook at 0x10b23a6c4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled CreatorLayer::onSecretVault hook at 0x10b23a4f4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled CreatorLayer::init hook at 0x10b239078 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled OptionsLayer::onSecretVault hook at 0x10b271188 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled SecretLayer2::onDoor hook at 0x10b48f920 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelPage::addSecretDoor hook at 0x10b588d88 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::onBack hook at 0x10b1acc14 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::init hook at 0x10b1a8348 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::confirmClone hook at 0x10b1aca1c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::onNewCustomItem hook at 0x10b56c49c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled SongSelectNode::audioPrevious hook at 0x10b2cb7fc for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled SongSelectNode::audioNext hook at 0x10b2cb830 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled MoreSearchLayer::selectSong hook at 0x10b1daf14 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled MoreSearchLayer::audioPrevious hook at 0x10b1dacf8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled MoreSearchLayer::audioNext hook at 0x10b1dad3c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::shouldExitHackedLevel hook at 0x10b3617f8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::isItemUnlocked hook at 0x10b4b3c38 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::isItemUnlocked hook at 0x10b4b3c38 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled CommentCell::loadFromComment hook at 0x10b289c94 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::handleButton hook at 0x10b37ebbc for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::pauseGame hook at 0x10b2a67f0 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::loadFromCheckpoint hook at 0x10b2a4fc8 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::markCheckpoint hook at 0x10b2a3590 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::processQueuedButtons hook at 0x10b37eb00 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::handleButton hook at 0x10b37ebbc for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::onPlaytest hook at 0x10b54b880 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled OptionsLayer::sfxSliderChanged hook at 0x10b2713c4 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled OptionsLayer::musicSliderChanged hook at 0x10b271358 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::sfxSliderChanged hook at 0x10b2c7548 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::musicSliderChanged hook at 0x10b2c750c for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled CCTextInputNode::updateLabel hook at 0x10b2f0c18 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled CCTextInputNode::updateLabel hook at 0x10b2f0c18 for eclipse.eclipse-menu
+19:26:10 DEBUG [Main] [Geode]:         Enabled RewardUnlockLayer::init hook at 0x10b348fac for eclipse.eclipse-menu
+19:26:10 WARN  [Main] [Geode]:         CustomButton contains unknown key "default"
+19:26:10 INFO  [Main] [Eclipse]:       Checking for language updates...
+19:26:10 DEBUG [Main] [Geode]:         Disabled GJBaseGameLayer::handleButton hook for eclipse.eclipse-menu
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID '' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID '' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID '' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID '' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.tpsbypass' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.speedhack' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.pitchshift' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.audiospeed' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.audiospeed.sync' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.zeropercentpractice' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.accuratepercentage' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.platgamemodes' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.allpassable' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.allowlowvolume' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.alwaysshowcoins' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.alwaystrail' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.autoclick' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.autokill' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.autokill.percentage' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.autokill.time' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.autoldm' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.autopickupcoins' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.autopracticemode' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.autosafemode' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.autosongdownload' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.ballrotation' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bot.state-0' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bot.state-1' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bot.state-2' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bot.ignore-inputs' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.common.new' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.common.save' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.common.load' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.common.delete' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.bot.open-replays-folder' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.charfilter' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.charlimit' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.checkpointdelay' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.checkpointlimit' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.clickbetweensteps' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.clickonsteps' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.compacteditorlevels' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.compactprofilecomments' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.confirmfullreset' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.confirmpractice' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.confirmrestart' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.customobjectbypass' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.customwavetrail' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.defaultsongbypass' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.fastchests' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.forceghosttrail' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.forceplatformer' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.framestepper' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.freescroll' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.freeze_attempts' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.hidelevelcomplete' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.hidepause' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.hideplayer' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.hidetriggers' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.hideui' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.hitbox_multiplier' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.instantcomplete' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.instantmirror' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.jumphack' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'labels.visible' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'labels.show-in-editor' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'labels.cheat-indicator.visible' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.11' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.12' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.13' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.14' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.15' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.16' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.17' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.18' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.19' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.20' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.21' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'label.22' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.layoutmode' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.legacypulse' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.legacyreversephysics' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.legacytrail' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.copybypass' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.leveledit' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.levelkick' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.matchlabelfonts' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.menugameplay' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.musiccustomizer' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.mutelevelaudioondeath' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.mutelevelsfx' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.muterewardssfx' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.nocopymark' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.nodeatheffect' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.noendshake' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.noghosttrail' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.nohidetrigger' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.nomirror' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.nomusicfadeout' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.noglow' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.noparticles' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.noplatformersquish' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.noportallightning' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.norespawnflash' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.norobotfire' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.noshader' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.noshortnumbers' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.nospiderdash' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.notrail' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.novehicleparticles' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.nowavetrailbehind' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.noclip' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.noclip.acclimit' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.noclip.deathlimit' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.pausebuffering' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.pausecount' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.pauseduringcomplete' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.practicecoins' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bot.practicefix' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.practicemusic' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.randomseed' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.resetpercentonsave' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.safemode' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.shipcopter' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.clipsy' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.options' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.uncomplete-level' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.restart-level' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.toggle-practice' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.place-checkpoint' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.remove-checkpoint' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.save-folder' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.reset-bg-volume' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.reset-sfx-volume' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.recount-secret-coins' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.show-level-password' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'button.shortcuts.show-graphic-settings' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.showhitboxes' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.showhitboxes.ondeath' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.showspamcomments' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.show-taps' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.showtrajectory' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.showtriggers' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.sliderlimit' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.smartstartpos' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'creator.smoothtrail' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.solidwavetrail' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.startpos_switcher' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.stoptrigondeath' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'level.stoptrigondeath.platformer' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.swiftclick' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.transitionspeed' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'global.transparentlists' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.unlockicons' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.unlockmainlevels' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.unlockpaths' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.unlockshops' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.unlockvaults' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'bypass.verifyhack' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.wavetrailondeath' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.wavetrailondeath.persist-trail' not found
+19:26:10 WARN  [Main] [Eclipse]:       Keybind with ID 'player.respawndelay' not found
+19:26:10 INFO  [Main] [Eclipse]:       Added bitmap fonts to search path: /var/mobile/Containers/Data/Application/0DA6CB69-A3ED-4201-AD69-49BE3E4CE30A/Documents/Data/Application/GeometryDash/Documents/game/geode/config/eclipse.eclipse-menu/bmfonts
+19:26:10 INFO  [Main] [Geode]:       Loading mod km7dev.server_api v4.0.0
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod km7dev.server_api
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::extension::CCHttpClient::send hook at 0x10b3c4f7c for km7dev.server_api
+19:26:10 INFO  [Main] [Geode]:       Loading mod km7dev.gdps-switcher v2.0.0
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod km7dev.gdps-switcher
+19:26:10 DEBUG [Main] [Geode]:         Enabled GManager::save hook at 0x10b3ce8e4 for km7dev.gdps-switcher
+19:26:10 DEBUG [Main] [Geode]:         Enabled GManager::setup hook at 0x10b3ce6a4 for km7dev.gdps-switcher
+19:26:10 DEBUG [Main] [Geode]:         Enabled MenuLayer::init hook at 0x10b3ea500 for km7dev.gdps-switcher
+19:26:10 DEBUG [Main] [Geode]:         Enabled MusicDownloadManager::pathForSongFolder hook at 0x10b2dabd4 for km7dev.gdps-switcher
+19:26:10 DEBUG [Main] [Geode]:         Enabled MusicDownloadManager::pathForSFXFolder hook at 0x10b2daeb0 for km7dev.gdps-switcher
+19:26:10 INFO  [Main] [Geode]:       Loading mod thesillydoggo.qolmod v2.8.6
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::reloadAllStep5 hook at 0x10b4a1b94 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCTouchDispatcher::touches hook at 0x10b2d32c0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled MenuLayer::init hook at 0x10b3ea500 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::createObjectsFromSetupFinished hook at 0x10b2a0090 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::addObject hook at 0x10b29c854 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::postUpdate hook at 0x10b2a364c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::toggleGhostEffect hook at 0x10b3ab4f4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::update hook at 0x10b39d6c8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::levelComplete hook at 0x10b29d948 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EndLevelLayer::onReplay hook at 0x10b47b218 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::updateRotation hook at 0x10b3a82b0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled "cocos2d::ccDrawCircle" hook at 0x10b3d056c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCMotionStreak::update hook at 0x10b2fb020 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::init hook at 0x10b39b810 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::updateCamera hook at 0x10b383830 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled CCCircleWave::init hook at 0x10b2f008c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled CCCircleWave::draw hook at 0x10b2f049c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::update hook at 0x10b39d6c8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playDeathEffect hook at 0x10b1db9ec for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::addObject hook at 0x10b29c854 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::updateInvisibleBlock hook at 0x10b2a0e40 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::lightningFlash hook at 0x10b3683bc for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::updateVisibility hook at 0x10b2a045c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::animatePlatformerJump hook at 0x10b3a230c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::init hook at 0x10b39b810 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playSpawnEffect hook at 0x10b3ab62c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::update hook at 0x10b39d6c8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled ShaderLayer::performCalculations hook at 0x10b3f70e0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::update hook at 0x10b39d6c8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playSpiderDashEffect hook at 0x10b3a95dc for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::update hook at 0x10b39d6c8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled HardStreak::updateStroke hook at 0x10b1e18f4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled HardStreak::updateStroke hook at 0x10b1e18f4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCParticleSystemQuad::draw hook at 0x10b3d7d60 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::createCustomParticle hook at 0x10b388bb4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::addAllParticles hook at 0x10b39d434 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::createObjectsFromSetupFinished hook at 0x10b2a0090 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameObject::createAndAddParticle hook at 0x10b3dd770 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCDrawNode::drawPolygon hook at 0x10b1c695c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled HardStreak::updateStroke hook at 0x10b1e18f4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCMotionStreak::initWithFade hook at 0x10b2fad4c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled CCSpriteGrayscale::createWithSpriteFrame hook at 0x10b327e98 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled CreatorLayer::init hook at 0x10b239078 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::update hook at 0x10b39d6c8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::tryCloneLevel hook at 0x10b1acb08 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::init hook at 0x10b1a8348 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::levelDownloadFinished hook at 0x10b1ade54 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled ShareLevelLayer::init hook at 0x10b3f8f94 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled HardStreak::updateStroke hook at 0x10b1e18f4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::placeStreakPoint hook at 0x10b3a1e88 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::fadeOutStreak2 hook at 0x10b3abc60 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::update hook at 0x10b39d6c8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::init hook at 0x10b548e74 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::onTryEdit hook at 0x10b2c7210 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::customSetup hook at 0x10b2c5df8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorPauseLayer::customSetup hook at 0x10b520134 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::onNewCustomItem hook at 0x10b56c49c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::zoomOut hook at 0x10b54bab0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::zoomIn hook at 0x10b54ba5c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::scrollWheel hook at 0x10b57e718 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorPauseLayer::saveLevel hook at 0x10b5222b0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled SliderTouchLogic::ccTouchMoved hook at 0x10b473288 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJScaleControl::ccTouchMoved hook at 0x10b57f398 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::postUpdate hook at 0x10b4e765c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorOptionsLayer::onButtonsPerRow hook at 0x10b458960 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorOptionsLayer::onButtonRows hook at 0x10b4589e8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled ShareLevelLayer::onShare hook at 0x10b3f9e60 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled ShareLevelLayer::init hook at 0x10b3f8f94 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::playerTookDamage hook at 0x10b4e7648 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::postUpdate hook at 0x10b4e765c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EndLevelLayer::customSetup hook at 0x10b47989c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled OBB2D::overlaps1Way hook at 0x10b2b1188 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled OBB2D::getBoundingRect hook at 0x10b2b122c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameObject::updateOrientedBox hook at 0x10b3e5924 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::addObject hook at 0x10b29c854 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::collisionCheckObjects hook at 0x10b36bf38 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::resetLevelVariables hook at 0x10b38620c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::processQueuedButtons hook at 0x10b37eb00 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::saveToCheckpoint hook at 0x10b3b183c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::loadFromCheckpoint hook at 0x10b3b1de4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::onRestartFull hook at 0x10b2c72f0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::onRestart hook at 0x10b2c74ac for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::onPracticeMode hook at 0x10b2c732c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::onNormalMode hook at 0x10b2c7368 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::showCompleteText hook at 0x10b29e6ac for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::playPlatformerEndAnimationToPos hook at 0x10b29fcd4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::playEndAnimationToPos hook at 0x10b29f8c4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::update hook at 0x10b39d6c8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::incrementStat hook at 0x10b4b02b4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::init hook at 0x10b39b810 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::update hook at 0x10b39d6c8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameObject::getObjectRect hook at 0x10b3dec18 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::resetLevelVariables hook at 0x10b38620c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::init hook at 0x10b35e9f0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::onPlaytest hook at 0x10b4e6a68 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::transformObjectCall hook at 0x10b57a324 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EditorUI::ccTouchMoved hook at 0x10b57cbe4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::customSetup hook at 0x10b2c5df8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCLayer::onEnter hook at 0x10b2ccce8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJGarageLayer::onSelect hook at 0x10b489920 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJGarageLayer::init hook at 0x10b485b48 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled CharacterColorPage::toggleGlow hook at 0x10b2add30 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled CharacterColorPage::onPlayerColor hook at 0x10b2ae0a8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::postUpdate hook at 0x10b2a364c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::toggleFlipped hook at 0x10b36ce28 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::toggleFlipped hook at 0x10b36ce28 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::postUpdate hook at 0x10b2a364c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::collidedWithObjectInternal hook at 0x10b3a5800 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::levelComplete hook at 0x10b29d948 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::updateProgressbar hook at 0x10b29c4ec for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::loadFromCheckpoint hook at 0x10b2a4fc8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::levelComplete hook at 0x10b29d948 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::customSetup hook at 0x10b2c5df8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::init hook at 0x10b35e9f0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::init hook at 0x10b4dabb4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::createObjectsFromSetupFinished hook at 0x10b2a0090 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::playEndAnimationToPos hook at 0x10b29f8c4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::playerTouchedTrigger hook at 0x10b36d2dc for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::playerTouchedRing hook at 0x10b36d218 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::activateSFXTrigger hook at 0x10b386f94 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::collisionCheckObjects hook at 0x10b36bf38 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::canBeActivatedByPlayer hook at 0x10b36cd08 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::activateSongEditTrigger hook at 0x10b386ed0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::gameEventTriggered hook at 0x10b3685e4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::ringJump hook at 0x10b3ac110 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playSpiderDashEffect hook at 0x10b3a95dc for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::stopDashing hook at 0x10b3a0a7c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::incrementJumps hook at 0x10b3a2110 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled HardStreak::addPoint hook at 0x10b1e1f7c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameObject::playShineEffect hook at 0x10b3e03a8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EffectGameObject::triggerObject hook at 0x10b509310 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::createObjectsFromSetupFinished hook at 0x10b2a0090 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::createObjectsFromSetupFinished hook at 0x10b2a0090 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::postUpdate hook at 0x10b2a364c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled UILayer::handleKeypress hook at 0x10b1cdc30 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled MenuGameLayer::update hook at 0x10b51f3a4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::postUpdate hook at 0x10b2a364c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled MenuLayer::init hook at 0x10b3ea500 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCScheduler::pauseTarget hook at 0x10b32f938 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCScheduler::update hook at 0x10b32fb2c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelInfoLayer::init hook at 0x10b1a8348 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled SecretRewardsLayer::onSelectItem hook at 0x10b46f434 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled SecretRewardsLayer::onGoldChest hook at 0x10b46dcf8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::recountSpecialStats hook at 0x10b4b916c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled MenuLayer::init hook at 0x10b3ea500 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled RewardUnlockLayer::showCollectReward hook at 0x10b348b9c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled OptionsLayer::customSetup hook at 0x10b270804 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::onSettings hook at 0x10b2c74e8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled UILayer::init hook at 0x10b1ccfe8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelPage::onPlay hook at 0x10b58792c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelAreaInnerLayer::init hook at 0x10b4c9714 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::isItemUnlocked hook at 0x10b4b3c38 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PauseLayer::customSetup hook at 0x10b2c5df8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::isItemUnlocked hook at 0x10b4b3c38 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::getModifiedDelta hook at 0x10b382538 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled CCTextInputNode::onTextFieldInsertText hook at 0x10b2f17a0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled AchievementNotifier::willSwitchToScene hook at 0x10b39a7dc for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::isIconUnlocked hook at 0x10b496a48 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameManager::isColorUnlocked hook at 0x10b496e58 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GameStatsManager::isItemUnlocked hook at 0x10b4b3c38 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::createPlayer hook at 0x10b3618b0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::startDashing hook at 0x10b3aa2e8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayerObject::playSpiderDashEffect hook at 0x10b3a95dc for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::handleButton hook at 0x10b37ebbc for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LoadingLayer::loadAssets hook at 0x10b35a7a4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCBMFontConfiguration::create hook at 0x10b47ce48 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::showNewBest hook at 0x10b29ee58 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::levelComplete hook at 0x10b29d948 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::init hook at 0x10b299800 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled PlayLayer::postUpdate hook at 0x10b2a364c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJGameLevel::savePercentage hook at 0x10b230744 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EndLevelLayer::playCoinEffect hook at 0x10b47bbdc for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled EndLevelLayer::customSetup hook at 0x10b47989c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::updateCamera hook at 0x10b383830 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::processQueuedButtons hook at 0x10b37eb00 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::checkRepellPlayer hook at 0x10b38364c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled LevelEditorLayer::updateVisibility hook at 0x10b4e286c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCEGLView::swapBuffers hook at 0x10b2ae7a0 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCEGLViewProtocol::handleTouchesCancel hook at 0x10b46b33c for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCEGLViewProtocol::handleTouchesEnd hook at 0x10b46b290 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCEGLViewProtocol::handleTouchesMove hook at 0x10b46aff8 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCEGLViewProtocol::handleTouchesBegin hook at 0x10b46adb4 for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCGridBase::beforeDraw hook at 0x10b4c62ec for thesillydoggo.qolmod
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCGridBase::afterDraw hook at 0x10b4c6320 for thesillydoggo.qolmod
+19:26:10 INFO  [Main] [GDPS Switcher]: Loading into GDPS: https://jags.breezegg.fun/gdpscore
+19:26:10 INFO  [Main] [Geode]:       Loading mod weebify.high-graphics-android v1.2.0
+19:26:10 DEBUG [Main] [Geode]:         Unzipping .geode file
+19:26:10 DEBUG [Main] [Geode]:         Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:         Loading binary
+19:26:10 DEBUG [Main] [Geode]:         Loading binary for mod weebify.high-graphics-android
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCDirector::updateContentScale hook at 0x10b2f9c84 for weebify.high-graphics-android
+19:26:10 DEBUG [Main] [Geode]:         Enabled cocos2d::CCFileUtils::purgeFileUtils hook at 0x10b2d4970 for weebify.high-graphics-android
+19:26:10 DEBUG [Main] [Geode]:         Enabled LoadingLayer::init hook at 0x10b359ff4 for weebify.high-graphics-android
+19:26:10 DEBUG [Main] [Geode]:         Enabled MenuLayer::scene hook at 0x10b3ea3a4 for weebify.high-graphics-android
+19:26:10 DEBUG [Main] [Geode]:         Enabled OptionsLayer::customSetup hook at 0x10b270804 for weebify.high-graphics-android
+19:26:10 INFO  [M>] [High Graphics >]: Game version: 2.2081
+19:26:10 INFO  [M>] [High Graphics >]: path: /var/mobile/Containers/Data/Application/0DA6CB69-A3ED-4201-AD69-49BE3E4CE30A/Documents/Data/Application/GeometryDash/Documents/game/geode/config/weebify.high-graphics-android
+19:26:10 DEBUG [M>] [High Graphics >]: Loading high graphics textures
+19:26:10 DEBUG [Main] [Geode]:     Took 0.212s. Continuing next frame...
+19:26:10 DEBUG [Main] [Geode]: Setting up IPC
+19:26:10 WARN  [Main] [Geode]:   IPC is not supported on this platform
+19:26:10 INFO  [Main] [Geode]: Starting loader update check
+19:26:10 INFO  [Main] [Geode]: Entry took 0.219s
+19:26:10 INFO  [Main] [Geode]: Loading non-early mods
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod alphalaneous.editortab_api v2.1.12
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditButtonBar::onRight hook at 0x10b5a54f8 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditButtonBar::onLeft hook at 0x10b5a54e8 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditButtonBar::loadFromItems hook at 0x10b5a4ebc for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditButtonBar::goToPage hook at 0x10b5a5514 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditButtonBar::create hook at 0x10b5a4d48 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::toggleMode hook at 0x10b56835c for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::updateCreateMenu hook at 0x10b56ac70 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::showUI hook at 0x10b5724a4 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::onPause hook at 0x10b5681f0 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::clickOnPosition hook at 0x10b56a6f8 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::onResume hook at 0x10b521a90 for alphalaneous.editortab_api
+19:26:10 DEBUG [Main] [Geode]: Took 0.027s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod alk.allium v1.0.11
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod alk.allium
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for alk.allium
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::updateZoom hook at 0x10b5726c8 for alk.allium
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::ccTouchEnded hook at 0x10b57d0c0 for alk.allium
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::ccTouchMoved hook at 0x10b57cbe4 for alk.allium
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::ccTouchBegan hook at 0x10b57c6b4 for alk.allium
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod beat.click-sound v2.5.3
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:     Enabled ProfilePage::init hook at 0x10b31aa28 for beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:     Enabled PauseLayer::customSetup hook at 0x10b2c5df8 for beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::init hook at 0x10b51fb9c for beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:     Enabled PlayerObject::releaseButton hook at 0x10b3acd08 for beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:     Enabled PlayerObject::pushButton hook at 0x10b3abeac for beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:     Enabled cocos2d::CCTouchDispatcher::touches hook at 0x10b2d32c0 for beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:     Enabled MenuLayer::init hook at 0x10b3ea500 for beat.click-sound
+19:26:10 DEBUG [Main] [Geode]:     Enabled EndLevelLayer::customSetup hook at 0x10b47989c for beat.click-sound
+19:26:10 DEBUG [M>] [Click Soun>]: Loading
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod firee.object-workshop v1.5.0-beta.2
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod firee.object-workshop
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for firee.object-workshop
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::onNewCustomItem hook at 0x10b56c49c for firee.object-workshop
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::keyDown hook at 0x10b57d880 for firee.object-workshop
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod fleym.nongd v3.6.2
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomSongWidget::updateSongInfo hook at 0x10b27fd64 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomSongWidget::updateMultiAssetInfo hook at 0x10b281980 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomSongWidget::updateWithMultiAssets hook at 0x10b281548 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomSongWidget::onDelete hook at 0x10b27eabc for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomSongWidget::init hook at 0x10b27d928 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelInfoLayer::init hook at 0x10b1a8348 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled FMODAudioEngine::setMusicTimeMS hook at 0x10b2bee08 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled FMODAudioEngine::queueStartMusic hook at 0x10b2c1974 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJGameLevel::getAudioFileName hook at 0x10b230c68 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelCell::loadCustomLevelCell hook at 0x10b290a64 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelTools::getAudioTitle hook at 0x10b32c298 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled MenuLayer::init hook at 0x10b3ea500 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelSelectLayer::init hook at 0x10b585954 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled MenuLayer::init hook at 0x10b3ea500 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled MusicDownloadManager::pathForSong hook at 0x10b2da138 for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled MusicDownloadManager::onGetSongInfoCompleted hook at 0x10b2d7aec for fleym.nongd
+19:26:10 DEBUG [Main] [Geode]:     Enabled MusicDownloadManager::getSongInfoObject hook at 0x10b2d8224 for fleym.nongd
+19:26:10 INFO  [Main] [Jukebox]:   Starting NONG read
+19:26:10 INFO  [Main] [Jukebox]:   Read 12 files successfully!
+19:26:10 INFO  [Main] [Jukebox]:   Nothing to migrate from V2!
+19:26:10 INFO  [Thread #9425447] [Jukebox]: Starting fetch for index https://raw.githubusercontent.com/FlafyDev/auto-nong-indexes/v2/auto-nong-index.min.json
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod grian.art_importer v2.1.0
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod grian.art_importer
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::createMoveMenu hook at 0x10b577bac for grian.art_importer
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod hjfod.gmd-api v1.5.0
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod hjfod.gmd-api
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod hjfod.betteredit v6.10.0-beta.6
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::init hook at 0x10b51fb9c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::updateCustomColorLabels hook at 0x10b1d3b64 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::onNextColorChannel hook at 0x10b1d3f24 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::updateColorSprite hook at 0x10b1d41bc for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::init hook at 0x10b1d1548 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::onUpdateCustomColor hook at 0x10b1d3adc for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::highlightSelected hook at 0x10b1d460c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::onSelectColor hook at 0x10b1d3a5c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::textChanged hook at 0x10b1d4b20 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled SelectFontLayer::init hook at 0x10b455c78 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorOptionsLayer::onButtonsPerRow hook at 0x10b458960 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorOptionsLayer::onButtonRows hook at 0x10b4589e8 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJSpecialColorSelect::init hook at 0x10b332d9c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CreateParticlePopup::init hook at 0x10b44e460 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::doPasteObjects hook at 0x10b572ba4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::doCopyObjects hook at 0x10b572aac for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetGroupIDLayer::init hook at 0x10b1bef10 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::sliderEnded hook at 0x10b2b4b50 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::sliderBegan hook at 0x10b2b4a8c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled ObjectToolbox::gridNodeSizeForKey hook at 0x10b42f6bc for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::updateGridNodeSize hook at 0x10b56b630 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled ConfigureHSVWidget::updateLabels hook at 0x10b283dc8 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::onHSV hook at 0x10b1d3714 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled HSVWidgetPopup::init hook at 0x10b282c5c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled ColorSelectPopup::onUpdateCopyColor hook at 0x10b5a3050 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled ColorSelectPopup::init hook at 0x10b5a04b0 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::showUI hook at 0x10b5724a4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJScaleControl::updateLabelY hook at 0x10b57f13c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJScaleControl::updateLabelXY hook at 0x10b57f1a4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJScaleControl::updateLabelX hook at 0x10b57f0d4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJScaleControl::onToggleLockScale hook at 0x10b57f05c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJScaleControl::loadValues hook at 0x10b5733e8 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJScaleControl::ccTouchMoved hook at 0x10b57f398 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJScaleControl::init hook at 0x10b57ec78 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJRotationControl::ccTouchMoved hook at 0x10b57eb44 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJRotationControl::draw hook at 0x10b57ec10 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJRotationControl::init hook at 0x10b57e848 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::moveObject hook at 0x10b572f68 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::activateRotationControl hook at 0x10b572398 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::angleChanged hook at 0x10b57c134 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::init hook at 0x10b51fb9c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::resetUI hook at 0x10b5680dc for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditButtonBar::loadFromItems hook at 0x10b5a4ebc for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetGroupIDLayer::onNextGroupID1 hook at 0x10b1c1470 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetGroupIDLayer::init hook at 0x10b1bef10 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::ccTouchEnded hook at 0x10b57d0c0 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::ccTouchMoved hook at 0x10b57cbe4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::ccTouchCancelled hook at 0x10b57d82c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::ccTouchBegan hook at 0x10b57c6b4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled DrawGridLayer::draw hook at 0x10b4ed918 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::updateButtons hook at 0x10b569a80 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::onLockLayer hook at 0x10b569930 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled DrawGridLayer::draw hook at 0x10b4ed918 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::removeSpecial hook at 0x10b4df5bc for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::addSpecial hook at 0x10b4ddc14 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GameObject::setVisible hook at 0x10b3dfc8c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::selectObjects hook at 0x10b5715dc for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::toggleMode hook at 0x10b56835c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::selectObject hook at 0x10b56ae48 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled DrawGridLayer::draw hook at 0x10b4ed918 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::updateOptions hook at 0x10b4db894 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::updateZoom hook at 0x10b5726c8 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::init hook at 0x10b51fb9c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::init hook at 0x10b4dabb4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditLevelLayer::init hook at 0x10b26cdc4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GManager::save hook at 0x10b3ce8e4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::saveLevel hook at 0x10b5222b0 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::onExitNoSave hook at 0x10b521c84 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::FLAlert_Clicked hook at 0x10b5227f8 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled MenuLayer::init hook at 0x10b3ea500 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::init hook at 0x10b51fb9c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::init hook at 0x10b4dabb4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::init hook at 0x10b51fb9c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled MenuLayer::init hook at 0x10b3ea500 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::ccTouchBegan hook at 0x10b57c6b4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled GameManager::returnToLastScene hook at 0x10b4a152c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::toggleMode hook at 0x10b56835c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::showUI hook at 0x10b5724a4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::clickOnPosition hook at 0x10b56a6f8 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::onExitNoSave hook at 0x10b521c84 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::init hook at 0x10b51fb9c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::moveForCommand hook at 0x10b579d9c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::showUI hook at 0x10b5724a4 for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::updateVisibility hook at 0x10b4e286c for hjfod.betteredit
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod hjfod.gdshare v1.6.0
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod hjfod.gdshare
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditLevelLayer::init hook at 0x10b26cdc4 for hjfod.gdshare
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelInfoLayer::init hook at 0x10b1a8348 for hjfod.gdshare
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelBrowserLayer::init hook at 0x10b598284 for hjfod.gdshare
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelListLayer::init hook at 0x10b3c71a0 for hjfod.gdshare
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod mat.reference-image v1.2.2
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod mat.reference-image
+19:26:10 DEBUG [Thread #9425445] [Geode]: Switching to Cloudflare for DNS resolution
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::createMoveMenu hook at 0x10b577bac for mat.reference-image
+19:26:10 DEBUG [Thread #9425446] [Geode]: Switching to System for DNS resolution
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod ninkaz.editor_utils v1.5.6
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorPauseLayer::init hook at 0x10b51fb9c for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::selectObjects hook at 0x10b5715dc for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::init hook at 0x10b548e74 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::canSelectObject hook at 0x10b571510 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::copyObjectState hook at 0x10b4e79bc for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::onPasteState hook at 0x10b569780 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::init hook at 0x10b2b22ec for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditTriggersPopup::init hook at 0x10b45653c for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::editObject hook at 0x10b568898 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::init hook at 0x10b2b22ec for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::sliderEnded hook at 0x10b2b4b50 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::sliderBegan hook at 0x10b2b4a8c for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled CreateParticlePopup::updateParticleValueForType hook at 0x10b4539c8 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled CreateParticlePopup::init hook at 0x10b44e460 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled CreateParticlePopup::createParticleSlider hook at 0x10b4524c8 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupRotatePopup::init hook at 0x10b3ec49c for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupRotatePopup::onCustomToggleTriggerValue hook at 0x10b3ec948 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::init hook at 0x10b2b22ec for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupPickupTriggerPopup::init hook at 0x10b1c733c for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupInteractObjectPopup::init hook at 0x10b5969c8 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupObjectOptions2Popup::init hook at 0x10b1c56ac for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled EditorUI::ccTouchBegan hook at 0x10b57c6b4 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled ConfigureHSVWidget::textChanged hook at 0x10b284240 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled ConfigureHSVWidget::onResetHSV hook at 0x10b283d50 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled ConfigureHSVWidget::init hook at 0x10b2830e8 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled ConfigureHSVWidget::getHSV hook at 0x10b2843dc for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled HSVWidgetPopup::init hook at 0x10b282c5c for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled CustomizeObjectLayer::hsvPopupClosed hook at 0x10b1d47b4 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled HSVLiveOverlay::init hook at 0x10b3239d8 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled HSVLiveOverlay::createHSVWidget hook at 0x10b323f50 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled HSVLiveOverlay::hsvChanged hook at 0x10b32410c for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled CreateParticlePopup::init hook at 0x10b44e460 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::init hook at 0x10b2b22ec for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::createValueControlAdvanced hook at 0x10b2b4f94 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTriggerPopup::updateDefaultTriggerValues hook at 0x10b2b6784 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled ColorSelectPopup::onToggleHSVMode hook at 0x10b5a2eb0 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled ColorSelectPopup::init hook at 0x10b5a04b0 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupPulsePopup::onSelectPulseMode hook at 0x10b53a3a8 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupPulsePopup::onSelectTargetMode hook at 0x10b53a108 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupPulsePopup::init hook at 0x10b537348 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupOpacityPopup::init hook at 0x10b1a6e2c for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJFollowCommandLayer::init hook at 0x10b2ba324 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupCollisionTriggerPopup::init hook at 0x10b3b35c8 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled CollisionBlockPopup::init hook at 0x10b208c14 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTouchTogglePopup::onTargetIDArrow hook at 0x10b3cfaf4 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupTouchTogglePopup::init hook at 0x10b3cf0ac for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupCountTriggerPopup::init hook at 0x10b277b58 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupInstantCountPopup::init hook at 0x10b33fe84 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupRandTriggerPopup::init hook at 0x10b34dc88 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupCameraOffsetTrigger::init hook at 0x10b312d64 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupCameraEdgePopup::init hook at 0x10b3bde40 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupShakePopup::init hook at 0x10b52d0fc for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupAnimationPopup::init hook at 0x10b5472fc for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled GJPFollowCommandLayer::init hook at 0x10b2e2ab8 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupMoveCommandPopup::valueDidChange hook at 0x10b3f8b68 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]:     Enabled SetupAdvFollowPopup::updateMode hook at 0x10b1e6ec0 for ninkaz.editor_utils
+19:26:10 DEBUG [Main] [Geode]: Took 0.033s
+19:26:10 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:10 INFO  [Main] [Geode]:   Loading mod okhx.grape v1.0.0
+19:26:10 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:10 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:10 DEBUG [Main] [Geode]:     Loading binary
+19:26:10 DEBUG [Main] [Geode]:     Loading binary for mod okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled cocos2d::CCDirector::drawScene hook at 0x10b2f95fc for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled cocos2d::CCScheduler::update hook at 0x10b32fb2c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled EnhancedGameObject::activatedByPlayer hook at 0x10b3e70c8 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled FMODAudioEngine::update hook at 0x10b2bcdd4 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled FMOD::System::update hook at 0x120558860 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::triggerGradientCommand hook at 0x10b373928 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::processQueuedButtons hook at 0x10b37eb00 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::processMoveActionsStep hook at 0x10b37b05c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::getModifiedDelta hook at 0x10b382538 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::handleButton hook at 0x10b37ebbc for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::updateCamera hook at 0x10b383830 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::createMiddleground hook at 0x10b3622b4 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::flipGravity hook at 0x10b36a81c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::collisionCheckObjects hook at 0x10b36bf38 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::destroyObject hook at 0x10b36d474 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::createGroundLayer hook at 0x10b36212c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::gameEventTriggered hook at 0x10b3685e4 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::toggleFlipped hook at 0x10b36ce28 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::updateColor hook at 0x10b375ebc for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::createBackground hook at 0x10b361bf8 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::teleportPlayer hook at 0x10b367d14 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::update hook at 0x10b3825c4 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GameObject::addGlow hook at 0x10b3d8dd8 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::updateEditor hook at 0x10b4dc2ac for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::onPlaytest hook at 0x10b4e6a68 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::init hook at 0x10b4dabb4 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled LevelEditorLayer::updateVisibility hook at 0x10b4e286c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PauseLayer::goEdit hook at 0x10b2c7660 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PauseLayer::customSetup hook at 0x10b2c5df8 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::storeCheckpoint hook at 0x10b2a4e28 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::removeCheckpoint hook at 0x10b2a4e88 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::onQuit hook at 0x10b29d520 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::updateAttempts hook at 0x10b2a6540 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::loadFromCheckpoint hook at 0x10b2a4fc8 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::pauseGame hook at 0x10b2a67f0 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::markCheckpoint hook at 0x10b2a3590 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::levelComplete hook at 0x10b29d948 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::init hook at 0x10b299800 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::fullReset hook at 0x10b2a592c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::delayedResetLevel hook at 0x10b2a3240 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::resetLevel hook at 0x10b2a5b78 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::setupHasCompleted hook at 0x10b29a8c4 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::addObject hook at 0x10b29c854 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::destroyPlayer hook at 0x10b2a2998 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::removeAllCheckpoints hook at 0x10b2a55a0 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::updateVisibility hook at 0x10b2a045c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::tryPlaceCheckpoint hook at 0x10b3a189c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::ringJump hook at 0x10b3ac110 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::removePendingCheckpoint hook at 0x10b3ab03c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::propellPlayer hook at 0x10b3b0d04 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::playSpawnEffect hook at 0x10b3ab62c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::releaseAllButtons hook at 0x10b3b0818 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::update hook at 0x10b39d6c8 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::incrementJumps hook at 0x10b3a2110 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::startDashing hook at 0x10b3aa2e8 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::bumpPlayer hook at 0x10b3b0ab0 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::playSpiderDashEffect hook at 0x10b3a95dc for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::playDeathEffect hook at 0x10b1db9ec for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled ShaderLayer::performCalculations hook at 0x10b3f70e0 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled VideoOptionsLayer::onApply hook at 0x10b274d2c for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled cocos2d::CCEGLView::swapBuffers hook at 0x10b2ae7a0 for okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJEffectManager::updateEffects hook at 0x10b193bfc for okhx.grape
+19:26:11 INFO  [Main] [Grape]:     Read keybinds successfully!
+19:26:11 INFO  [Main] [Grape]:     Registering new keybind for ui.visible
+19:26:11 INFO  [Main] [Grape]:     Registering new keybind for updater.frame_advance
+19:26:11 INFO  [Main] [Grape]:     Registering new keybind for updater.advance_back
+19:26:11 INFO  [Main] [Grape]:     Registering new keybind for updater.advance_one
+19:26:11 INFO  [Main] [Grape]:     Registering new keybind for trajectory.enabled
+19:26:11 INFO  [Main] [Grape]:     Registering new keybind for ui.visible
+19:26:11 INFO  [Main] [Grape]:     Detected non-Windows platform - defaulting to libx264 (CPU)
+19:26:11 INFO  [Main] [Grape]:     Successfully enabled Grape.
+19:26:11 INFO  [Main] [Grape]: [RENDERER] FFmpeg is not supported on this platform.
+19:26:11 INFO  [Main] [Grape]: Initialized ImGUI
+19:26:11 DEBUG [Main] [Geode]: Took 0.034s
+19:26:11 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:11 INFO  [Main] [Geode]:   Loading mod syzzi.click_between_frames v1.5.0
+19:26:11 DEBUG [Thread #94>] [G>]: Unzipping .geode file
+19:26:11 DEBUG [Thread #94>] [G>]: Same hash detected, skipping unzip
+19:26:11 DEBUG [Main] [Geode]:     Loading binary
+19:26:11 DEBUG [Main] [Geode]:     Loading binary for mod syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::showNewBest hook at 0x10b29ee58 for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::levelComplete hook at 0x10b29d948 for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayLayer::init hook at 0x10b299800 for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled cocos2d::CCScheduler::update hook at 0x10b32fb2c for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::processCommands hook at 0x10b3834f8 for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJBaseGameLayer::getModifiedDelta hook at 0x10b382538 for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::updateRotation hook at 0x10b3a82b0 for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled PlayerObject::update hook at 0x10b39d6c8 for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled EndLevelLayer::customSetup hook at 0x10b47989c for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     Enabled GJGameLevel::savePercentage hook at 0x10b230744 for syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]: Took 0.032s
+19:26:11 DEBUG [Main] [Geode]: Continuing mod graph refresh...
+19:26:11 INFO  [Main] [Geode]:   Finding problems
+19:26:11 DEBUG [Main] [Geode]:     alk.allium
+19:26:11 DEBUG [Main] [Geode]:     geode.texture-loader
+19:26:11 DEBUG [Main] [Geode]:     cvolton.level-id-api
+19:26:11 DEBUG [Main] [Geode]:     eclipse.eclipse-menu
+19:26:11 DEBUG [Main] [Geode]:     beat.click-sound
+19:26:11 DEBUG [Main] [Geode]:     prevter.imageplus
+19:26:11 DEBUG [Main] [Geode]:     hjfod.betteredit
+19:26:11 DEBUG [Main] [Geode]:     km7dev.gdps-switcher
+19:26:11 DEBUG [Main] [Geode]:     syzzi.click_between_frames
+19:26:11 DEBUG [Main] [Geode]:     geode.node-ids
+19:26:11 DEBUG [Main] [Geode]:     alphalaneous.happy_textures
+19:26:11 DEBUG [Main] [Geode]:     mat.reference-image
+19:26:11 DEBUG [Main] [Geode]:     grian.art_importer
+19:26:11 DEBUG [Main] [Geode]:     ninkaz.editor_utils
+19:26:11 DEBUG [Main] [Geode]:     weebify.high-graphics-android
+19:26:11 DEBUG [Main] [Geode]:     alphalaneous.editortab_api
+19:26:11 DEBUG [Main] [Geode]:     hjfod.gdshare
+19:26:11 DEBUG [Main] [Geode]:     hjfod.gmd-api
+19:26:11 DEBUG [Main] [Geode]:     okhx.grape
+19:26:11 DEBUG [Main] [Geode]:     fleym.nongd
+19:26:11 DEBUG [Main] [Geode]:     alk.ime-input
+19:26:11 DEBUG [Main] [Geode]:     alphalaneous.alphas_geode_utils
+19:26:11 DEBUG [Main] [Geode]:     km7dev.server_api
+19:26:11 DEBUG [Main] [Geode]:     firee.object-workshop
+19:26:11 DEBUG [Main] [Geode]:     thesillydoggo.qolmod
+19:26:11 DEBUG [Main] [Geode]:     geode.loader
+19:26:11 DEBUG [Main] [Geode]:   Took 0s
+19:26:11 DEBUG [Main] [Geode]: Verifying Loader Resources
+19:26:11 DEBUG [Main] [Geode]: Loading Loader Resources
+19:26:11 DEBUG [Main] [Geode]: Loading mod resources
+19:26:11 DEBUG [Main] [Geode]: Adding resources
+19:26:11 DEBUG [Main] [Geode]:   alk.allium
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet alk.allium/AlliumSpritesheet
+19:26:11 DEBUG [Main] [Geode]:   eclipse.eclipse-menu
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet eclipse.eclipse-menu/emojis
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet eclipse.eclipse-menu/UISheet
+19:26:11 DEBUG [Thread #9425448] [Geode]: DNS server Cloudflare: score 15.816
+19:26:11 DEBUG [Thread #9425448] [Geode]: DNS server Google: score 9.784
+19:26:11 DEBUG [Thread #9425448] [Geode]: DNS server Cloudflare DoH: score 7.916
+19:26:11 DEBUG [Thread #9425448] [Geode]: DNS server System: score 18.312
+19:26:11 DEBUG [Main] [Geode]:   hjfod.betteredit
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet hjfod.betteredit/UISheet
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet hjfod.betteredit/ViewTabSheet
+19:26:11 DEBUG [Main] [Geode]:   km7dev.gdps-switcher
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet km7dev.gdps-switcher/GS_serverSheet02
+19:26:11 DEBUG [Main] [Geode]:   mat.reference-image
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet mat.reference-image/EditorImageButton
+19:26:11 DEBUG [Main] [Geode]:   grian.art_importer
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet grian.art_importer/ImageButton
+19:26:11 DEBUG [Main] [Geode]:   ninkaz.editor_utils
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet ninkaz.editor_utils/editor-sheet
+19:26:11 DEBUG [Main] [Geode]:   hjfod.gdshare
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet hjfod.gdshare/GDShare
+19:26:11 DEBUG [Main] [Geode]:   fleym.nongd
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet fleym.nongd/JukeboxSheet
+19:26:11 DEBUG [Main] [Geode]:   thesillydoggo.qolmod
+19:26:11 DEBUG [Main] [Geode]:     Adding sheet thesillydoggo.qolmod/qolmod-ui-sheet
