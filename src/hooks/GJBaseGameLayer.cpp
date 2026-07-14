@@ -28,6 +28,7 @@ using namespace geode::prelude;
 
 #include <Geode/modify/GJBaseGameLayer.hpp>
 
+#ifndef GEODE_IS_IOS
 $execute {
     // Patch GJBaseGameLayer::resetLevelVariables to not release buttons
     geode::log::info("Patching {} (GJBaseGameLayer::resetLevelVariables)",
@@ -57,6 +58,7 @@ $execute {
         geode::log::error("Failed to patch PlayLayer::resumeAndRestart");
     }
 }
+#endif
 
 struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     struct PlayerState {

@@ -51,7 +51,11 @@ void ReplaySystem::onReset(uint32_t newFrame) {
 }
 
 uint64_t& ReplaySystem::getCurrentRandomState() {
+#ifdef GEODE_IS_IOS
+    return m_portableRandomState;
+#else
     return *reinterpret_cast<uint64_t*>(geode::base::get() + 0x6c2e90);
+#endif
 }
 
 uint64_t& ReplaySystem::getCurrentShakeState() {

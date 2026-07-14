@@ -134,3 +134,12 @@ endif()
 target_compile_options(GeodeBindings PRIVATE -Wno-overloaded-virtual -Wno-unused-variable)
 
 setup_geode_mod(${PROJECT_NAME})
+
+# Geode enables -Wpedantic and -Werror as part of setup_geode_mod. Its
+# lifecycle helpers intentionally use '$' in their macro names, which Apple
+# Clang diagnoses as an extension when compiling iOS targets.
+if (APPLE)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -Wno-error=dollar-in-identifier-extension
+    )
+endif()

@@ -3,7 +3,6 @@
 #include <Geode/binding/VideoOptionsLayer.hpp>
 
 #include "../bot/bot.hpp"
-#include "Geode/cocos/platform/win32/CCEGLView.h"
 #include "ui/hook.hpp"
 // #include "../recorder/recorder.hpp"
 

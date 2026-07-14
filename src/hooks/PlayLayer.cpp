@@ -727,6 +727,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 };
 
+#ifndef GEODE_IS_IOS
 constexpr int QUEUE_CHECKPOINT_OFFSET = 0x4ce060;
 
 // this basically removes the one frame delay with placing checkpoints
@@ -751,8 +752,9 @@ $execute {
     (void)Mod::get()->hook(
         reinterpret_cast<void*>(geode::base::get() + QUEUE_CHECKPOINT_OFFSET),
         &PlayLayer_queueCheckpoint, "PlayLayer::queueCheckpoint",
-        tulip::hook::TulipConvention::Default);
+                           tulip::hook::TulipConvention::Default);
 }
+#endif
 
 #ifdef GEODE_IS_WINDOWS
 static void resetLevelSeedMidhook(SafetyHookContext&) {

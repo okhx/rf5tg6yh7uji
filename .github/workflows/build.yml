@@ -15,7 +15,7 @@ jobs:
         config:
         - name: Windows
           os: windows-latest
-          flags: -T host=x64 -A win32
+          configure-args: -T host=x64 -A win32
         - name: Android32
           os: ubuntu-latest
           target: Android32
@@ -42,7 +42,7 @@ jobs:
         bindings-ref: main
         combine: true
         target: ${{ matrix.config.target }}
-        flags: ${{ matrix.config.flags }}
+        configure-args: ${{ matrix.config.configure-args }}
 
   package:
     name: Package Geode Mod

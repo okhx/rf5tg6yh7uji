@@ -488,14 +488,6 @@ void BotUpdater::findBestFrameCandidate() {
 // everything DOES work fine with this bypass
 // anyways yea yapping over heres the code:::::::::::::
 
-constexpr int ACTIONMGR_UPDATE_OFFSET = 0x38B90;
-static void* CCActionManager_update;
-
-$execute {
-    CCActionManager_update = reinterpret_cast<void*>(geode::base::getCocos() +
-                                                     ACTIONMGR_UPDATE_OFFSET);
-}
-
 #ifdef GEODE_IS_WINDOWS
 static void earlyUpdateMidhook(SafetyHookContext&) {
     Bot* bot = Bot::get();

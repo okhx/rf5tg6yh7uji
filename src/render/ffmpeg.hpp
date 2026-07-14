@@ -174,6 +174,7 @@ inline bool loadFFmpegFunctions(void* ff) {
 
     return true;
 #else
+    (void)ff;
     geode::log::info("[RENDERER] FFmpeg is not supported on this platform.");
     return false;
 #endif
