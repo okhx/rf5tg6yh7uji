@@ -43,7 +43,14 @@ void ReplaySystem::onReset(uint32_t newFrame) {
     }
 
     auto& input = m_actionAtom.m_actions.at(m_inputIndex);
+#ifdef GEODE_IS_MOBILE
+    // Mobile advances the replay clock in logical TPS-sized steps because it
+    // cannot install the desktop physics-step hook. Deliver every action up
+    // to that step so short taps are not stranded between display frames.
+    if (input.m_frame <= frame) {
+#else
     if (input.m_frame == frame) {
+#endif
         m_inputIndex++;
         return input;
     }

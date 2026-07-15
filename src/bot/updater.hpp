@@ -199,7 +199,7 @@ class BotUpdater {
      * ONLY USE IF YOU KNOW WHAT YOU ARE DOING.
      * Incrementing the frame WILL forward time in the macro.
      */
-    void incrementFrame() { m_frame++; }
+    void incrementFrame(uint32_t count = 1) { m_frame += count; }
     void resetFrame() { m_frame = 0; }
     void setFrame(uint32_t frame) { m_frame = frame; }
 
@@ -208,7 +208,7 @@ class BotUpdater {
     bool useFastLockDelta();
 
     void findBestFrameCandidate();
-    void portableFrameUpdate(PlayLayer* playLayer);
+    void portableFrameUpdate(PlayLayer* playLayer, float visualDt);
 };
 
 #endif  // UPDATER_HPP

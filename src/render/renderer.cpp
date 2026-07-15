@@ -226,6 +226,15 @@ static void resizeShaderLayer(CCSize size, CCSize original) {
 geode::Result<> Renderer::start() {
     geode::log::info("Starting renderer");
 
+    // Never enter the capture/encoding path without an encoder backend. On
+    // mobile FFmpeg is not bundled yet; continuing here would dereference an
+    // empty function table and turn a failed export into a game crash.
+    if (!m_ffmpegLoaded || !ff) {
+        return geode::Err(
+            "Video export needs a mobile encoder backend (FFmpeg/AVFoundation)"
+        );
+    }
+
     FMODAudioEngine::get()->m_system->getSoftwareFormat(&m_sampleRate, nullptr,
                                                         &m_channels);
     m_seenFrames = 0;

@@ -26,6 +26,7 @@ class MobileMenu final : public geode::Popup {
 
     float columnX(int column) const;
     float rowY(int row) const;
+    void addFunctionLabel(std::string const& text, float x, float y);
     void addLabel(std::string const& text, float x, float y,
                   float scale = .36f,
                   cocos2d::ccColor3B color = cocos2d::ccWHITE);

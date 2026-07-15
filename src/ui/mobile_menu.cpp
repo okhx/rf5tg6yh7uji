@@ -123,6 +123,7 @@ class MobileFeaturePopup final : public geode::Popup {
         const float y = rowY(row);
         label(text, x - 65.f, y);
         auto* input = TextInput::create(92.f, "Value");
+        input->setScaleY(.84f);
         input->setCommonFilter(CommonFilter::Float);
         input->setString(fmt::format("{:.{}f}", value, decimals));
         input->setCallback([setter = std::move(setter), minimum,
@@ -142,6 +143,7 @@ class MobileFeaturePopup final : public geode::Popup {
         const float y = rowY(row);
         label(labelText, 120.f, y);
         auto* input = TextInput::create(145.f, "Value");
+        input->setScaleY(.84f);
         input->setCommonFilter(CommonFilter::ID);
         input->setString(value);
         input->setCallback(std::move(setter));
@@ -525,6 +527,15 @@ void MobileMenu::addLabel(std::string const& text, float x, float y,
     m_pageNode->addChild(label);
 }
 
+void MobileMenu::addFunctionLabel(std::string const& text, float x, float y) {
+    auto* label = CCLabelBMFont::create(text.c_str(), "bigFont.fnt");
+    label->setAnchorPoint({0.f, .5f});
+    label->setScale(.33f);
+    label->setPosition({x, y});
+    label->limitLabelWidth(92.f, .33f, .15f);
+    m_pageNode->addChild(label);
+}
+
 ButtonSprite* MobileMenu::addButton(std::string const& text, float x, float y,
                                     std::function<void()> callback,
                                     float width) {
@@ -542,7 +553,7 @@ void MobileMenu::addToggle(std::string const& text, int row, int column,
                            bool value, std::function<void(bool)> callback) {
     const float x = columnX(column);
     const float y = rowY(row);
-    addLabel(text, x - 22.f, y, .33f);
+    addFunctionLabel(text, x - 94.f, y);
 
     auto toggle = geode::cocos::CCMenuItemExt::createTogglerWithStandardSprites(
         .42f, [callback = std::move(callback)](CCMenuItemToggler* item) {
@@ -558,7 +569,7 @@ void MobileMenu::addToggleWithSettings(
     std::function<void(bool)> callback, std::function<void()> openSettings) {
     const float x = columnX(column);
     const float y = rowY(row);
-    addLabel(text, x - 31.f, y, .31f);
+    addFunctionLabel(text, x - 94.f, y);
 
     auto* toggle =
         geode::cocos::CCMenuItemExt::createTogglerWithStandardSprites(
@@ -568,7 +579,7 @@ void MobileMenu::addToggleWithSettings(
     toggle->toggle(value);
     toggle->setPosition({x + 55.f, y});
     m_pageMenu->addChild(toggle);
-    addButton("+", x + 88.f, y, std::move(openSettings), 22.f);
+    addButton("+", x + 88.f, y, std::move(openSettings), 19.f);
 }
 
 TextInput* MobileMenu::addNumberInput(
@@ -579,6 +590,7 @@ TextInput* MobileMenu::addNumberInput(
     const float y = rowY(row);
     addLabel(text, x - 55.f, y, .32f);
     auto* input = TextInput::create(width, "Value");
+    input->setScaleY(.84f);
     input->setCommonFilter(CommonFilter::Float);
     input->setString(fmt::format("{:.{}f}", getter(), decimals));
     input->setCallback([setter = std::move(setter), minimum,
@@ -603,6 +615,7 @@ void MobileMenu::addAdjuster(
     addLabel(text, x - 57.f, y, .32f);
 
     auto* input = TextInput::create(60.f, "Value");
+    input->setScaleY(.84f);
     input->setCommonFilter(CommonFilter::Float);
     input->setString(formatter(getter()));
     input->setPosition({x + 42.f, y});
@@ -623,8 +636,8 @@ void MobileMenu::addAdjuster(
         const double value = std::clamp(getter() + delta, minimum, maximum);
         apply(value);
     };
-    addButton("-", x - 1.f, y, [change, step] { change(-step); }, 19.f);
-    addButton("+", x + 84.f, y, [change, step] { change(step); }, 19.f);
+    addButton("-", x - 1.f, y, [change, step] { change(-step); }, 16.f);
+    addButton("+", x + 84.f, y, [change, step] { change(step); }, 16.f);
 }
 
 void MobileMenu::rebuildPage() {
@@ -709,6 +722,7 @@ void MobileMenu::buildRecordPage() {
               [&](bool value) { replay.m_ignoreInputs->inner() = value; });
 
     auto input = geode::TextInput::create(185.f, "Replay name");
+    input->setScaleY(.84f);
     input->setCommonFilter(geode::CommonFilter::Name);
     input->setMaxCharCount(64);
     input->setString(replay.m_replayName);
@@ -754,22 +768,23 @@ void MobileMenu::buildRecordPage() {
                   }
               }, 70.f);
 
-    addToggle("Frame advance", 5, 0, updater.m_paused->inner(),
-              [&](bool value) { updater.setPaused(value); });
+    addToggleWithSettings(
+        "Frame stepper", 5, 0, updater.m_paused->inner(),
+        [&updater](bool value) {
+            // Frame advance and the stepper are one mode on mobile: enabling
+            // it pauses the level and keeps a checkpoint history for backstep.
+            updater.setPaused(value);
+            updater.m_backwardsStepping->inner() = value;
+        },
+        [] {
+            MobileFeaturePopup::open(MobileFeaturePopup::Feature::Stepper);
+        });
     addToggle("Intentional death", 5, 1, updater.m_canDie->inner(),
               [&](bool value) { updater.m_canDie->inner() = value; });
     addToggle("Frame extrapolation", 6, 0,
               updater.m_extrapolateFrames->inner(), [&](bool value) {
                   updater.m_extrapolateFrames->inner() = value;
               });
-    addToggleWithSettings(
-        "Frame stepper", 6, 1, updater.m_backwardsStepping->inner(),
-        [&updater](bool value) {
-            updater.m_backwardsStepping->inner() = value;
-        },
-        [] {
-            MobileFeaturePopup::open(MobileFeaturePopup::Feature::Stepper);
-        });
 
     m_statusLabel = CCLabelBMFont::create("", "bigFont.fnt");
     m_statusLabel->setScale(.27f);
@@ -798,15 +813,13 @@ void MobileMenu::buildAssistPage() {
         [&updater](bool value) { updater.m_noclip->inner() = value; }, [] {
             MobileFeaturePopup::open(MobileFeaturePopup::Feature::Noclip);
         });
-    addToggle("Prevent death", 1, 1, updater.m_preventDeath->inner(),
-              [&](bool value) { updater.m_preventDeath->inner() = value; });
     addToggleWithSettings(
-        "Trajectory", 2, 0, trajectory.m_state.m_enabled->inner(),
+        "Trajectory", 1, 1, trajectory.m_state.m_enabled->inner(),
         [&trajectory](bool value) { trajectory.setEnabled(value); }, [] {
             MobileFeaturePopup::open(MobileFeaturePopup::Feature::Trajectory);
         });
     addToggleWithSettings(
-        "Layout mode", 2, 1, updater.m_layoutMode->inner(),
+        "Layout mode", 2, 0, updater.m_layoutMode->inner(),
         [&updater](bool value) {
                   updater.m_layoutMode->inner() = value;
                   updater.m_layoutMode->notifyChange();
@@ -816,7 +829,7 @@ void MobileMenu::buildAssistPage() {
         });
     auto* autoclicker = &bot->autoclicker();
     addToggleWithSettings(
-        "Autoclicker", 3, 0, autoclicker->m_enabled->inner(),
+        "Autoclicker", 2, 1, autoclicker->m_enabled->inner(),
         [autoclicker](bool value) {
             autoclicker->m_enabled->inner() = value;
             crash_log::breadcrumb(fmt::format(
@@ -829,33 +842,22 @@ void MobileMenu::buildAssistPage() {
             MobileFeaturePopup::open(
                 MobileFeaturePopup::Feature::Autoclicker);
         });
-    addToggleWithSettings(
-        "Backwards stepping", 3, 1,
-        updater.m_backwardsStepping->inner(), [&updater](bool value) {
-                  updater.m_backwardsStepping->inner() = value;
-        },
-        [] {
-            MobileFeaturePopup::open(MobileFeaturePopup::Feature::Stepper);
-        });
-    addButton("Layout settings", columnX(0), rowY(4), [] {
-        MobileFeaturePopup::open(MobileFeaturePopup::Feature::Layout);
-    }, 145.f);
-    addToggle("No mirror", 4, 1, updater.m_noMirror->inner(),
+    addToggle("No mirror", 3, 0, updater.m_noMirror->inner(),
               [&](bool value) { updater.m_noMirror->inner() = value; });
 
     addAdjuster(
-        "Hitbox width", 5, 0, [&] { return hitboxes.m_width->inner(); },
+        "Hitbox width", 4, 0, [&] { return hitboxes.m_width->inner(); },
         [&](double value) { hitboxes.m_width->inner() = value; }, .05, 0.05,
         1.0, [](double value) { return fmt::format("{:.2f}", value); });
     addAdjuster(
-        "Path length", 5, 1,
+        "Path length", 4, 1,
         [&] { return trajectory.m_state.m_length->inner(); },
         [&](double value) { trajectory.m_state.m_length->inner() = value; },
         .1, .1, 5.0,
         [](double value) { return fmt::format("{:.1f}", value); });
-    addToggle("SSB fix", 6, 0, updater.m_ssbFix->inner(),
+    addToggle("SSB fix", 5, 0, updater.m_ssbFix->inner(),
               [&](bool value) { updater.m_ssbFix->inner() = value; });
-    addToggle("Use regular updates", 6, 1,
+    addToggle("Use regular updates", 5, 1,
               updater.m_useVisualUpdates->inner(), [&](bool value) {
                   updater.m_useVisualUpdates->inner() = value;
               });
@@ -888,17 +890,12 @@ void MobileMenu::buildSettingsPage() {
     addToggle("Block playback input", 3, 0,
               replay.m_ignoreInputs->inner(),
               [&](bool value) { replay.m_ignoreInputs->inner() = value; });
-    addToggle("Audio speedhack", 3, 1,
-              updater.m_speedhackAudio->inner(), [&](bool value) {
-                  updater.m_speedhackAudio->inner() = value;
-                  updater.m_speedhackAudio->notifyChange();
-              });
-    addToggle("Visual updates", 4, 0,
+    addToggle("Visual updates", 3, 1,
               updater.m_useVisualUpdates->inner(), [&](bool value) {
                   updater.m_useVisualUpdates->inner() = value;
               });
 
-    addToggle("End screen menu", 4, 1,
+    addToggle("End screen menu", 4, 0,
               SLSettings::get()->showEndMenuButton, [](bool value) {
                   SLSettings::get()->showEndMenuButton = value;
               });
@@ -919,8 +916,6 @@ void MobileMenu::buildSettingsPage() {
     addButton("Render settings", columnX(0), rowY(6), [] {
         MobileFeaturePopup::open(MobileFeaturePopup::Feature::Rendering);
     }, 145.f);
-    addLabel("Mobile input hook is always enabled", columnX(1), rowY(6),
-             .27f, {120, 255, 160});
 }
 
 void MobileMenu::onTab(CCObject* sender) {

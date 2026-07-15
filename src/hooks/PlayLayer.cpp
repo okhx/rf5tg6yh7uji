@@ -34,7 +34,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 #ifndef GEODE_IS_WINDOWS
     void postUpdate(float dt) override {
         PlayLayer::postUpdate(dt);
-        Bot::get()->updater().portableFrameUpdate(this);
+        Bot::get()->updater().portableFrameUpdate(this, dt);
     }
 #endif
 

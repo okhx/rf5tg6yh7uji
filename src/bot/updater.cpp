@@ -477,7 +477,7 @@ void BotUpdater::findBestFrameCandidate() {
     // CCScheduler::get()->update(this->getPhysicsDt());
 }
 
-void BotUpdater::portableFrameUpdate(PlayLayer* playLayer) {
+void BotUpdater::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
     auto* bot = Bot::get();
     if (!playLayer || !bot->isEnabled() || m_onlyRefresh ||
         playLayer->m_resumeTimer > 0) {
@@ -494,7 +494,19 @@ void BotUpdater::portableFrameUpdate(PlayLayer* playLayer) {
             }
         }
 
-        incrementFrame();
+        // Desktop adjusts Geometry Dash's physics loop with midhooks. Mobile
+        // has no equivalent hook, so keep the macro clock in TPS time while
+        // the game remains at its supported display cadence. This prevents a
+        // 240-TPS replay from taking roughly four times too long on 60 Hz.
+        uint32_t logicalSteps = 1;
+        if (!m_paused->inner()) {
+            const double steps = m_tps->inner() * visualDt;
+            if (std::isfinite(steps) && steps > 1.0) {
+                logicalSteps = static_cast<uint32_t>(std::clamp(
+                    std::lround(steps), 1l, 1000l));
+            }
+        }
+        incrementFrame(logicalSteps);
         bot->hitboxes().saveToTrail(playLayer);
     }
 
