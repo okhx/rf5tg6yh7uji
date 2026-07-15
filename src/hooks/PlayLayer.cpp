@@ -666,15 +666,15 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         PlayLayer::levelComplete();
 
         auto bot = Bot::get();
-        if (!bot->replaySystem().m_autosaveAtLevelEnd->inner()) return;
+        auto& replay = bot->replaySystem();
+        if (!replay.m_autosaveAtLevelEnd->inner()) return;
 
-        auto path = silicate::paths::directory("replays") /
-                    (bot->ui().m_state.m_replayName + ".slc");
+        if (replay.m_replayName.empty()) replay.m_replayName = "autosave";
+        auto path = replay.getCurrentPath();
         if (std::filesystem::exists(path)) {
-            bot->replaySystem().createBackup();
+            replay.createBackup();
         } else {
-            bot->replaySystem().save(path,
-                                     true);  // don't overwrite existing replays
+            replay.save(path, true);  // don't overwrite existing replays
         }
     }
 
@@ -727,7 +727,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 };
 
-#ifndef GEODE_IS_IOS
+#ifdef GEODE_IS_WINDOWS
 constexpr int QUEUE_CHECKPOINT_OFFSET = 0x4ce060;
 
 // this basically removes the one frame delay with placing checkpoints

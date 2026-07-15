@@ -37,8 +37,8 @@ class ReplaySystem {
     uint64_t m_startingSeed = 0;
     uint64_t m_startingSeedThisAttempt = 0;
     uint64_t m_shakeRandomState = 0;
-#ifdef GEODE_IS_IOS
-    // The desktop random-state address is not present in the iOS binary.
+#ifndef GEODE_IS_WINDOWS
+    // The Windows random-state address is not valid on other platforms.
     uint64_t m_portableRandomState = 0;
 #endif
     bool m_flipProcessingInputs = false;

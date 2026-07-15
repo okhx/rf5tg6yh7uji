@@ -152,7 +152,7 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 #endif
 
-#ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_MOBILE
 const char* BLUR_VERT = R"(#version 130
 #extension GL_ARB_explicit_attrib_location : require
 
@@ -246,6 +246,14 @@ void main() {
 #endif
 
 void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
+#ifdef GEODE_IS_MOBILE
+    // Mobile intentionally has no ImGui context or raw OpenGL renderer. Keep
+    // this guard here as well as in swapBuffers so future callers cannot
+    // accidentally re-enable the crashing path.
+    (void)view;
+    return;
+#endif
+
     if (m_inited) {
         return;
     }
@@ -291,7 +299,7 @@ void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
 #ifdef GEODE_IS_WINDOWS
     ImGui_ImplWin32_InitForOpenGL(m_hWnd);
 #endif
-#ifdef GEODE_IS_IOS
+#ifdef GEODE_IS_MOBILE
     ImGui_ImplOpenGL3_Init("#version 100");
 #else
     ImGui_ImplOpenGL3_Init("#version 130");
@@ -305,7 +313,7 @@ void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
 
     Bot::get()->ui().setup();
 
-#ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_MOBILE
     m_blurPass = RenderPass{.m_width = (unsigned int)width,
                             .m_height = (unsigned int)height,
                             .m_vertexShader = BLUR_VERT,
@@ -349,7 +357,7 @@ void ImGuiHookCtx::handleResize(float width, float height) {
     m_width = width * BLUR_DOWNSCALING_FACTOR;
     m_height = height * BLUR_DOWNSCALING_FACTOR;
 
-#ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_MOBILE
     m_blurPass.m_width = (unsigned int)width;
     m_blurPass.m_height = (unsigned int)height;
     m_blurPass.resize();
@@ -362,7 +370,7 @@ void ImGuiHookCtx::handleResize(float width, float height) {
 #endif
 }
 
-#ifdef GEODE_IS_IOS
+#ifdef GEODE_IS_MOBILE
 void ImGuiHookCtx::preSampleBlur(ImVec4) {}
 void ImGuiHookCtx::sampleBlurFirstPass() {}
 void ImGuiHookCtx::sampleBlurSecondPass() {}
@@ -475,6 +483,10 @@ void ImGuiHookCtx::postSampleBlur() {
 #endif
 
 void ImGuiHookCtx::draw() {
+#ifdef GEODE_IS_MOBILE
+    return;
+#endif
+
     init(CCEGLView::get());
 
 #ifndef GEODE_IS_WINDOWS
@@ -501,12 +513,11 @@ void ImGuiHookCtx::draw() {
 
 struct SLEGLView : Modify<SLEGLView, CCEGLView> {
     void swapBuffers() {
-#ifdef GEODE_IS_IOS
-        // Geometry Dash uses an ES2 Cocos renderer on iOS. Dear ImGui's raw
-        // OpenGL backend corrupts the driver's vertex state after the frame
-        // has been presented, which crashes the following Cocos sprite draw.
-        // Keep the bot functional on iOS, but do not run that unsupported
-        // desktop overlay renderer until it has a dedicated Cocos/iOS backend.
+#ifdef GEODE_IS_MOBILE
+        // Geometry Dash uses its own OpenGL ES state on mobile. Running Dear
+        // ImGui's desktop-style raw GL backend here corrupts that state on
+        // iOS and is not a supported input/render path on Android. Both use
+        // the native Cocos popup instead.
         CCEGLView::swapBuffers();
 #else
         ImGuiHookCtx::get().draw();

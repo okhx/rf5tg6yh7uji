@@ -1,5 +1,6 @@
 #include <Geode/Geode.hpp>
 #include <ui/manager.hpp>
+#include <ui/mobile_menu.hpp>
 
 #include "assist/hitboxes.hpp"
 #include "bot/bot.hpp"
@@ -52,15 +53,8 @@ struct SLPauseLayer : Modify<SLPauseLayer, PauseLayer> {
 
    public:
     void onSilicateOpen(CCObject*) {
-#ifdef GEODE_IS_IOS
-        FLAlertLayer::create(
-            "Grape",
-            "The Grape desktop overlay is disabled on iOS because its OpenGL "
-            "renderer is not compatible with Geometry Dash's iOS renderer. "
-            "The bot remains active; a native iOS menu is required before the "
-            "overlay can be enabled safely.",
-            "OK")
-            ->show();
+#ifdef GEODE_IS_MOBILE
+        MobileMenu::open();
 #else
         // This pause-menu action opens the UI; it should not accidentally
         // close it if the saved visibility setting was already enabled.

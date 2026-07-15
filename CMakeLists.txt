@@ -47,6 +47,7 @@ add_library(${PROJECT_NAME} SHARED
     src/ui/manager.cpp
     src/ui/hook.cpp
     src/ui/theme.cpp
+    src/ui/mobile_menu.cpp
 
     ${IMGUI_VENDOR_DIR}/imgui.cpp
     ${IMGUI_VENDOR_DIR}/imgui_draw.cpp

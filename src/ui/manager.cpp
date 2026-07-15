@@ -660,7 +660,7 @@ static void postDrawBlurEffect(const ImDrawList*, const ImDrawCmd*) {
 static void renderBlurBg(float rounding = 24.0f, float borderSize = 2.5f,
                          bool useShader = true, float bgOpacity = 0.15f,
                          bool pp = false) {
-#ifdef GEODE_IS_IOS
+#ifdef GEODE_IS_MOBILE
     // The blur renderer needs desktop framebuffer blitting APIs that are not
     // available in Geometry Dash's iOS OpenGL ES context.
     useShader = false;
@@ -997,7 +997,7 @@ void UIManager::draw() {
     cfg.fittedWindowHeight = tabHeights[static_cast<int>(m_state.m_currentTab)];
 
     if (!m_state.m_visible->inner()) {
-#ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_MOBILE
         auto view = CCEGLView::get();
 
         auto pl = PlayLayer::get();
@@ -1012,7 +1012,7 @@ void UIManager::draw() {
         return;
     }
 
-#ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_MOBILE
     CCEGLView::get()->showCursor(true);
 #endif
 

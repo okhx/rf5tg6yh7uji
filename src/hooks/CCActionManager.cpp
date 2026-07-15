@@ -7,7 +7,7 @@ using namespace geode::prelude;
 
 #include <Geode/modify/CCActionManager.hpp>
 
-#ifndef GEODE_IS_IOS
+#ifdef GEODE_IS_WINDOWS
 constexpr int ACTIONMGR_UPDATE_OFFSET = 0x38B90;
 static void* _CCActionManager_update_orig;
 

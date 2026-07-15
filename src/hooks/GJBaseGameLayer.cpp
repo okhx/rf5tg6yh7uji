@@ -28,7 +28,7 @@ using namespace geode::prelude;
 
 #include <Geode/modify/GJBaseGameLayer.hpp>
 
-#ifndef GEODE_IS_IOS
+#ifdef GEODE_IS_WINDOWS
 $execute {
     // Patch GJBaseGameLayer::resetLevelVariables to not release buttons
     geode::log::info("Patching {} (GJBaseGameLayer::resetLevelVariables)",

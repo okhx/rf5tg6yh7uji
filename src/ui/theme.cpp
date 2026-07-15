@@ -9,7 +9,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "lib/stb_image.h"
 
-#ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_MOBILE
 const char* THEME_BASE_VERT = R"(#version 130
 #extension GL_ARB_explicit_attrib_location : require
 
@@ -26,6 +26,12 @@ void main() {
 #endif
 
 void Theme::initialize() {
+#ifdef GEODE_IS_MOBILE
+    // Theme textures belong to the ImGui renderer. The mobile UI uses Cocos
+    // sprites exclusively, so it must not touch raw OpenGL state here.
+    return;
+#endif
+
     int width, height, channels;
     uint8_t* data = stbi_load(
         (geode::Mod::get()->getResourcesDir() / m_iconPath).string().c_str(),
@@ -62,9 +68,9 @@ void Theme::initialize() {
     glBindTexture(GL_TEXTURE_2D, oldTexture);
     glActiveTexture(oldActiveTexture);
 
-#ifdef GEODE_IS_IOS
-    // iOS uses the solid UI background; the desktop postprocess shaders use
-    // desktop GLSL and framebuffer operations.
+#ifdef GEODE_IS_MOBILE
+    // Mobile uses the native Cocos menu; these desktop postprocess shaders
+    // are never initialized in its OpenGL ES context.
     return;
 #else
     m_postprocessPass =
