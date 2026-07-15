@@ -381,7 +381,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         // updater.m_respawning = false;
     }
 
-    void resetLevel() {
+    void resetLevel() override {
         auto bot = Bot::get();
         if (!bot->isEnabled()) {
             m_player1->releaseAllButtons();
@@ -513,7 +513,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         Bot::get()->practiceFix().popLatest();
     }
 
-    void removeAllCheckpoints() {
+    void removeAllCheckpoints() override {
         if (!Bot::get()->isEnabled()) {
             return PlayLayer::removeAllCheckpoints();
         }
@@ -617,7 +617,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         }
     }
 
-    void destroyPlayer(PlayerObject* player, GameObject* gameObject) {
+    void destroyPlayer(PlayerObject* player, GameObject* gameObject) override {
         auto bot = Bot::get();
 
         if (!bot->trajectory().hasDied(player)) {
@@ -655,7 +655,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         PlayLayer::pauseGame(p0);
     }
 
-    void updateVisibility(float dt) {
+    void updateVisibility(float dt) override {
         auto& updater = Bot::get()->updater();
         if (updater.m_extrapolateFrames->inner()) {
             dt = CCDirector::get()->getDeltaTime();
