@@ -587,7 +587,9 @@ void UIManager::setup() {
     m_state.m_replayNames.clear();
     for (const auto& entry : std::filesystem::directory_iterator(
               silicate::paths::directory("replays"))) {
-        if (entry.is_regular_file() && entry.path().extension() == ".slc") {
+        if (entry.is_regular_file() &&
+            (entry.path().extension() == ".grape" ||
+             entry.path().extension() == ".slc")) {
             m_state.m_replayNames.push_back(entry.path().stem().string());
         }
     }
@@ -1219,7 +1221,8 @@ void UIManager::draw() {
                              std::filesystem::directory_iterator(
                                  silicate::paths::directory("replays"))) {
                             if (entry.is_regular_file() &&
-                                entry.path().extension() == ".slc") {
+                                (entry.path().extension() == ".grape" ||
+                                 entry.path().extension() == ".slc")) {
                                 m_state.m_replayNames.push_back(
                                     entry.path().stem().string());
                             }
@@ -1239,7 +1242,8 @@ void UIManager::draw() {
                          std::filesystem::directory_iterator(
                               silicate::paths::directory("replays"))) {
                         if (entry.is_regular_file() &&
-                            entry.path().extension() == ".slc") {
+                            (entry.path().extension() == ".grape" ||
+                             entry.path().extension() == ".slc")) {
                             m_state.m_replayNames.push_back(
                                 entry.path().stem().string());
                         }
@@ -1316,7 +1320,10 @@ void UIManager::draw() {
                 if (slui::button("Merge").pressed) {
                     auto mergePath =
                         silicate::paths::directory("replays") /
-                        (m_state.m_mergeReplayName + ".slc");
+                        (m_state.m_mergeReplayName + ".grape");
+                    if (!std::filesystem::exists(mergePath)) {
+                        mergePath.replace_extension(".slc");
+                    }
                     using MergeMode = ReplaySystem::MergeMode;
                     MergeMode mode;
                     switch (m_state.m_mergeModeState.selectedIndex) {
@@ -1421,6 +1428,8 @@ void UIManager::draw() {
                                    *reinterpret_cast<int*>(
                                        &Bot::get()->updater().m_noclipType),
                                    popupShaderFn);
+                    SLSettings::get()->noclipPlayer = static_cast<int>(
+                        Bot::get()->updater().m_noclipType);
                     ImGui::EndTable();
                 }
 
@@ -1523,6 +1532,7 @@ void UIManager::draw() {
                             "{} Frame(s)");
                 slui::checkbox("Swift Clicks",
                                 Bot::get()->autoclicker().m_performSwifts);
+                Bot::get()->autoclicker().saveSettings();
                 keybindRightClick("autoclicker.swift_clicks");
 
                 slui::divider();

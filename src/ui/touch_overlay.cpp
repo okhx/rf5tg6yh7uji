@@ -30,13 +30,13 @@ bool TouchOverlay::init() {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
     auto leftSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
-    leftSprite->setFlipX(true);
     leftSprite->setOpacity(150);
     m_leftBtn = CCMenuItemSpriteExtra::create(
         leftSprite, this, menu_selector(TouchOverlay::onLeft)
     );
     
     auto rightSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
+    rightSprite->setFlipX(true);
     rightSprite->setOpacity(150);
     m_rightBtn = CCMenuItemSpriteExtra::create(
         rightSprite, this, menu_selector(TouchOverlay::onRight)
@@ -59,8 +59,39 @@ bool TouchOverlay::init() {
     // own hit-tested touch handler for the two visible arrows.
 
     this->setVisible(false);
-
     return true;
+}
+
+void TouchOverlay::update(float dt) {
+    auto* settings = SLSettings::get();
+    if (!settings->frameStepperHold || !this->isVisible()) {
+        m_leftHeld = m_rightHeld = m_leftRepeat = m_rightRepeat = 0.f;
+        return;
+    }
+
+    const float delay = std::max(0.0, settings->frameStepperHoldDelay);
+    const float interval =
+        1.f / std::max(1.0, settings->frameStepperHoldSpeed);
+    const auto repeat = [dt, delay, interval](CCMenuItemSpriteExtra* button,
+                                               float& held, float& elapsed,
+                                               auto action) {
+        if (!button->isSelected()) {
+            held = elapsed = 0.f;
+            return;
+        }
+        held += dt;
+        if (held < delay) return;
+        elapsed += dt;
+        while (elapsed >= interval) {
+            elapsed -= interval;
+            action();
+        }
+    };
+
+    repeat(m_leftBtn, m_leftHeld, m_leftRepeat,
+           [] { Bot::get()->updater().backwardsStep(); });
+    repeat(m_rightBtn, m_rightHeld, m_rightRepeat,
+           [] { Bot::get()->updater().stepOnce(); });
 }
 
 void TouchOverlay::onLeft(CCObject*) {

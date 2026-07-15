@@ -51,6 +51,8 @@ struct glz::meta<RendererSettings> {
         "width", &T::m_width, "height", &T::m_height, "bitrate", &T::m_bitrate,
         "codec", &T::m_codec, "pix_fmt", &T::m_pixFmt, "fps", &T::m_fps,
         "after_end_time", &T::m_afterEndTime, "color_fix", &T::m_colorFix,
+        "extension", &T::m_extension,
+        "audio_codec", &T::m_audioCodec,
         "render_args", &T::m_renderArgs, "output_path", hide{&T::m_outputPath},
         "music_volume", &T::m_musicVolume, "sfx_volume", &T::m_sfxVolume,
         "record_paused", &T::m_firstAttemptPause);

@@ -59,11 +59,24 @@ class SLSettings {
     bool scrollSpeedBugFix = false;
 
     bool autoclickerEnabled = false;
+    int autoclickerFrequency = 1;
+    bool autoclickerSwifts = false;
+    int autoclickerPlayer = 0;
 
     bool useAlternateHook = false;
 
     bool backwardsStepping = false;
     uint32_t stepsToSave = 120;
+    bool frameStepperHold = true;
+    double frameStepperHoldDelay = 0.35;
+    double frameStepperHoldSpeed = 12.0;
+    bool showEndMenuButton = true;
+
+    bool noclipTintEnabled = true;
+    int noclipPlayer = 0;
+    std::array<float, 4> noclipTintColor = {1.0, 0.0, 0.0, 1.0};
+    double noclipTintOpacity = 0.35;
+    double noclipTintTime = 0.2;
 
     std::array<float, 4> layoutBgColor = {0.2828, 0.4901, 1.0, 1.0};
     std::array<float, 4> layoutGroundColor = {0.2828, 0.4901, 1.0, 1.0};
@@ -200,11 +213,24 @@ struct glz::meta<SLSettings> {
         "preset", &T::lastLoadedPreset,
         "preview_audio", &T::previewAudio,
         "autoclicker_enabled", hide{&T::autoclickerEnabled},
+        "autoclicker_frequency", &T::autoclickerFrequency,
+        "autoclicker_swifts", &T::autoclickerSwifts,
+        "autoclicker_player", &T::autoclickerPlayer,
 
         "ssb_fix", &T::scrollSpeedBugFix,
 
         "backwards_stepping", &T::backwardsStepping,
         "steps_saved", &T::stepsToSave,
+        "frame_stepper_hold", &T::frameStepperHold,
+        "frame_stepper_hold_delay", &T::frameStepperHoldDelay,
+        "frame_stepper_hold_speed", &T::frameStepperHoldSpeed,
+        "show_end_menu_button", &T::showEndMenuButton,
+
+        "noclip_tint_enabled", &T::noclipTintEnabled,
+        "noclip_player", &T::noclipPlayer,
+        "noclip_tint_color", &T::noclipTintColor,
+        "noclip_tint_opacity", &T::noclipTintOpacity,
+        "noclip_tint_time", &T::noclipTintTime,
 
         "autosave_at_level_end", &T::autosaveAtLevelEnd,
         "autosave_at_interval", &T::autosaveAtInterval,

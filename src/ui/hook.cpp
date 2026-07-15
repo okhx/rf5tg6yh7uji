@@ -129,7 +129,8 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
             std::filesystem::path path(fileName);
             geode::log::info("Loading file via drag-and-drop: {}", path);
-            if (path.extension() != ".slc") {
+            if (path.extension() != ".grape" &&
+                path.extension() != ".slc") {
                 break;
             }
 

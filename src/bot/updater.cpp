@@ -477,6 +477,30 @@ void BotUpdater::findBestFrameCandidate() {
     // CCScheduler::get()->update(this->getPhysicsDt());
 }
 
+void BotUpdater::portableFrameUpdate(PlayLayer* playLayer) {
+    auto* bot = Bot::get();
+    if (!playLayer || !bot->isEnabled() || m_onlyRefresh ||
+        playLayer->m_resumeTimer > 0) {
+        return;
+    }
+
+    if (!playLayer->m_playerDied) {
+        if (m_backwardsStepping->inner() &&
+            !Renderer::get()->isRecording()) {
+            auto* checkpoint = playLayer->createCheckpoint();
+            if (checkpoint) {
+                checkpoint->retain();
+                bot->practiceFix().saveState(checkpoint, m_frameOnLastAttempt);
+            }
+        }
+
+        incrementFrame();
+        bot->hitboxes().saveToTrail(playLayer);
+    }
+
+    bot->autoclicker().update(playLayer);
+}
+
 // THE tps bypass
 
 // DEAR GEODE REVIEWER or whoever is reading this

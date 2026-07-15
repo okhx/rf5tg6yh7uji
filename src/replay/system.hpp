@@ -16,8 +16,8 @@ struct ReplayMeta {
 
 class ReplaySystem {
    private:
-    void processSlc3(slc::v3::Replay<>& replay);
-    void processSlc2(slc::v2::Replay<ReplayMeta>& replay);
+    bool processSlc3(slc::v3::Replay<>& replay);
+    bool processSlc2(slc::v2::Replay<ReplayMeta>& replay);
 
    public:
     size_t m_inputIndex;
@@ -51,6 +51,7 @@ class ReplaySystem {
     bool m_maintainGravity = false;
 
     std::string m_replayName = "";
+    bool m_lastOperationSucceeded = false;
 
     BotScheduler::JobId m_autosaveId;
     SLValuePtr<bool> m_autosaveAtInterval = SLValue<bool>::create(

@@ -33,6 +33,7 @@ add_library(${PROJECT_NAME} SHARED
     src/hooks/CCActionManager.cpp
     src/hooks/CCDirector.cpp
     src/hooks/CCScheduler.cpp
+    src/hooks/EndLevelLayer.cpp
     src/hooks/EnhancedGameObject.cpp
     src/hooks/FMODAudioEngine.cpp
     src/hooks/GJBaseGameLayer.cpp

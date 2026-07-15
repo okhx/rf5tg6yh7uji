@@ -4,6 +4,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
 #include <filesystem>
+#include <algorithm>
 
 #include "assist/autoclicker.hpp"
 #include "assist/hitboxes.hpp"
@@ -99,6 +100,22 @@ void Bot::initialize() {
     if (ec) {
         geode::log::error("Failed to read settings");
     }
+
+    settings.stepsToSave = std::max<uint32_t>(2, settings.stepsToSave);
+    settings.autoclickerFrequency =
+        std::max(1, settings.autoclickerFrequency);
+    this->autoclicker().m_frequency = settings.autoclickerFrequency;
+    this->autoclicker().m_performSwifts = settings.autoclickerSwifts;
+    this->autoclicker().m_player = static_cast<Autoclicker::PlayerToggle>(
+        std::clamp(settings.autoclickerPlayer, 0, 2));
+    this->updater().m_noclipType = static_cast<BotUpdater::NoclipType>(
+        std::clamp(settings.noclipPlayer, 0, 2));
+
+#ifdef GEODE_IS_MOBILE
+    // The regular queued-input hook depends on desktop-specific timing.
+    // Mobile always records through GJBaseGameLayer::handleButton instead.
+    settings.useAlternateHook = true;
+#endif
 
     std::filesystem::path keybindsPath =
         silicate::paths::file("keybinds.json");

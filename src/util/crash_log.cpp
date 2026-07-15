@@ -3,6 +3,11 @@
 
 #include <Geode/Geode.hpp>
 
+#include <exception>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+
 #ifdef GEODE_IS_WINDOWS
 
 // Must come before DbgHelp so NOMINMAX / WIN32_LEAN_AND_MEAN are already set
@@ -330,8 +335,119 @@ void crash_log::install() {
     silicate::paths::directory("logs");
 }
 
+void crash_log::breadcrumb(std::string_view message) {
+    geode::log::info("[crash breadcrumb] {}", message);
+}
+
 #else
 
-void crash_log::install() {}
+#include <csignal>
+#include <cstring>
+#include <fcntl.h>
+#include <limits.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+namespace {
+char g_mobileCrashPath[PATH_MAX] = {};
+volatile sig_atomic_t g_handlingSignal = 0;
+struct sigaction g_previousHandlers[64] = {};
+
+void writeAll(int fd, char const* text, size_t size) {
+    while (size > 0) {
+        const auto written = ::write(fd, text, size);
+        if (written <= 0) return;
+        text += written;
+        size -= static_cast<size_t>(written);
+    }
+}
+
+void writeLiteral(int fd, char const* text) {
+    writeAll(fd, text, std::strlen(text));
+}
+
+void writeSignalNumber(int fd, int signal) {
+    char buffer[16] = {};
+    int index = 15;
+    unsigned int value = static_cast<unsigned int>(signal);
+    do {
+        buffer[--index] = static_cast<char>('0' + value % 10);
+        value /= 10;
+    } while (value && index > 0);
+    writeAll(fd, buffer + index, static_cast<size_t>(15 - index));
+}
+
+void mobileSignalHandler(int signal, siginfo_t* info, void*) {
+    if (g_handlingSignal) _exit(128 + signal);
+    g_handlingSignal = 1;
+
+    const int fd = ::open(g_mobileCrashPath, O_WRONLY | O_CREAT | O_APPEND,
+                          S_IRUSR | S_IWUSR);
+    if (fd >= 0) {
+        writeLiteral(fd, "\n=== Grape mobile crash ===\nSignal: ");
+        writeSignalNumber(fd, signal);
+        writeLiteral(fd, "\nFault address: ");
+        if (info && info->si_addr) {
+            constexpr char hex[] = "0123456789abcdef";
+            uintptr_t value = reinterpret_cast<uintptr_t>(info->si_addr);
+            char address[2 + sizeof(uintptr_t) * 2] = {'0', 'x'};
+            for (size_t i = 0; i < sizeof(uintptr_t) * 2; ++i) {
+                const size_t shift = (sizeof(uintptr_t) * 2 - i - 1) * 4;
+                address[2 + i] = hex[(value >> shift) & 0xf];
+            }
+            writeAll(fd, address, sizeof(address));
+        } else {
+            writeLiteral(fd, "unknown");
+        }
+        writeLiteral(fd, "\n");
+        writeLiteral(fd, "=== end crash ===\n");
+        ::fsync(fd);
+        ::close(fd);
+    }
+
+    ::sigaction(signal, &g_previousHandlers[signal], nullptr);
+    ::kill(::getpid(), signal);
+    _exit(128 + signal);
+}
+
+void mobileTerminateHandler() {
+    const int fd = ::open(g_mobileCrashPath, O_WRONLY | O_CREAT | O_APPEND,
+                          S_IRUSR | S_IWUSR);
+    if (fd >= 0) {
+        writeLiteral(fd, "\n=== Grape std::terminate ===\n");
+        ::fsync(fd);
+        ::close(fd);
+    }
+    std::abort();
+}
+}  // namespace
+
+void crash_log::install() {
+    auto path = silicate::paths::directory("logs") / "mobile-last-crash.log";
+    auto pathString = path.string();
+    std::strncpy(g_mobileCrashPath, pathString.c_str(),
+                 sizeof(g_mobileCrashPath) - 1);
+
+    // Create the file during normal startup so it exists even if a later
+    // signal happens before the handler can allocate or resolve anything.
+    std::ofstream session(path, std::ios::out | std::ios::app);
+    session << "\nGrape mobile session started\n";
+    session.flush();
+
+    struct sigaction action = {};
+    action.sa_sigaction = mobileSignalHandler;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = SA_SIGINFO | SA_RESETHAND;
+    for (int signal : {SIGABRT, SIGBUS, SIGFPE, SIGILL, SIGSEGV, SIGTRAP}) {
+        sigaction(signal, &action, &g_previousHandlers[signal]);
+    }
+    std::set_terminate(mobileTerminateHandler);
+}
+
+void crash_log::breadcrumb(std::string_view message) {
+    std::ofstream out(g_mobileCrashPath, std::ios::out | std::ios::app);
+    out << "Breadcrumb: " << message << '\n';
+    out.flush();
+}
 
 #endif

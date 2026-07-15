@@ -5,6 +5,7 @@
 #include <Geode/modify/GJBaseGameLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <chrono>
+#include <cmath>
 #include <filesystem>
 #include <slc/formats/v3/replay.hpp>
 #include <vector>
@@ -67,6 +68,7 @@ void ReplaySystem::onExit() { m_inputIndex = 0; }
 using Replay = slc::v3::Replay<>;
 
 void ReplaySystem::save(std::filesystem::path path, bool noOverwrite) {
+    m_lastOperationSucceeded = false;
     if (noOverwrite && std::filesystem::exists(path)) {
         geode::log::info("Not overwriting replay at {}", path);
         return;
@@ -91,6 +93,10 @@ void ReplaySystem::save(std::filesystem::path path, bool noOverwrite) {
     replay.m_meta.m_tps = Bot::get()->updater().m_tps->inner();
 
     std::ofstream fd(path, std::ios::binary);
+    if (!fd) {
+        geode::log::error("Failed to open replay for writing: {}", path);
+        return;
+    }
     auto result = replay.write(fd);
     if (!result.has_value()) {
         geode::log::error("Failed to save replay: {}",
@@ -99,25 +105,36 @@ void ReplaySystem::save(std::filesystem::path path, bool noOverwrite) {
     }
 
     geode::log::info("Successfully saved replay to {}", path);
+    m_lastOperationSucceeded = true;
 }
 
-void ReplaySystem::processSlc3(Replay& replay) {
+bool ReplaySystem::processSlc3(Replay& replay) {
     auto& atoms = replay.m_atoms.m_atoms;
     auto it = std::find_if(atoms.begin(), atoms.end(), [](auto& v) {
         return std::visit(
             [](auto& at) { return at.id == slc::v3::AtomId::Action; }, v);
     });
 
+    if (it == atoms.end()) {
+        geode::log::error("Replay contains no action data");
+        return false;
+    }
+
     auto atom = *it;
     auto& updater = Bot::get()->updater();
     m_actionAtom = std::get<slc::ActionAtom>(atom);
+    m_inputIndex = 0;
     m_startingSeed = replay.m_meta.m_seed;
-    updater.m_tps->inner() = replay.m_meta.m_tps;
+    updater.m_tps->inner() =
+        std::isfinite(replay.m_meta.m_tps) && replay.m_meta.m_tps > 0.0
+            ? replay.m_meta.m_tps
+            : 240.0;
     updater.m_tps->notifyChange();
     Bot::get()->setMode(Bot::Mode::Playing);
+    return true;
 }
 
-void ReplaySystem::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
+bool ReplaySystem::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
     uint64_t currentFrame = 0;
     auto& a = m_actionAtom;
     a.clear();
@@ -153,13 +170,23 @@ void ReplaySystem::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
     }
 
     auto& updater = Bot::get()->updater();
+    m_inputIndex = 0;
     m_startingSeed = replay.m_meta.seed;
-    updater.m_tps->inner() = replay.m_tps;
+    updater.m_tps->inner() =
+        std::isfinite(replay.m_tps) && replay.m_tps > 0.0 ? replay.m_tps
+                                                          : 240.0;
     updater.m_tps->notifyChange();
     Bot::get()->setMode(Bot::Mode::Playing);
+    return true;
 }
 
 void ReplaySystem::load(std::filesystem::path path) {
+    m_lastOperationSucceeded = false;
+    if (!std::filesystem::exists(path) && path.extension() == ".grape") {
+        auto legacyPath = path;
+        legacyPath.replace_extension(".slc");
+        if (std::filesystem::exists(legacyPath)) path = legacyPath;
+    }
     if (!std::filesystem::exists(path)) {
         geode::log::error(
             "Failed to load slc3 replay from {}; file does not exist", path);
@@ -171,13 +198,13 @@ void ReplaySystem::load(std::filesystem::path path) {
     auto replay = Replay::read(fd);
     if (replay.has_value()) {
         geode::log::info("Loading slc3 replay from {}", path);
-        this->processSlc3(replay.value());
+        m_lastOperationSucceeded = this->processSlc3(replay.value());
     } else {
         fd.seekg(0, std::ios::beg);
         auto v2Replay = slc::v2::Replay<ReplayMeta>::read(fd);
         if (v2Replay.has_value()) {
             geode::log::info("Loading slc2 (legacy) replay from {}", path);
-            this->processSlc2(v2Replay.value());
+            m_lastOperationSucceeded = this->processSlc2(v2Replay.value());
         } else {
             geode::log::error("Failed to load slc3 replay from {}", path);
         }
@@ -295,7 +322,7 @@ void ReplaySystem::merge(std::filesystem::path path, MergeMode mode) {
 
 std::filesystem::path ReplaySystem::getCurrentPath() {
     return silicate::paths::directory("replays") /
-           (m_replayName + ".slc");
+           (m_replayName + ".grape");
 }
 
 static std::filesystem::path createBackupPath(const std::string& name) {
@@ -306,7 +333,7 @@ static std::filesystem::path createBackupPath(const std::string& name) {
 
     const std::filesystem::path path =
         silicate::paths::directory("backups") /
-        fmt::format("_backup_{:%Y%m%d_%H%M%S}_{}.slc", timestamp, name);
+        fmt::format("_backup_{:%Y%m%d_%H%M%S}_{}.grape", timestamp, name);
 
     return path;
 }

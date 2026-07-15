@@ -11,8 +11,14 @@ class MobileMenu final : public geode::Popup {
     Page m_page = Page::Record;
     cocos2d::CCNode* m_pageNode = nullptr;
     cocos2d::CCMenu* m_pageMenu = nullptr;
+    cocos2d::CCLabelBMFont* m_frameLabel = nullptr;
+    cocos2d::CCLabelBMFont* m_statusLabel = nullptr;
+    ButtonSprite* m_recordSprite = nullptr;
+    ButtonSprite* m_playSprite = nullptr;
+    std::string m_status;
 
-    bool init();
+    bool init() override;
+    void update(float dt) override;
     void rebuildPage();
     void buildRecordPage();
     void buildAssistPage();
@@ -28,6 +34,15 @@ class MobileMenu final : public geode::Popup {
         std::function<void()> callback, float width = 82.f);
     void addToggle(std::string const& text, int row, int column, bool value,
                    std::function<void(bool)> callback);
+    void addToggleWithSettings(std::string const& text, int row, int column,
+                               bool value,
+                               std::function<void(bool)> callback,
+                               std::function<void()> openSettings);
+    geode::TextInput* addNumberInput(
+        std::string const& text, int row, int column,
+        std::function<double()> getter, std::function<void(double)> setter,
+        double minimum, double maximum, int decimals = 2,
+        float width = 70.f);
     void addAdjuster(std::string const& text, int row, int column,
                      std::function<double()> getter,
                      std::function<void(double)> setter, double step,

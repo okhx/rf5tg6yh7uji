@@ -7,6 +7,7 @@
 
 #include <forward_list>
 #include <functional>
+#include <algorithm>
 
 #include "settings/settings.hpp"
 #include "shared/value/value.hpp"
@@ -137,7 +138,8 @@ class BotUpdater {
 
     SLValuePtr<bool> m_noclip =
         SLValue<bool>::create("updater.noclip", &_noclip);
-    NoclipType m_noclipType = NoclipType::Player1;
+    NoclipType m_noclipType = static_cast<NoclipType>(
+        std::clamp(SLSettings::get()->noclipPlayer, 0, 2));
 
     bool m_isAutoFlipped = false;
     bool m_predicting = false;
@@ -206,6 +208,7 @@ class BotUpdater {
     bool useFastLockDelta();
 
     void findBestFrameCandidate();
+    void portableFrameUpdate(PlayLayer* playLayer);
 };
 
 #endif  // UPDATER_HPP

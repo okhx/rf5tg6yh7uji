@@ -31,6 +31,13 @@ using namespace geode::prelude;
 #include "util/paths.hpp"
 
 struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
+#ifndef GEODE_IS_WINDOWS
+    void postUpdate(float dt) override {
+        PlayLayer::postUpdate(dt);
+        Bot::get()->updater().portableFrameUpdate(this);
+    }
+#endif
+
     CheckpointObject* markCheckpoint() {
         if (!Bot::get()->isEnabled()) {
             return PlayLayer::markCheckpoint();
@@ -573,6 +580,40 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
         if (!bot->updater().m_noclip->inner() || shouldDie) {
             return PlayLayer::destroyPlayer(player, gameObject);
+        }
+
+        auto* settings = SLSettings::get();
+        if (settings->noclipTintEnabled) {
+            constexpr auto tintID = "noclip-tint"_spr;
+            auto* tint =
+                typeinfo_cast<CCLayerColor*>(this->getChildByID(tintID));
+            auto& source = settings->noclipTintColor;
+            ccColor4B color = {
+                static_cast<GLubyte>(std::clamp(source[0], 0.f, 1.f) * 255.f),
+                static_cast<GLubyte>(std::clamp(source[1], 0.f, 1.f) * 255.f),
+                static_cast<GLubyte>(std::clamp(source[2], 0.f, 1.f) * 255.f),
+                static_cast<GLubyte>(
+                    std::clamp(settings->noclipTintOpacity, 0.0, 1.0) *
+                    255.0)};
+            if (!tint) {
+                auto size = CCDirector::get()->getWinSize();
+                tint = CCLayerColor::create(color, size.width, size.height);
+                tint->setID(tintID);
+                this->addChild(tint, 100000);
+            } else {
+                tint->stopAllActions();
+                tint->setColor({color.r, color.g, color.b});
+                tint->setOpacity(color.a);
+            }
+
+            const float duration = static_cast<float>(
+                std::clamp(settings->noclipTintTime, 0.0, 10.0));
+            tint->runAction(CCSequence::create(
+                CCDelayTime::create(duration * .35f),
+                CCFadeOut::create(std::max(.01f, duration * .65f)),
+                geode::cocos::CallFuncExt::create(
+                    [tint] { tint->removeFromParent(); }),
+                nullptr));
         }
     }
 

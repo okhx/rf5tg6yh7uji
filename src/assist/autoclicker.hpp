@@ -7,6 +7,7 @@
 using namespace geode::prelude;
 
 class Autoclicker {
+   public:
     enum class PlayerToggle : int {
         Player1,
         Player2,
@@ -19,11 +20,19 @@ class Autoclicker {
     bool m_p2Clicked = false;
 
    public:
-    int m_frequency = 1;
-    bool m_performSwifts = false;
+    int m_frequency = SLSettings::get()->autoclickerFrequency;
+    bool m_performSwifts = SLSettings::get()->autoclickerSwifts;
     SLValuePtr<bool> m_enabled = SLValue<bool>::create(
         "autoclicker.enabled", &SLSettings::get()->autoclickerEnabled);
-    PlayerToggle m_player = PlayerToggle::Player1;
+    PlayerToggle m_player = static_cast<PlayerToggle>(
+        std::clamp(SLSettings::get()->autoclickerPlayer, 0, 2));
+
+    void saveSettings() {
+        m_frequency = std::max(1, m_frequency);
+        SLSettings::get()->autoclickerFrequency = m_frequency;
+        SLSettings::get()->autoclickerSwifts = m_performSwifts;
+        SLSettings::get()->autoclickerPlayer = static_cast<int>(m_player);
+    }
 
     void reset() {
         m_lastFrame = UINT64_MAX;
