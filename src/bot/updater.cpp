@@ -121,7 +121,11 @@ static void runFastLockDeltaUpdates(float realDt,
             updater.getPhysicsDt());
 
         if (updater.estimatedStepCount >= 1) {
-            update(realDt * updater.m_speedhack->inner());
+            // Use the accumulated fixed-step time, not the latest display
+            // delta. When display FPS is above TPS, several tiny display
+            // deltas are intentionally skipped; forwarding only the final
+            // tiny delta made the game run at TPS / FPS speed.
+            update(updater.getPhysicsDt() * updater.estimatedStepCount);
         }
     } else {
         updater.calculateSteps(
@@ -144,7 +148,7 @@ static void runFastLockDeltaUpdates(float realDt,
 
             if (steps > 0) {
                 updater.estimatedStepCount = 1;
-                update(realDt * updater.m_speedhack->inner());
+                update(updater.getPhysicsDt());
                 steps -= 1;
             }
         }

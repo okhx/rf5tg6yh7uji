@@ -1,6 +1,8 @@
 #include "trajectory.hpp"
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 
 #include "bot/bot.hpp"
 #include "bot/updater.hpp"
@@ -73,6 +75,19 @@ static size_t hashTrajectoryCategories() {
     return h;
 }
 
+static double trajectoryPredictionTps(double actualTps,
+                                      double overriddenTps = 0.0) {
+    if (std::isfinite(overriddenTps) && overriddenTps > 0.0) {
+        return overriddenTps;
+    }
+    if (!std::isfinite(actualTps) || actualTps <= 0.0) actualTps = 240.0;
+
+    // More than 480 visual prediction samples per second adds substantial
+    // CPU cost but no useful screen detail. Macro inputs are mapped from their
+    // original TPS below, so this does not change replay timing.
+    return std::clamp(actualTps, 240.0, 480.0);
+}
+
 Trajectory::Signature Trajectory::computeSignature(GJBaseGameLayer* pl) {
     Signature s;
     s.frame = Bot::get()->updater().getFrame();
@@ -118,9 +133,12 @@ int Trajectory::getPredictionLength() {
     if (!pl) return 0;
 
     auto& ts = SLSettings::get()->trajectory;
+    const double timeWarp = std::max(
+        std::abs(static_cast<double>(pl->m_gameState.m_timeWarp)), 0.001);
+    const double length = std::clamp(ts.length, 0.0, 60.0);
     int steps = static_cast<int>(
-        ts.length * std::max(bot->updater().getTps(), 240.0) /
-        pl->m_gameState.m_timeWarp);
+        length * trajectoryPredictionTps(bot->updater().getTps()) /
+        timeWarp);
 
     if (ts.maxSteps > 0)
         steps = std::min(steps, ts.maxSteps);
@@ -134,7 +152,9 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
     const CCPoint prevPos = player->getPosition();
 
     auto& updater = Bot::get()->updater();
-    const float physicsDt = updater.getPhysicsDt();
+    const double predictionTps = trajectoryPredictionTps(
+        updater.getTps(), config.m_overridenTPS);
+    const float physicsDt = static_cast<float>(1.0 / predictionTps);
     const float timeWarp  = updater.getTimeWarp();
 
     pl->m_gameState.m_totalTime    += physicsDt;
@@ -174,9 +194,10 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
         std::erase_if(m_actions, [](const auto& a) { return a.m_executed; });
     }
 
-    const float delta = (config.m_overridenTPS == 0.0)
-                            ? m_delta
-                            : static_cast<float>((1.0 / config.m_overridenTPS) * 60.0);
+    // Always predict with a stable substep rate. Previously prediction length
+    // was clamped to at least 240 steps/second while each step still used a
+    // 60-TPS delta, producing a path up to four times too long at low FPS/TPS.
+    const float delta = physicsDt * 60.0f;
 
     player->m_playEffects = false;
     player->update(delta);
@@ -272,11 +293,16 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
 
     int trajectoryInputIndex = bot->replaySystem().getInputIndex();
     const auto& inputs = bot->replaySystem().m_actionAtom.m_actions;
+    const double macroTps = std::max(bot->updater().getTps(), 1.0);
+    const double predictionTps = trajectoryPredictionTps(
+        macroTps, config.m_overridenTPS);
 
     int predCount = 0;
     for (int i = 0; i < iterations; ++i) {
         if (bot->isPlaying()) {
-            const uint64_t frame = bot->updater().getFrame() + i;
+            const uint64_t frame = bot->updater().getFrame() +
+                static_cast<uint64_t>(
+                    std::floor(i * macroTps / predictionTps));
             while (trajectoryInputIndex < static_cast<int>(inputs.size()) &&
                    inputs[trajectoryInputIndex].m_frame <= frame) {
                 const auto& input = inputs[trajectoryInputIndex];
@@ -400,8 +426,15 @@ void Trajectory::update(GJBaseGameLayer* pl) {
 
     m_node->setVisible(true);
 
-    const Signature sig   = computeSignature(pl);
+    const Signature sig = computeSignature(pl);
     const bool needsRebuild = !m_calculated || !(sig == m_lastSignature);
+    const uint64_t currentFrame = Bot::get()->updater().getFrame();
+    const uint64_t rebuildInterval = static_cast<uint64_t>(std::max(
+        1.0, std::floor(Bot::get()->updater().getTps() / 120.0)));
+    if (m_calculated && currentFrame >= m_lastFrame &&
+        currentFrame - m_lastFrame < rebuildInterval) {
+        goto applyLayoutColors;
+    }
 
     if (!needsRebuild) goto applyLayoutColors;
 

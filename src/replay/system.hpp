@@ -20,7 +20,7 @@ class ReplaySystem {
     bool processSlc2(slc::v2::Replay<ReplayMeta>& replay);
 
    public:
-    size_t m_inputIndex;
+    size_t m_inputIndex = 0;
 
     slc::ActionAtom m_actionAtom;
     bool m_collectInputs = true;
@@ -73,10 +73,11 @@ class ReplaySystem {
     uint64_t& getCurrentShakeState();
 
     [[nodiscard]] const std::optional<slc::Action> getNextQueuedInput() {
-        if (m_inputIndex + 1 >= m_actionAtom.m_actions.size())
+        // m_inputIndex always points at the next unprocessed action.
+        if (m_inputIndex >= m_actionAtom.m_actions.size())
             return std::nullopt;
 
-        return m_actionAtom.m_actions.at(m_inputIndex + 1);
+        return m_actionAtom.m_actions.at(m_inputIndex);
     }
 
     [[nodiscard]] const std::optional<slc::Action> getCurrentQueuedInput() {

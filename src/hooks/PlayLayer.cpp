@@ -171,12 +171,24 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
     void checkIfResetWasExpected(uint64_t deathFrame) {
         auto bot = Bot::get();
-        while (auto input = bot->replaySystem().getNextInput(deathFrame)) {
-            if (input->m_type == slc::Action::ActionType::Death) {
-                bot->updater().m_expectsDeath = true;
-            } else {
-                break;
-            }
+        auto& replay = bot->replaySystem();
+        const auto input = replay.getCurrentQueuedInput();
+        if (!input.has_value() ||
+            input->m_type != slc::Action::ActionType::Death) {
+            return;
+        }
+
+#ifdef GEODE_IS_MOBILE
+        const bool isDue = input->m_frame <= deathFrame;
+#else
+        const bool isDue = input->m_frame == deathFrame;
+#endif
+        if (isDue) {
+            // Only consume the Death marker here. The old getNextInput loop
+            // also consumed the first non-death action at this frame, which
+            // could discard a Restart or button input and desync the macro.
+            replay.advanceInputIndex();
+            bot->updater().m_expectsDeath = true;
         }
     }
 

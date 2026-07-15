@@ -4,6 +4,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/GJBaseGameLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <filesystem>
@@ -130,8 +131,20 @@ bool ReplaySystem::processSlc3(Replay& replay) {
     auto atom = *it;
     auto& updater = Bot::get()->updater();
     m_actionAtom = std::get<slc::ActionAtom>(atom);
+    std::stable_sort(
+        m_actionAtom.m_actions.begin(), m_actionAtom.m_actions.end(),
+        [](const auto& left, const auto& right) {
+            return left.m_frame < right.m_frame;
+        });
     m_inputIndex = 0;
     m_startingSeed = replay.m_meta.m_seed;
+    m_startingSeedThisAttempt = m_startingSeed;
+    m_lastInputs.clear();
+    updater.resetFrame();
+    updater.m_frameOnLastAttempt = 0;
+    updater.m_expectsDeath = false;
+    updater.m_fullReset = false;
+    updater.m_tpsOverflow = 0.0;
     updater.m_tps->inner() =
         std::isfinite(replay.m_meta.m_tps) && replay.m_meta.m_tps > 0.0
             ? replay.m_meta.m_tps
@@ -177,8 +190,20 @@ bool ReplaySystem::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
     }
 
     auto& updater = Bot::get()->updater();
+    std::stable_sort(
+        m_actionAtom.m_actions.begin(), m_actionAtom.m_actions.end(),
+        [](const auto& left, const auto& right) {
+            return left.m_frame < right.m_frame;
+        });
     m_inputIndex = 0;
     m_startingSeed = replay.m_meta.seed;
+    m_startingSeedThisAttempt = m_startingSeed;
+    m_lastInputs.clear();
+    updater.resetFrame();
+    updater.m_frameOnLastAttempt = 0;
+    updater.m_expectsDeath = false;
+    updater.m_fullReset = false;
+    updater.m_tpsOverflow = 0.0;
     updater.m_tps->inner() =
         std::isfinite(replay.m_tps) && replay.m_tps > 0.0 ? replay.m_tps
                                                           : 240.0;

@@ -404,7 +404,9 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         }
     }
 
-    void processReplayAction(slc::Action& action) {
+    // Returns true when the action replaced/reset the active PlayLayer. The
+    // caller must stop processing the stale pre-reset queue in that case.
+    bool processReplayAction(slc::Action& action) {
         auto bot = Bot::get();
 
         int button = static_cast<int>(action.m_type);
@@ -412,7 +414,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
             bot->updater().m_expectsDeath = true;
             bot->replaySystem().m_startingSeedThisAttempt =
                 bot->replaySystem().getCurrentRandomState();
-            return;
+            return false;
         }
 
         if (action.m_type == slc::Action::ActionType::RestartFull) {
@@ -420,7 +422,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
             bot->replaySystem().m_startingSeedThisAttempt =
                 bot->replaySystem().getCurrentRandomState();
             ((PlayLayer*)this)->fullReset();
-            return;
+            return true;
         }
 
         if (action.m_type == slc::Action::ActionType::Restart) {
@@ -428,23 +430,24 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
             bot->replaySystem().m_startingSeedThisAttempt =
                 bot->replaySystem().getCurrentRandomState();
             ((PlayLayer*)this)->resetLevel();
-            return;
+            return true;
         }
 
         if (action.m_type == slc::Action::ActionType::TPS) {
             bot->updater().m_tps->inner() = action.m_tps;
             bot->updater().estimatedStepCount = 0;
             bot->updater().totalStepCount = 0;
-            return;
+            return false;
         }
 
         if (button == 0 || button > 3) {
-            return;
+            return false;
         }
 
         this->queueButton(button, action.m_holding,
                           bot->replaySystem().playerFlipped(action.m_player2),
                           0);
+        return false;
     }
 
     void performAutoFlipOnDeath() {
@@ -521,7 +524,10 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
             }
 
             while (auto input = bot->replaySystem().getNextInput(frame)) {
-                if (input.has_value()) this->processReplayAction(input.value());
+                if (input.has_value() &&
+                    this->processReplayAction(input.value())) {
+                    return;
+                }
             }
         }
 
