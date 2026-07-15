@@ -5,6 +5,9 @@
 #include "../shared/value/value.hpp"
 #include "ffmpeg.hpp"
 #include "texture.hpp"
+#ifdef GEODE_IS_MOBILE
+#include "mobile_ffmpeg_api.hpp"
+#endif
 // #include "render_texture.hpp"
 // #include "dsp.hpp"
 
@@ -97,6 +100,12 @@ class Renderer {
     geode::Result<> stop();
 
     void signalStop() {
+#ifdef GEODE_IS_MOBILE
+        if (m_mobileRecording) {
+            stopMobile();
+            return;
+        }
+#endif
         m_recording = false;
         m_recordCv.notify_one();
     }
@@ -139,6 +148,12 @@ class Renderer {
 
     bool m_shouldStart = false;
     bool m_collectAudio = true;
+
+#ifdef GEODE_IS_MOBILE
+    geode::Result<> startMobile();
+    void stopMobile();
+    void updateMobile(PlayLayer* pl);
+#endif
 
     std::atomic<bool> m_halting = false;
     std::atomic<bool> m_collected = false;
@@ -237,6 +252,15 @@ class Renderer {
     std::mutex m_lock;
 
     friend class AudioRecorder;
+
+#ifdef GEODE_IS_MOBILE
+    std::unique_ptr<MobileFFmpegRecorder> m_mobileRecorder;
+    cocos2d::CCTexture2D* m_mobileTexture = nullptr;
+    GLuint m_mobileFbo = 0;
+    std::vector<uint8_t> m_mobileFrame;
+    double m_mobileNextFrameTime = 0.0;
+    bool m_mobileRecording = false;
+#endif
 };
 
 #endif

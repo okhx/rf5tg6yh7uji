@@ -139,6 +139,8 @@ class SLSettings {
     struct HitboxSettings {
         double width = 0.5;
         bool trailEnabled = false;
+        bool holdingTrailEnabled = true;
+        std::array<float, 4> holdingTrailColor = {0.1f, 1.0f, 0.2f, 1.0f};
 
         int trailMaxLength = 1000;
         int trailRebuildInterval = 3;

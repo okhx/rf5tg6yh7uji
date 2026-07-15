@@ -368,18 +368,35 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
                     lastPx  = px;
                     lastPy  = py;
 
+                    const bool showHolding =
+                        hbs.holdingTrailEnabled && unit.m_holding;
+                    const auto& hold = hbs.holdingTrailColor;
+                    const cocos2d::ccColor4F holdLine = {
+                        hold[0], hold[1], hold[2], hold[3]};
+                    const auto lineFor = [&](const ResolvedHBCategory& cat) {
+                        return showHolding ? holdLine : cat.line;
+                    };
+                    const auto fillFor = [&](const ResolvedHBCategory& cat) {
+                        if (!showHolding) return cat.fill;
+                        return cocos2d::ccColor4F{
+                            hold[0], hold[1], hold[2],
+                            hold[3] * cat.fill.a};
+                    };
+
                     if (eSolid) {
                         auto r = usingWidth(unit.m_rect, width);
-                        m_trailDrawNode->drawRect(r, rSol.fill, width, rSol.line);
+                        m_trailDrawNode->drawRect(
+                            r, fillFor(rSol), width, lineFor(rSol));
                     }
                     if (eRotated && unit.m_rotated[0] != unit.m_rotated[2]) {
                         m_trailDrawNode->drawPolygon(
                             const_cast<cocos2d::CCPoint*>(unit.m_rotated.data()),
-                            4, rRot.fill, width, rRot.line);
+                            4, fillFor(rRot), width, lineFor(rRot));
                     }
                     if (eInner) {
                         auto r = usingWidth(unit.m_scaled, width);
-                        m_trailDrawNode->drawRect(r, rInner.fill, width, rInner.line);
+                        m_trailDrawNode->drawRect(
+                            r, fillFor(rInner), width, lineFor(rInner));
                     }
                     if (eCircle) {
                         float radius = usingWidth(unit.m_rect, width).size.width * 0.5f;
@@ -387,7 +404,8 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
                             cocos2d::CCPoint center{unit.m_rect.getMidX(),
                                                     unit.m_rect.getMidY()};
                             m_trailDrawNode->drawCircle(
-                                center, radius, rCirc.fill, width, rCirc.line,
+                                center, radius, fillFor(rCirc), width,
+                                lineFor(rCirc),
                                 trailCircleSegments(radius));
                         }
                     }
@@ -431,6 +449,8 @@ static void appendTrailUnit(std::deque<HitboxTrailUnit>& trail,
         .m_scaled  = player->getObjectRect(0.3f, 0.3f),
         .m_rotated = box ? box->m_corners
                          : std::array<cocos2d::CCPoint, 4>{},
+        .m_holding = player->m_jumpBuffered ||
+                     player->m_holdingButtons[1],
     });
     while (static_cast<int>(trail.size()) > maxLength)
         trail.pop_front();

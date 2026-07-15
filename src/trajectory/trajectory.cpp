@@ -429,8 +429,11 @@ void Trajectory::update(GJBaseGameLayer* pl) {
     const Signature sig = computeSignature(pl);
     const bool needsRebuild = !m_calculated || !(sig == m_lastSignature);
     const uint64_t currentFrame = Bot::get()->updater().getFrame();
-    const uint64_t rebuildInterval = static_cast<uint64_t>(std::max(
-        1.0, std::floor(Bot::get()->updater().getTps() / 120.0)));
+    const double currentTps = Bot::get()->updater().getTps();
+    const uint64_t rebuildInterval = currentTps <= 240.0
+        ? 1u
+        : static_cast<uint64_t>(std::max(
+              1.0, std::floor(currentTps / 120.0)));
     if (m_calculated && currentFrame >= m_lastFrame &&
         currentFrame - m_lastFrame < rebuildInterval) {
         goto applyLayoutColors;

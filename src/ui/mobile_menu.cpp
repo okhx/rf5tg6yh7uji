@@ -21,7 +21,7 @@
 using namespace geode::prelude;
 
 namespace {
-constexpr float kTabWidth = 100.f;
+constexpr float kTabWidth = 84.f;
 
 ButtonSprite* makeButtonSprite(std::string const& text, float width) {
     return ButtonSprite::create(text.c_str(), static_cast<int>(width), true,
@@ -90,6 +90,16 @@ class MobileFeaturePopup final : public geode::Popup {
         m_content->addChild(node);
     }
 
+    void settingLabel(std::string const& text, float y,
+                      float scale = .34f) {
+        auto* node = CCLabelBMFont::create(text.c_str(), "bigFont.fnt");
+        node->setAnchorPoint({0.f, .5f});
+        node->setScale(scale);
+        node->setPosition({28.f, y});
+        node->limitLabelWidth(185.f, scale, .14f);
+        m_content->addChild(node);
+    }
+
     ButtonSprite* button(std::string const& text, float x, float y,
                          std::function<void()> callback, float width = 85.f) {
         auto* sprite = makeButtonSprite(text, width);
@@ -105,7 +115,7 @@ class MobileFeaturePopup final : public geode::Popup {
     void toggle(std::string const& text, int row, bool value,
                 std::function<void(bool)> callback, float x = 185.f) {
         const float y = rowY(row);
-        label(text, x - 55.f, y);
+        settingLabel(text, y);
         auto* item =
             geode::cocos::CCMenuItemExt::createTogglerWithStandardSprites(
                 .42f,
@@ -121,7 +131,7 @@ class MobileFeaturePopup final : public geode::Popup {
                       std::function<void(double)> setter, double minimum,
                       double maximum, int decimals = 2, float x = 185.f) {
         const float y = rowY(row);
-        label(text, x - 65.f, y);
+        settingLabel(text, y);
         auto* input = TextInput::create(92.f, "Value");
         input->setScaleY(.84f);
         input->setCommonFilter(CommonFilter::Float);
@@ -141,7 +151,7 @@ class MobileFeaturePopup final : public geode::Popup {
     TextInput* text(std::string const& labelText, int row, std::string value,
                     std::function<void(std::string const&)> setter) {
         const float y = rowY(row);
-        label(labelText, 120.f, y);
+        settingLabel(labelText, y);
         auto* input = TextInput::create(145.f, "Value");
         input->setScaleY(.84f);
         input->setCommonFilter(CommonFilter::ID);
@@ -154,7 +164,7 @@ class MobileFeaturePopup final : public geode::Popup {
 
     void color(std::string const& text, int row,
                std::array<float, 4>* target) {
-        label(text, 120.f, rowY(row));
+        settingLabel(text, rowY(row));
         button("Color", 260.f, rowY(row),
                [target] { openColorPicker(target); }, 80.f);
     }
@@ -203,18 +213,19 @@ class MobileFeaturePopup final : public geode::Popup {
                [hitboxes](bool value) {
                    hitboxes->m_trailEnabled->inner() = value;
                });
-        number("Trail frames", 2, settings->hitboxes.trailMaxLength,
+        toggle("Holding trail", 2, settings->hitboxes.holdingTrailEnabled,
+               [settings](bool value) {
+                   settings->hitboxes.holdingTrailEnabled = value;
+               }, 155.f);
+        button("Color", 325.f, rowY(2), [settings] {
+            openColorPicker(&settings->hitboxes.holdingTrailColor);
+        }, 62.f);
+        number("Trail frames", 3, settings->hitboxes.trailMaxLength,
                [settings](double value) {
                    settings->hitboxes.trailMaxLength =
                        std::max(1, static_cast<int>(value));
                },
                1, 100000, 0);
-        number("Trail rebuild", 3, settings->hitboxes.trailRebuildInterval,
-               [settings](double value) {
-                   settings->hitboxes.trailRebuildInterval =
-                       std::max(1, static_cast<int>(value));
-               },
-               1, 1000, 0);
         label(names[m_category], 185.f, rowY(4), .35f, {255, 220, 90});
         button("<", 55.f, rowY(4), [this] {
             m_category = (m_category + 8) % 9;
@@ -291,8 +302,6 @@ class MobileFeaturePopup final : public geode::Popup {
         toggle("Show category", 4, state->enabled,
                [state](bool value) { state->enabled = value; });
         color("Category color", 5, &state->colors);
-        label("Includes hold, swift, release, left/right, follow and opposite",
-              185.f, rowY(6), .25f, {130, 255, 170});
     }
 
     void buildAutoclicker() {
@@ -300,7 +309,7 @@ class MobileFeaturePopup final : public geode::Popup {
         static constexpr const char* players[] = {"Player 1", "Player 2",
                                                    "Both"};
         int player = std::clamp(static_cast<int>(autoclicker->m_player), 0, 2);
-        label("Player", 110.f, rowY(0));
+        settingLabel("Player", rowY(0));
         button(players[player], 255.f, rowY(0), [this, autoclicker] {
             int next = (static_cast<int>(autoclicker->m_player) + 1) % 3;
             autoclicker->m_player =
@@ -333,8 +342,6 @@ class MobileFeaturePopup final : public geode::Popup {
                });
         color("Background color", 2, &settings->layoutBgColor);
         color("Ground color", 3, &settings->layoutGroundColor);
-        label("Colors update live while Layout Mode is enabled.", 185.f,
-              rowY(5), .3f, {130, 255, 170});
     }
 
     void buildNoclip() {
@@ -343,7 +350,7 @@ class MobileFeaturePopup final : public geode::Popup {
         static constexpr const char* players[] = {"Player 1", "Player 2",
                                                    "Both"};
         int player = std::clamp(static_cast<int>(updater->m_noclipType), 0, 2);
-        label("Affected player", 110.f, rowY(0));
+        settingLabel("Affected player", rowY(0));
         button(players[player], 255.f, rowY(0), [this, updater] {
             int next = (static_cast<int>(updater->m_noclipType) + 1) % 3;
             updater->m_noclipType =
@@ -468,13 +475,14 @@ bool MobileMenu::init() {
 
     this->setTitle("Grape Mobile", "goldFont.fnt", .75f, 18.f);
 
-    static constexpr const char* names[] = {"Record", "Assist", "Settings"};
-    for (int i = 0; i < 3; ++i) {
+    static constexpr const char* names[] = {
+        "Record", "Assist", "Settings", "Render"};
+    for (int i = 0; i < 4; ++i) {
         auto sprite = makeButtonSprite(names[i], kTabWidth);
         auto button = CCMenuItemSpriteExtra::create(
             sprite, this, menu_selector(MobileMenu::onTab));
         button->setTag(i);
-        button->setPosition({m_size.width / 2.f + (i - 1) * 108.f,
+        button->setPosition({m_size.width / 2.f + (i - 1.5f) * 94.f,
                              m_size.height - 48.f});
         m_buttonMenu->addChild(button);
     }
@@ -499,6 +507,10 @@ void MobileMenu::update(float) {
     if (m_playSprite) {
         m_playSprite->setString(bot->isPlaying() ? "Stop playback"
                                                  : "Start playback");
+    }
+    if (m_renderSprite) {
+        m_renderSprite->setString(Renderer::get()->isRecording()
+                                      ? "Stop render" : "Start render");
     }
     if (m_frameLabel) {
         m_frameLabel->setString(
@@ -645,6 +657,7 @@ void MobileMenu::rebuildPage() {
     m_statusLabel = nullptr;
     m_recordSprite = nullptr;
     m_playSprite = nullptr;
+    m_renderSprite = nullptr;
     m_pageNode->removeAllChildren();
     m_pageMenu = CCMenu::create();
     m_pageMenu->setPosition({0.f, 0.f});
@@ -655,6 +668,7 @@ void MobileMenu::rebuildPage() {
         case Page::Record: buildRecordPage(); break;
         case Page::Assist: buildAssistPage(); break;
         case Page::Settings: buildSettingsPage(); break;
+        case Page::Render: buildRenderPage(); break;
     }
 }
 
@@ -689,6 +703,12 @@ void MobileMenu::buildRecordPage() {
             if (bot->isPlaying()) {
                 bot->setMode(Bot::Stopped);
             } else {
+                if (auto* playLayer = PlayLayer::get(); playLayer &&
+                    (playLayer->m_hasCompletedLevel ||
+                     playLayer->m_levelEndAnimationStarted)) {
+                    m_status = "Close the completion screen before playback";
+                    return;
+                }
                 bot->setMode(Bot::Playing);
                 replay.m_inputIndex = 0;
                 if (auto* playLayer = PlayLayer::get()) playLayer->resetLevel();
@@ -887,21 +907,18 @@ void MobileMenu::buildSettingsPage() {
                   replay.m_autosaveAtInterval->inner() = value;
                   replay.m_autosaveAtInterval->notifyChange();
               });
-    addToggle("Block playback input", 3, 0,
-              replay.m_ignoreInputs->inner(),
-              [&](bool value) { replay.m_ignoreInputs->inner() = value; });
-    addToggle("Visual updates", 3, 1,
+    addToggle("Visual updates", 3, 0,
               updater.m_useVisualUpdates->inner(), [&](bool value) {
                   updater.m_useVisualUpdates->inner() = value;
               });
 
-    addToggle("End screen menu", 4, 0,
+    addToggle("End screen menu", 3, 1,
               SLSettings::get()->showEndMenuButton, [](bool value) {
                   SLSettings::get()->showEndMenuButton = value;
               });
 
     addNumberInput(
-        "Backup seconds", 5, 0,
+        "Backup seconds", 4, 0,
         [&] { return replay.m_autosaveInterval->inner(); },
         [&](double value) {
             replay.m_autosaveInterval->inner() = value;
@@ -909,13 +926,97 @@ void MobileMenu::buildSettingsPage() {
         },
         15.0, 3600.0, 0);
     addNumberInput(
-        "Target FPS", 5, 1, [&] { return updater.m_fpsTarget->inner(); },
+        "Target FPS", 4, 1, [&] { return updater.m_fpsTarget->inner(); },
         [&](double value) { updater.m_fpsTarget->inner() = value; }, 15.0,
         480.0, 0);
 
-    addButton("Render settings", columnX(0), rowY(6), [] {
-        MobileFeaturePopup::open(MobileFeaturePopup::Feature::Rendering);
-    }, 145.f);
+}
+
+void MobileMenu::buildRenderPage() {
+    auto* renderer = Renderer::get();
+    auto& settings = renderer->m_settings;
+    const float center = m_pageNode->getContentSize().width / 2.f;
+
+    addLabel("Resolution", center - 125.f, rowY(0), .33f);
+    auto makeNumber = [this](float x, float y, int value,
+                             std::function<void(int)> setter) {
+        auto* input = TextInput::create(72.f, "Value");
+        input->setScaleY(.84f);
+        input->setCommonFilter(CommonFilter::Int);
+        input->setString(std::to_string(value));
+        input->setCallback([setter = std::move(setter)](std::string const& s) {
+            double value = 0.0;
+            if (parseNumber(s, value)) setter(static_cast<int>(value));
+        });
+        input->setPosition({x, y});
+        m_pageNode->addChild(input, 3);
+    };
+    makeNumber(center - 35.f, rowY(0), settings.m_width,
+               [&settings](int value) {
+                   settings.m_width = std::clamp(value, 64, 3840);
+               });
+    addLabel("x", center + 10.f, rowY(0), .36f);
+    makeNumber(center + 58.f, rowY(0), settings.m_height,
+               [&settings](int value) {
+                   settings.m_height = std::clamp(value, 64, 2160);
+               });
+
+    addNumberInput("FPS", 1, 0, [&settings] { return settings.m_fps; },
+                   [&settings](double value) {
+                       settings.m_fps = static_cast<int>(value);
+                   }, 1, 240, 0);
+    addNumberInput("Bitrate Mbps", 1, 1,
+                   [&settings] { return settings.m_bitrate / 1'000'000.0; },
+                   [&settings](double value) {
+                       settings.m_bitrate = static_cast<uint32_t>(
+                           value * 1'000'000.0);
+                   }, 1, 200, 0);
+
+    auto makeText = [this](std::string const& title, int row, int column,
+                           std::string value,
+                           std::function<void(std::string const&)> setter) {
+        const float x = columnX(column);
+        addLabel(title, x - 55.f, rowY(row), .32f);
+        auto* input = TextInput::create(105.f, "Value");
+        input->setScaleY(.84f);
+        input->setString(value);
+        input->setCallback(std::move(setter));
+        input->setPosition({x + 48.f, rowY(row)});
+        m_pageNode->addChild(input, 3);
+    };
+    makeText("Codec", 2, 0, settings.m_codec,
+             [&settings](std::string const& value) {
+                 settings.m_codec = value;
+             });
+    makeText("Container", 2, 1, settings.m_extension,
+             [&settings](std::string const& value) {
+                 settings.m_extension = value;
+             });
+    addNumberInput("After end", 3, 0,
+                   [&settings] { return settings.m_afterEndTime; },
+                   [&settings](double value) {
+                       settings.m_afterEndTime = static_cast<float>(value);
+                   }, 0, 30, 1);
+
+    m_renderSprite = addButton(
+        renderer->isRecording() ? "Stop render" : "Start render",
+        center, rowY(5), [this, renderer] {
+            if (renderer->isRecording()) {
+                renderer->signalStop();
+                m_status = "Render saved";
+                return;
+            }
+            auto result = renderer->start();
+            m_status = result.isOk() ? "Rendering level..."
+                                     : result.unwrapErr();
+        }, 155.f);
+
+    m_statusLabel = CCLabelBMFont::create("", "bigFont.fnt");
+    m_statusLabel->setScale(.27f);
+    m_statusLabel->setColor({130, 255, 170});
+    m_statusLabel->setPosition({center, rowY(6)});
+    m_statusLabel->limitLabelWidth(390.f, .27f, .16f);
+    m_pageNode->addChild(m_statusLabel);
 }
 
 void MobileMenu::onTab(CCObject* sender) {

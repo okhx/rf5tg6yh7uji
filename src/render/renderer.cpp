@@ -13,6 +13,7 @@
 #include <Geode/modify/GJBaseGameLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/ShaderLayer.hpp>
+#include <algorithm>
 #include <iostream>
 #ifdef GEODE_IS_WINDOWS
 #include <safetyhook.hpp>
@@ -147,7 +148,168 @@ static std::string getDefaultCodec() {
     }
 }
 
-void Renderer::initializeDefaults() { m_settings.m_codec = getDefaultCodec(); }
+void Renderer::initializeDefaults() {
+#ifdef GEODE_IS_IOS
+    m_settings.m_codec = "h264_videotoolbox";
+#else
+    m_settings.m_codec = getDefaultCodec();
+#endif
+}
+
+#ifdef GEODE_IS_MOBILE
+geode::Result<> Renderer::startMobile() {
+    auto* pl = PlayLayer::get();
+    if (!pl) return geode::Err("Open a level before starting a render");
+    if (pl->m_hasCompletedLevel || pl->m_levelEndAnimationStarted) {
+        return geode::Err("Restart the level before starting a render");
+    }
+    if (!Loader::get()->isModLoaded("eclipse.ffmpeg-api")) {
+        return geode::Err("Install and enable eclipse.ffmpeg-api to render on mobile");
+    }
+    if (m_mobileRecording) return geode::Err("A render is already running");
+
+    m_settings.m_width = std::clamp(m_settings.m_width, 64, 3840);
+    m_settings.m_height = std::clamp(m_settings.m_height, 64, 2160);
+    m_settings.m_width += m_settings.m_width & 1;
+    m_settings.m_height += m_settings.m_height & 1;
+    m_settings.m_fps = std::clamp(m_settings.m_fps, 1, 240);
+    m_settings.m_bitrate = std::clamp<uint32_t>(
+        m_settings.m_bitrate, 1'000'000, 200'000'000);
+
+    std::string name = m_settings.m_outputPath.empty()
+        ? "grape-mobile-render" : m_settings.m_outputPath;
+    if (m_autoVideoName->inner()) {
+        name = pl->m_level->m_levelName.empty()
+            ? "grape-mobile-render" : pl->m_level->m_levelName;
+    }
+    for (char& c : name) {
+        if (c == '/' || c == '\\' || c == ':' || c == '*') c = '_';
+    }
+    std::string extension = m_settings.m_extension.empty()
+        ? "mp4" : m_settings.m_extension;
+    if (extension.front() == '.') extension.erase(extension.begin());
+    auto output = silicate::paths::directory("videos") /
+                  (name + "." + extension);
+
+    m_mobileRecorder = std::make_unique<MobileFFmpegRecorder>();
+    if (!m_mobileRecorder->valid()) {
+        m_mobileRecorder.reset();
+        return geode::Err("FFmpeg API recorder could not be created");
+    }
+
+    ffmpeg::RenderSettings settings;
+    settings.m_pixelFormat = ffmpeg::PixelFormat::RGB24;
+    settings.m_codec = m_settings.m_codec;
+    settings.m_bitrate = m_settings.m_bitrate;
+    settings.m_width = static_cast<uint32_t>(m_settings.m_width);
+    settings.m_height = static_cast<uint32_t>(m_settings.m_height);
+    settings.m_fps = static_cast<uint16_t>(m_settings.m_fps);
+    settings.m_outputFile = output;
+    settings.m_doVerticalFlip = true;
+    auto result = m_mobileRecorder->init(settings);
+    if (result.isErr()) {
+        m_mobileRecorder.reset();
+        return result;
+    }
+
+    std::vector<uint8_t> blank(
+        static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 3, 0);
+    m_mobileTexture = new CCTexture2D();
+    if (!m_mobileTexture->initWithData(
+            blank.data(), kCCTexture2DPixelFormat_RGB888,
+            m_settings.m_width, m_settings.m_height,
+            {static_cast<float>(m_settings.m_width),
+             static_cast<float>(m_settings.m_height)})) {
+        m_mobileTexture->release();
+        m_mobileTexture = nullptr;
+        m_mobileRecorder->stop();
+        m_mobileRecorder.reset();
+        return geode::Err("Failed to allocate the mobile render texture");
+    }
+
+    GLint previousFbo = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFbo);
+    glGenFramebuffers(1, &m_mobileFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_mobileFbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D, m_mobileTexture->getName(), 0);
+    const auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        stopMobile();
+        return geode::Err("Mobile render framebuffer is incomplete");
+    }
+
+    m_mobileFrame.resize(
+        static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 3);
+    m_mobileNextFrameTime = 0.0;
+    m_endTime = 0.0f;
+    m_time = 0.0;
+    m_mobileRecording = true;
+    m_recording = true;
+    geode::log::info("Mobile render started: {}", output);
+    return geode::Ok();
+}
+
+void Renderer::stopMobile() {
+    if (m_mobileRecorder) {
+        m_mobileRecorder->stop();
+        m_mobileRecorder.reset();
+    }
+    if (m_mobileFbo) {
+        glDeleteFramebuffers(1, &m_mobileFbo);
+        m_mobileFbo = 0;
+    }
+    if (m_mobileTexture) {
+        m_mobileTexture->release();
+        m_mobileTexture = nullptr;
+    }
+    m_mobileFrame.clear();
+    m_mobileRecording = false;
+    m_recording = false;
+    geode::log::info("Mobile render stopped");
+}
+
+void Renderer::updateMobile(PlayLayer* pl) {
+    if (!m_mobileRecording || !pl) return;
+
+    const double tps = std::max(Bot::get()->updater().getTps(), 1.0);
+    const double gameTime = Bot::get()->updater().getFrame() / tps;
+    if (gameTime + 1e-9 < m_mobileNextFrameTime) return;
+
+    GLint previousFbo = 0;
+    GLint viewport[4] = {};
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFbo);
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_mobileFbo);
+    glViewport(0, 0, m_settings.m_width, m_settings.m_height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    pl->visit();
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, m_settings.m_width, m_settings.m_height,
+                 GL_RGB, GL_UNSIGNED_BYTE, m_mobileFrame.data());
+    glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);
+    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+
+    auto result = m_mobileRecorder->writeFrame(m_mobileFrame);
+    if (result.isErr()) {
+        geode::log::error("Mobile render frame failed: {}", result.unwrapErr());
+        stopMobile();
+        return;
+    }
+
+    m_time = gameTime;
+    m_mobileNextFrameTime += 1.0 / m_settings.m_fps;
+    if (m_mobileNextFrameTime <= gameTime) {
+        m_mobileNextFrameTime = gameTime + 1.0 / m_settings.m_fps;
+    }
+
+    if (pl->m_hasCompletedLevel) {
+        m_endTime += 1.0f / m_settings.m_fps;
+        if (m_endTime >= m_settings.m_afterEndTime) stopMobile();
+    }
+}
+#endif
 
 void Renderer::loadSettings(fs::path& path) {
     if (!fs::exists(path)) {
@@ -225,6 +387,10 @@ static void resizeShaderLayer(CCSize size, CCSize original) {
 
 geode::Result<> Renderer::start() {
     geode::log::info("Starting renderer");
+
+#ifdef GEODE_IS_MOBILE
+    return startMobile();
+#endif
 
     // Never enter the capture/encoding path without an encoder backend. On
     // mobile FFmpeg is not bundled yet; continuing here would dereference an
@@ -812,6 +978,12 @@ void Renderer::capture() {
 }
 
 void Renderer::update(PlayLayer* pl) {
+#ifdef GEODE_IS_MOBILE
+    if (m_mobileRecording) {
+        updateMobile(pl);
+        return;
+    }
+#endif
     if (!this->isRecording()) return;
 
     bool started =

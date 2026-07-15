@@ -29,15 +29,14 @@ bool TouchOverlay::init() {
 
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
-    auto leftSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
-    leftSprite->setOpacity(150);
+    auto leftSprite = ButtonSprite::create(
+        "<", 34, true, "bigFont.fnt", "GJ_button_01.png", 22.f, .65f);
     m_leftBtn = CCMenuItemSpriteExtra::create(
         leftSprite, this, menu_selector(TouchOverlay::onLeft)
     );
     
-    auto rightSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
-    rightSprite->setFlipX(true);
-    rightSprite->setOpacity(150);
+    auto rightSprite = ButtonSprite::create(
+        ">", 34, true, "bigFont.fnt", "GJ_button_01.png", 22.f, .65f);
     m_rightBtn = CCMenuItemSpriteExtra::create(
         rightSprite, this, menu_selector(TouchOverlay::onRight)
     );

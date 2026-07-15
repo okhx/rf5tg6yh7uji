@@ -11,6 +11,7 @@ struct HitboxTrailUnit {
     cocos2d::CCRect m_rect;
     cocos2d::CCRect m_scaled;
     std::array<cocos2d::CCPoint, 4> m_rotated;
+    bool m_holding = false;
 
     inline bool shouldDraw(float minX, float maxX, float minY,
                            float maxY) const noexcept {

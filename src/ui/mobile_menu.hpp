@@ -6,7 +6,7 @@
 
 class MobileMenu final : public geode::Popup {
    protected:
-    enum class Page { Record, Assist, Settings };
+    enum class Page { Record, Assist, Settings, Render };
 
     Page m_page = Page::Record;
     cocos2d::CCNode* m_pageNode = nullptr;
@@ -15,6 +15,7 @@ class MobileMenu final : public geode::Popup {
     cocos2d::CCLabelBMFont* m_statusLabel = nullptr;
     ButtonSprite* m_recordSprite = nullptr;
     ButtonSprite* m_playSprite = nullptr;
+    ButtonSprite* m_renderSprite = nullptr;
     std::string m_status;
 
     bool init() override;
@@ -23,6 +24,7 @@ class MobileMenu final : public geode::Popup {
     void buildRecordPage();
     void buildAssistPage();
     void buildSettingsPage();
+    void buildRenderPage();
 
     float columnX(int column) const;
     float rowY(int row) const;
