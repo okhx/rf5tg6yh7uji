@@ -1,4 +1,5 @@
 #include "Geode/binding/LevelEditorLayer.hpp"
+#include <Geode/binding/EditorUI.hpp>
 
 #include <Geode/Geode.hpp>
 
@@ -8,6 +9,9 @@
 #include "bot/updater.hpp"
 #include "replay/system.hpp"
 #include "trajectory/trajectory.hpp"
+#ifdef GEODE_IS_MOBILE
+#include "ui/mobile_menu.hpp"
+#endif
 
 using namespace geode::prelude;
 
@@ -62,6 +66,24 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
         }
 
         t.init();
+
+#ifdef GEODE_IS_MOBILE
+        if (m_editorUI) {
+            auto* menu = CCMenu::create();
+            menu->setPosition({0.f, 0.f});
+            menu->setID("grape-editor-menu");
+            auto* sprite = ButtonSprite::create(
+                "Grape", 58, true, "bigFont.fnt", "GJ_button_01.png",
+                26.f, .5f);
+            auto* button = geode::cocos::CCMenuItemExt::createSpriteExtra(
+                sprite, [](CCMenuItemSpriteExtra*) { MobileMenu::open(); });
+            const auto winSize = CCDirector::get()->getWinSize();
+            button->setPosition({winSize.width - 42.f,
+                                 winSize.height - 20.f});
+            menu->addChild(button);
+            m_editorUI->addChild(menu, 1000);
+        }
+#endif
 
         return true;
     }

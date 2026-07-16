@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_OBJCXX_STANDARD 23)
+set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_ARCHITECTURES "arm64")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
@@ -9,6 +11,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /FS")
 
 project(grape VERSION 1.0.0)
+
+if (GEODE_TARGET_PLATFORM STREQUAL "iOS")
+    enable_language(OBJCXX)
+endif()
 
 set(ARC_FEATURE_FULL ON CACHE BOOL "" FORCE)
 
@@ -83,6 +89,21 @@ add_library(${PROJECT_NAME} SHARED
     src/hooks/GJEffectManager.cpp
     src/ui/touch_overlay.cpp
 )
+
+if (GEODE_TARGET_PLATFORM STREQUAL "iOS")
+    target_sources(${PROJECT_NAME} PRIVATE src/render/ios_video_writer.mm)
+    set_source_files_properties(src/render/ios_video_writer.mm PROPERTIES
+        COMPILE_OPTIONS "-fobjc-arc"
+    )
+    find_library(AVFOUNDATION_FRAMEWORK AVFoundation REQUIRED)
+    find_library(COREMEDIA_FRAMEWORK CoreMedia REQUIRED)
+    find_library(COREVIDEO_FRAMEWORK CoreVideo REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${AVFOUNDATION_FRAMEWORK}
+        ${COREMEDIA_FRAMEWORK}
+        ${COREVIDEO_FRAMEWORK}
+    )
+endif()
 
 if (WIN32)
     target_sources(${PROJECT_NAME} PRIVATE

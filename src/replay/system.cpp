@@ -37,6 +37,16 @@ void ReplaySystem::onReset(uint32_t newFrame) {
     }
 }
 
+void ReplaySystem::seekAfterFrame(uint32_t frame) {
+    m_inputIndex = static_cast<size_t>(std::distance(
+        m_actionAtom.m_actions.begin(),
+        std::upper_bound(
+            m_actionAtom.m_actions.begin(), m_actionAtom.m_actions.end(), frame,
+            [](uint32_t target, const slc::Action& action) {
+                return target < action.m_frame;
+            })));
+}
+
 [[nodiscard]] const std::optional<slc::Action> ReplaySystem::getNextInput(
     uint32_t frame) {
     if (m_inputIndex >= m_actionAtom.length()) {

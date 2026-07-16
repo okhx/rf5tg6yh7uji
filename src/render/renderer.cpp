@@ -153,7 +153,8 @@ static std::string getDefaultCodec() {
 
 void Renderer::initializeDefaults() {
 #ifdef GEODE_IS_IOS
-    m_settings.m_codec = "h264_videotoolbox";
+    m_settings.m_codec = "h264";
+    m_settings.m_extension = "mp4";
 #else
     m_settings.m_codec = getDefaultCodec();
 #endif
@@ -166,9 +167,11 @@ geode::Result<> Renderer::startMobile() {
     if (pl->m_hasCompletedLevel || pl->m_levelEndAnimationStarted) {
         return geode::Err("Restart the level before starting a render");
     }
+#ifndef GEODE_IS_IOS
     if (!Loader::get()->isModLoaded("eclipse.ffmpeg-api")) {
         return geode::Err("Install and enable eclipse.ffmpeg-api to render on mobile");
     }
+#endif
     if (m_mobileRecording) return geode::Err("A render is already running");
 
     m_settings.m_width = std::clamp(m_settings.m_width, 64, 3840);
@@ -190,10 +193,23 @@ geode::Result<> Renderer::startMobile() {
     }
     std::string extension = m_settings.m_extension.empty()
         ? "mp4" : m_settings.m_extension;
+#ifdef GEODE_IS_IOS
+    extension = "mp4";
+#endif
     if (extension.front() == '.') extension.erase(extension.begin());
     auto output = silicate::paths::directory("videos") /
                   (name + "." + extension);
 
+#ifdef GEODE_IS_IOS
+    m_iosWriter = std::make_unique<IOSVideoWriter>();
+    auto result = m_iosWriter->open(
+        output, m_settings.m_width, m_settings.m_height,
+        m_settings.m_fps, m_settings.m_bitrate);
+    if (result.isErr()) {
+        m_iosWriter.reset();
+        return result;
+    }
+#else
     m_mobileRecorder = std::make_unique<MobileFFmpegRecorder>();
     if (!m_mobileRecorder->valid()) {
         m_mobileRecorder.reset();
@@ -214,6 +230,7 @@ geode::Result<> Renderer::startMobile() {
         m_mobileRecorder.reset();
         return result;
     }
+#endif
 
     std::vector<uint8_t> blank(
         static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 3, 0);
@@ -225,8 +242,13 @@ geode::Result<> Renderer::startMobile() {
              static_cast<float>(m_settings.m_height)})) {
         m_mobileTexture->release();
         m_mobileTexture = nullptr;
+#ifdef GEODE_IS_IOS
+        (void)m_iosWriter->finish();
+        m_iosWriter.reset();
+#else
         m_mobileRecorder->stop();
         m_mobileRecorder.reset();
+#endif
         return geode::Err("Failed to allocate the mobile render texture");
     }
 
@@ -255,10 +277,21 @@ geode::Result<> Renderer::startMobile() {
 }
 
 void Renderer::stopMobile() {
+#ifdef GEODE_IS_IOS
+    if (m_iosWriter) {
+        auto result = m_iosWriter->finish();
+        if (result.isErr()) {
+            geode::log::error("iOS render finalize failed: {}",
+                              result.unwrapErr());
+        }
+        m_iosWriter.reset();
+    }
+#else
     if (m_mobileRecorder) {
         m_mobileRecorder->stop();
         m_mobileRecorder.reset();
     }
+#endif
     if (m_mobileFbo) {
         glDeleteFramebuffers(1, &m_mobileFbo);
         m_mobileFbo = 0;
@@ -294,21 +327,31 @@ void Renderer::updateMobile(PlayLayer* pl) {
     glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);
     glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 
-    auto result = m_mobileRecorder->writeFrame(m_mobileFrame);
-    if (result.isErr()) {
-        geode::log::error("Mobile render frame failed: {}", result.unwrapErr());
-        stopMobile();
-        return;
+    int writtenFrames = 0;
+    const double frameDuration = 1.0 / m_settings.m_fps;
+    while (m_mobileNextFrameTime <= gameTime + 1e-9 &&
+           writtenFrames < 32) {
+#ifdef GEODE_IS_IOS
+        auto result = m_iosWriter->appendRGB(m_mobileFrame);
+#else
+        auto result = m_mobileRecorder->writeFrame(m_mobileFrame);
+#endif
+        if (result.isErr()) {
+            geode::log::error("Mobile render frame failed: {}",
+                              result.unwrapErr());
+            stopMobile();
+            return;
+        }
+        ++writtenFrames;
+        m_mobileNextFrameTime += frameDuration;
     }
-
+    // Avoid an unbounded catch-up loop after a long app suspension.
+    if (writtenFrames == 32 && m_mobileNextFrameTime <= gameTime)
+        m_mobileNextFrameTime = gameTime + frameDuration;
     m_time = gameTime;
-    m_mobileNextFrameTime += 1.0 / m_settings.m_fps;
-    if (m_mobileNextFrameTime <= gameTime) {
-        m_mobileNextFrameTime = gameTime + 1.0 / m_settings.m_fps;
-    }
 
     if (pl->m_hasCompletedLevel) {
-        m_endTime += 1.0f / m_settings.m_fps;
+        m_endTime += static_cast<float>(writtenFrames * frameDuration);
         if (m_endTime >= m_settings.m_afterEndTime) stopMobile();
     }
 }

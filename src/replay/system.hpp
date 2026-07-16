@@ -61,6 +61,7 @@ class ReplaySystem {
 
     size_t getInputIndex() const { return m_inputIndex; }
     void onReset(uint32_t newFrame);
+    void seekAfterFrame(uint32_t frame);
     void onExit();
 
     void advanceInputIndex() { m_inputIndex++; }

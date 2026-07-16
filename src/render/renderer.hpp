@@ -5,7 +5,9 @@
 #include "../shared/value/value.hpp"
 #include "ffmpeg.hpp"
 #include "texture.hpp"
-#ifdef GEODE_IS_MOBILE
+#ifdef GEODE_IS_IOS
+#include "ios_video_writer.hpp"
+#elif defined(GEODE_IS_MOBILE)
 #include "mobile_ffmpeg_api.hpp"
 #endif
 // #include "render_texture.hpp"
@@ -254,7 +256,11 @@ class Renderer {
     friend class AudioRecorder;
 
 #ifdef GEODE_IS_MOBILE
+#ifdef GEODE_IS_IOS
+    std::unique_ptr<IOSVideoWriter> m_iosWriter;
+#else
     std::unique_ptr<MobileFFmpegRecorder> m_mobileRecorder;
+#endif
     cocos2d::CCTexture2D* m_mobileTexture = nullptr;
     GLuint m_mobileFbo = 0;
     std::vector<uint8_t> m_mobileFrame;

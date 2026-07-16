@@ -1,6 +1,7 @@
 #include "mobile_menu.hpp"
 
 #include <Geode/UI.hpp>
+#include <Geode/binding/LevelEditorLayer.hpp>
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
@@ -465,6 +466,195 @@ class MobileFeaturePopup final : public geode::Popup {
         }
     }
 };
+
+class MobileMacroEditorPopup final : public geode::Popup {
+    CCNode* m_content = nullptr;
+    CCMenu* m_menu = nullptr;
+    int m_selected = 0;
+
+    slc::ActionAtom& atom() {
+        return Bot::get()->replaySystem().m_actionAtom;
+    }
+
+    void normalize() {
+        auto& replay = Bot::get()->replaySystem();
+        auto& inputs = atom().m_actions;
+        std::stable_sort(inputs.begin(), inputs.end(), [](const auto& a,
+                                                          const auto& b) {
+            return a.m_frame < b.m_frame;
+        });
+        uint64_t previous = 0;
+        for (auto& input : inputs) {
+            input.recalculateDelta(previous);
+            previous = input.m_frame;
+        }
+        replay.m_inputIndex = 0;
+        if (inputs.empty()) {
+            m_selected = 0;
+        } else {
+            m_selected = std::clamp(
+                m_selected, 0, static_cast<int>(inputs.size()) - 1);
+        }
+    }
+
+    void label(std::string const& text, float x, float y,
+               float scale = .34f, ccColor3B color = ccWHITE) {
+        auto* node = CCLabelBMFont::create(text.c_str(), "bigFont.fnt");
+        node->setAnchorPoint({0.f, .5f});
+        node->setScale(scale);
+        node->setColor(color);
+        node->setPosition({x, y});
+        node->limitLabelWidth(250.f, scale, .14f);
+        m_content->addChild(node);
+    }
+
+    void button(std::string const& text, float x, float y,
+                std::function<void()> callback, float width = 82.f) {
+        auto* item = geode::cocos::CCMenuItemExt::createSpriteExtra(
+            makeButtonSprite(text, width),
+            [callback = std::move(callback)](CCMenuItemSpriteExtra*) {
+                callback();
+            });
+        item->setPosition({x, y});
+        m_menu->addChild(item);
+    }
+
+    void toggle(std::string const& text, float x, float y, bool value,
+                std::function<void(bool)> callback) {
+        label(text, x, y);
+        auto* item =
+            geode::cocos::CCMenuItemExt::createTogglerWithStandardSprites(
+                .4f, [callback = std::move(callback)](CCMenuItemToggler* item) {
+                    callback(!item->isToggled());
+                });
+        item->toggle(value);
+        item->setPosition({x + 145.f, y});
+        m_menu->addChild(item);
+    }
+
+    void rebuild() {
+        m_content->removeAllChildren();
+        m_menu = CCMenu::create();
+        m_menu->setPosition({0.f, 0.f});
+        m_content->addChild(m_menu, 3);
+
+        auto& inputs = atom().m_actions;
+        if (inputs.empty()) {
+            label("No macro inputs", 24.f, 170.f, .4f, {255, 220, 90});
+            button("Add input", 190.f, 105.f, [this] {
+                atom().m_actions.emplace_back(
+                    0, 0, slc::Action::ActionType::Jump, true, false);
+                normalize();
+                rebuild();
+            }, 120.f);
+            return;
+        }
+
+        m_selected = std::clamp(
+            m_selected, 0, static_cast<int>(inputs.size()) - 1);
+        auto* input = &inputs[m_selected];
+        label(fmt::format("Input {} / {}", m_selected + 1, inputs.size()),
+              24.f, 188.f, .38f, {255, 220, 90});
+        button("<", 285.f, 188.f, [this] {
+            const int size = static_cast<int>(atom().m_actions.size());
+            m_selected = (m_selected + size - 1) % size;
+            rebuild();
+        }, 34.f);
+        button(">", 335.f, 188.f, [this] {
+            m_selected = (m_selected + 1) % atom().m_actions.size();
+            rebuild();
+        }, 34.f);
+
+        label("Frame", 24.f, 153.f);
+        auto* frame = TextInput::create(105.f, "Frame");
+        frame->setScaleY(.84f);
+        frame->setCommonFilter(CommonFilter::Int);
+        frame->setString(std::to_string(input->m_frame));
+        frame->setCallback([this](std::string const& value) {
+            double parsed = 0.0;
+            if (!parseNumber(value, parsed) || atom().m_actions.empty()) return;
+            const uint64_t target = static_cast<uint64_t>(std::clamp(
+                parsed, 0.0,
+                static_cast<double>(std::numeric_limits<uint32_t>::max())));
+            atom().m_actions[m_selected].m_frame = target;
+            normalize();
+        });
+        frame->setPosition({190.f, 153.f});
+        m_content->addChild(frame, 2);
+
+        toggle("Holding / click", 24.f, 118.f, input->m_holding,
+               [this](bool value) {
+                   if (!atom().m_actions.empty())
+                       atom().m_actions[m_selected].m_holding = value;
+               });
+        toggle("Player 2", 210.f, 118.f, input->m_player2,
+               [this](bool value) {
+                   if (!atom().m_actions.empty())
+                       atom().m_actions[m_selected].m_player2 = value;
+               });
+
+        button("Add", 62.f, 78.f, [this] {
+            auto& inputs = atom().m_actions;
+            const auto& selected = inputs[m_selected];
+            inputs.emplace_back(selected.m_frame + 1, 0,
+                                slc::Action::ActionType::Jump,
+                                !selected.m_holding, selected.m_player2);
+            ++m_selected;
+            normalize();
+            rebuild();
+        }, 72.f);
+        button("Delete", 151.f, 78.f, [this] {
+            auto& inputs = atom().m_actions;
+            inputs.erase(inputs.begin() + m_selected);
+            normalize();
+            rebuild();
+        }, 82.f);
+        button("Remove P1", 252.f, 78.f, [this] {
+            std::erase_if(atom().m_actions,
+                          [](const auto& action) { return !action.m_player2; });
+            normalize();
+            rebuild();
+        }, 96.f);
+        button("Remove P2", 350.f, 78.f, [this] {
+            std::erase_if(atom().m_actions,
+                          [](const auto& action) { return action.m_player2; });
+            normalize();
+            rebuild();
+        }, 96.f);
+
+        button("Flip hold", 105.f, 38.f, [this] {
+            for (auto& action : atom().m_actions)
+                action.m_holding = !action.m_holding;
+            rebuild();
+        }, 115.f);
+        button("Flip players", 265.f, 38.f, [this] {
+            for (auto& action : atom().m_actions)
+                action.m_player2 = !action.m_player2;
+            rebuild();
+        }, 125.f);
+    }
+
+    bool init() override {
+        if (!Popup::init(420.f, 270.f, "GJ_square01.png")) return false;
+        setTitle("Macro Editor", "goldFont.fnt", .72f, 18.f);
+        m_content = CCNode::create();
+        m_content->setPosition({15.f, 20.f});
+        m_mainLayer->addChild(m_content);
+        rebuild();
+        return true;
+    }
+
+   public:
+    static void open() {
+        auto* popup = new MobileMacroEditorPopup();
+        if (popup && popup->init()) {
+            popup->autorelease();
+            popup->show();
+        } else {
+            CC_SAFE_DELETE(popup);
+        }
+    }
+};
 }  // namespace
 
 bool MobileMenu::init() {
@@ -711,7 +901,12 @@ void MobileMenu::buildRecordPage() {
                 }
                 bot->setMode(Bot::Playing);
                 replay.m_inputIndex = 0;
-                if (auto* playLayer = PlayLayer::get()) playLayer->resetLevel();
+                if (auto* playLayer = PlayLayer::get()) {
+                    playLayer->resetLevel();
+                } else if (auto* editor = LevelEditorLayer::get()) {
+                    if (editor->m_playbackActive) editor->onStopPlaytest();
+                    editor->onPlaytest();
+                }
             }
             m_playSprite->setString(bot->isPlaying() ? "Stop playback"
                                                      : "Start playback");
@@ -767,6 +962,10 @@ void MobileMenu::buildRecordPage() {
     addButton("Load", m_pageNode->getContentSize().width * .86f, rowY(4),
               [this, &replay] {
                   if (replay.m_replayName.empty()) return;
+                  auto* playLayer = PlayLayer::get();
+                  const bool completionOpen =
+                      playLayer && (playLayer->m_hasCompletedLevel ||
+                                    playLayer->m_levelEndAnimationStarted);
                   auto path = replay.getCurrentPath();
                   if (!std::filesystem::exists(path)) {
                       path.replace_extension(".slc");
@@ -774,12 +973,18 @@ void MobileMenu::buildRecordPage() {
                   if (std::filesystem::exists(path)) {
                       replay.load(path);
                       if (replay.m_lastOperationSucceeded) {
-                          if (auto* playLayer = PlayLayer::get()) {
+                          if (completionOpen) {
+                              Bot::get()->setMode(Bot::Stopped);
+                              replay.m_inputIndex = 0;
+                          } else if (playLayer) {
                               playLayer->resetLevel();
                           }
-                          m_status = fmt::format(
-                              "Macro loaded [{} inputs]",
-                              replay.m_actionAtom.length());
+                          m_status = completionOpen
+                              ? fmt::format(
+                                    "Macro loaded [{} inputs] - close result",
+                                    replay.m_actionAtom.length())
+                              : fmt::format("Macro loaded [{} inputs]",
+                                            replay.m_actionAtom.length());
                       } else {
                           m_status = "Macro load failed";
                       }
@@ -805,6 +1010,8 @@ void MobileMenu::buildRecordPage() {
               updater.m_extrapolateFrames->inner(), [&](bool value) {
                   updater.m_extrapolateFrames->inner() = value;
               });
+    addButton("Macro editor", columnX(1), rowY(6),
+              [] { MobileMacroEditorPopup::open(); }, 130.f);
 
     m_statusLabel = CCLabelBMFont::create("", "bigFont.fnt");
     m_statusLabel->setScale(.27f);
@@ -937,7 +1144,17 @@ void MobileMenu::buildRenderPage() {
     auto& settings = renderer->m_settings;
     const float center = m_pageNode->getContentSize().width / 2.f;
 
-    addLabel("Resolution", center - 125.f, rowY(0), .33f);
+    const auto leftLabel = [this](std::string const& text, float x, float y,
+                                  float width = 130.f) {
+        auto* label = CCLabelBMFont::create(text.c_str(), "bigFont.fnt");
+        label->setAnchorPoint({0.f, .5f});
+        label->setScale(.32f);
+        label->setPosition({x, y});
+        label->limitLabelWidth(width, .32f, .14f);
+        m_pageNode->addChild(label);
+    };
+
+    leftLabel("Resolution", 18.f, rowY(0));
     auto makeNumber = [this](float x, float y, int value,
                              std::function<void(int)> setter) {
         auto* input = TextInput::create(72.f, "Value");
@@ -951,37 +1168,61 @@ void MobileMenu::buildRenderPage() {
         input->setPosition({x, y});
         m_pageNode->addChild(input, 3);
     };
-    makeNumber(center - 35.f, rowY(0), settings.m_width,
+    makeNumber(145.f, rowY(0), settings.m_width,
                [&settings](int value) {
                    settings.m_width = std::clamp(value, 64, 3840);
                });
-    addLabel("x", center + 10.f, rowY(0), .36f);
-    makeNumber(center + 58.f, rowY(0), settings.m_height,
+    leftLabel("x", 188.f, rowY(0), 20.f);
+    makeNumber(245.f, rowY(0), settings.m_height,
                [&settings](int value) {
                    settings.m_height = std::clamp(value, 64, 2160);
                });
 
-    addNumberInput("FPS", 1, 0, [&settings] { return settings.m_fps; },
-                   [&settings](double value) {
-                       settings.m_fps = static_cast<int>(value);
-                   }, 1, 240, 0);
-    addNumberInput("Bitrate Mbps", 1, 1,
-                   [&settings] { return settings.m_bitrate / 1'000'000.0; },
-                   [&settings](double value) {
-                       settings.m_bitrate = static_cast<uint32_t>(
-                           value * 1'000'000.0);
-                   }, 1, 200, 0);
+    auto makeValue = [this, &leftLabel](std::string const& title, int row,
+                                        float labelX, float inputX,
+                                        double value,
+                                        std::function<void(double)> setter,
+                                        int decimals = 0) {
+        leftLabel(title, labelX, rowY(row));
+        auto* input = TextInput::create(72.f, "Value");
+        input->setScaleY(.84f);
+        input->setCommonFilter(CommonFilter::Float);
+        input->setString(fmt::format("{:.{}f}", value, decimals));
+        input->setCallback([setter = std::move(setter)](std::string const& s) {
+            double parsed = 0.0;
+            if (parseNumber(s, parsed)) setter(parsed);
+        });
+        input->setPosition({inputX, rowY(row)});
+        m_pageNode->addChild(input, 3);
+    };
+    makeValue("FPS", 1, 18.f, 145.f, settings.m_fps,
+              [&settings](double value) {
+                  settings.m_fps = std::clamp(static_cast<int>(value), 1, 240);
+              });
+    makeValue("Bitrate Mbps", 1, 225.f, 365.f,
+              settings.m_bitrate / 1'000'000.0,
+              [&settings](double value) {
+                  settings.m_bitrate = static_cast<uint32_t>(
+                      std::clamp(value, 1.0, 200.0) * 1'000'000.0);
+              });
 
+#ifndef GEODE_IS_IOS
     auto makeText = [this](std::string const& title, int row, int column,
                            std::string value,
                            std::function<void(std::string const&)> setter) {
-        const float x = columnX(column);
-        addLabel(title, x - 55.f, rowY(row), .32f);
+        const float labelX = column == 0 ? 18.f : 225.f;
+        const float inputX = column == 0 ? 145.f : 365.f;
+        auto* label = CCLabelBMFont::create(title.c_str(), "bigFont.fnt");
+        label->setAnchorPoint({0.f, .5f});
+        label->setScale(.32f);
+        label->setPosition({labelX, rowY(row)});
+        label->limitLabelWidth(130.f, .32f, .14f);
+        m_pageNode->addChild(label);
         auto* input = TextInput::create(105.f, "Value");
         input->setScaleY(.84f);
         input->setString(value);
         input->setCallback(std::move(setter));
-        input->setPosition({x + 48.f, rowY(row)});
+        input->setPosition({inputX, rowY(row)});
         m_pageNode->addChild(input, 3);
     };
     makeText("Codec", 2, 0, settings.m_codec,
@@ -992,11 +1233,15 @@ void MobileMenu::buildRenderPage() {
              [&settings](std::string const& value) {
                  settings.m_extension = value;
              });
-    addNumberInput("After end", 3, 0,
-                   [&settings] { return settings.m_afterEndTime; },
-                   [&settings](double value) {
-                       settings.m_afterEndTime = static_cast<float>(value);
-                   }, 0, 30, 1);
+#else
+    leftLabel("Encoder: H.264 (native)", 18.f, rowY(2), 180.f);
+    leftLabel("Container: MP4", 225.f, rowY(2), 150.f);
+#endif
+    makeValue("After end", 3, 18.f, 145.f, settings.m_afterEndTime,
+              [&settings](double value) {
+                  settings.m_afterEndTime = static_cast<float>(
+                      std::clamp(value, 0.0, 30.0));
+              }, 1);
 
     m_renderSprite = addButton(
         renderer->isRecording() ? "Stop render" : "Start render",
@@ -1012,9 +1257,10 @@ void MobileMenu::buildRenderPage() {
         }, 155.f);
 
     m_statusLabel = CCLabelBMFont::create("", "bigFont.fnt");
+    m_statusLabel->setAnchorPoint({0.f, .5f});
     m_statusLabel->setScale(.27f);
     m_statusLabel->setColor({130, 255, 170});
-    m_statusLabel->setPosition({center, rowY(6)});
+    m_statusLabel->setPosition({18.f, rowY(6)});
     m_statusLabel->limitLabelWidth(390.f, .27f, .16f);
     m_pageNode->addChild(m_statusLabel);
 }

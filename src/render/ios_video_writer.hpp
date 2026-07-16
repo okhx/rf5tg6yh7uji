@@ -1,0 +1,25 @@
+#pragma once
+
+#ifdef GEODE_IS_IOS
+
+#include <Geode/Result.hpp>
+#include <cstdint>
+#include <filesystem>
+#include <memory>
+#include <vector>
+
+class IOSVideoWriter {
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
+
+   public:
+    IOSVideoWriter();
+    ~IOSVideoWriter();
+
+    geode::Result<> open(const std::filesystem::path& output, int width,
+                         int height, int fps, uint32_t bitrate);
+    geode::Result<> appendRGB(const std::vector<uint8_t>& rgb);
+    geode::Result<> finish();
+};
+
+#endif
