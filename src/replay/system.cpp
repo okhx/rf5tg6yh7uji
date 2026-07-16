@@ -53,8 +53,6 @@ void ReplaySystem::seekAfterFrame(uint32_t frame) {
 
 [[nodiscard]] const std::optional<slc::Action> ReplaySystem::getNextInput(
     uint32_t frame) {
-    if (!Bot::get()->isPlaying()) return std::nullopt;
-
     if (m_inputIndex >= m_actionAtom.length()) {
         return std::nullopt;
     }

@@ -500,7 +500,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
             if (!bot->replaySystem().m_useAlternateHook->inner()) {
                 this->saveQueuedButtons();
             }
-        } else if (bot->isPlaying()) {
+        } else if (!LevelEditorLayer::get() || bot->isPlaying()) {
             uint32_t frame = bot->updater().getFrame();
 
             // Remove the ELL if the current input is a RestartFull on the

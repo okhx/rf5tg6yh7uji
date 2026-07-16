@@ -55,7 +55,7 @@ class Bot {
 
     bool isRecording() { return m_mode == Recording; }
     bool isPlaying() { return m_mode == Playing; }
-    void setMode(Mode mode);
+    void setMode(Mode mode) { m_mode = mode; }
 
     BotUpdater& updater();
     BotScheduler& scheduler();
