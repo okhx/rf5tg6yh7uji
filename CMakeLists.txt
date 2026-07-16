@@ -98,7 +98,7 @@ if (GEODE_TARGET_PLATFORM STREQUAL "iOS")
     find_library(AVFOUNDATION_FRAMEWORK AVFoundation REQUIRED)
     find_library(COREMEDIA_FRAMEWORK CoreMedia REQUIRED)
     find_library(COREVIDEO_FRAMEWORK CoreVideo REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
+    target_link_libraries(${PROJECT_NAME}
         ${AVFOUNDATION_FRAMEWORK}
         ${COREMEDIA_FRAMEWORK}
         ${COREVIDEO_FRAMEWORK}
@@ -138,22 +138,22 @@ endif()
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
 CPMAddPackage("gh:stephenberry/glaze#main")
-target_link_libraries(${PROJECT_NAME} PRIVATE glaze::glaze)
+target_link_libraries(${PROJECT_NAME} glaze::glaze)
 
 if (WIN32)
     CPMAddPackage("gh:zyantific/zydis#bffbb61")
-    target_link_libraries(${PROJECT_NAME} PRIVATE Zydis)
+    target_link_libraries(${PROJECT_NAME} Zydis)
 
     CPMAddPackage("gh:cursey/safetyhook#main")
-    target_link_libraries(${PROJECT_NAME} PRIVATE safetyhook)
+    target_link_libraries(${PROJECT_NAME} safetyhook)
 endif()
 
 CPMAddPackage("gh:peonii/slc#main")
 
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE libslc dbghelp)
+    target_link_libraries(${PROJECT_NAME} libslc dbghelp)
 else()
-    target_link_libraries(${PROJECT_NAME} PRIVATE libslc)
+    target_link_libraries(${PROJECT_NAME} libslc)
 endif()
 target_compile_options(GeodeBindings PRIVATE -Wno-overloaded-virtual -Wno-unused-variable)
 
