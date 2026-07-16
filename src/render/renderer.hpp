@@ -47,6 +47,8 @@ struct RendererSettings {
     double m_sfxVolume = 1.0;
 
     bool m_firstAttemptPause = false;
+    bool m_renderOnlyLevel = true;
+    bool m_renderAudio = true;
 };
 
 template <>
@@ -60,7 +62,9 @@ struct glz::meta<RendererSettings> {
         "audio_codec", &T::m_audioCodec,
         "render_args", &T::m_renderArgs, "output_path", hide{&T::m_outputPath},
         "music_volume", &T::m_musicVolume, "sfx_volume", &T::m_sfxVolume,
-        "record_paused", &T::m_firstAttemptPause);
+        "record_paused", &T::m_firstAttemptPause,
+        "render_only_level", &T::m_renderOnlyLevel,
+        "render_audio", &T::m_renderAudio);
 };
 
 #define SL_AV_PTR(type) std::unique_ptr<type, std::function<void(type*)>>
@@ -266,6 +270,11 @@ class Renderer {
     std::vector<uint8_t> m_mobileFrame;
     std::vector<uint8_t> m_mobileRGBAFrame;
     double m_mobileNextFrameTime = 0.0;
+    uint32_t m_mobileArmFrame = 0;
+    uint32_t m_mobileStartFrame = 0;
+    cocos2d::CCSize m_mobileOriginalFrameSize{};
+    bool m_mobileCaptureStarted = false;
+    bool m_mobileShaderResized = false;
     bool m_mobileRecording = false;
 #endif
 };

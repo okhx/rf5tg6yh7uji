@@ -73,6 +73,11 @@ void FMOD_System_update(FMOD::System* self) {
     // this only takes audio from two channels of the possible more,
     // but will delete the rest correctly
     while (audio->m_buffer.size() >= (size_t)totalFrameSize) {
+#ifdef GEODE_IS_MOBILE
+        // Renderer::updateMobile consumes this buffer and muxes it through
+        // the native writer. The desktop FFmpeg contexts do not exist here.
+        break;
+#else
         uint64_t pts = (uint64_t)(audio->m_index * frameSize);
 
         auto result = renderer->writeAudio(audio->m_buffer, pts);
@@ -88,6 +93,7 @@ void FMOD_System_update(FMOD::System* self) {
 
         audio->m_time = (double)audio->m_index++ *
                         ((double)frameSize / (double)audio->m_sampleRate);
+#endif
     }
 }
 

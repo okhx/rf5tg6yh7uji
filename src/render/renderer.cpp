@@ -160,6 +160,9 @@ void Renderer::initializeDefaults() {
 #endif
 }
 
+static void silentChangeSize(CCSize size);
+static void resizeShaderLayer(CCSize size, CCSize original);
+
 #ifdef GEODE_IS_MOBILE
 geode::Result<> Renderer::startMobile() {
     auto* pl = PlayLayer::get();
@@ -181,6 +184,12 @@ geode::Result<> Renderer::startMobile() {
     m_settings.m_fps = std::clamp(m_settings.m_fps, 1, 240);
     m_settings.m_bitrate = std::clamp<uint32_t>(
         m_settings.m_bitrate, 1'000'000, 200'000'000);
+    m_collectAudio = m_settings.m_renderAudio;
+
+    int sampleRate = 48000;
+    int channels = 2;
+    FMODAudioEngine::get()->m_system->getSoftwareFormat(
+        &sampleRate, nullptr, &channels);
 
     std::string name = m_settings.m_outputPath.empty()
         ? "grape-mobile-render" : m_settings.m_outputPath;
@@ -204,7 +213,8 @@ geode::Result<> Renderer::startMobile() {
     m_iosWriter = std::make_unique<IOSVideoWriter>();
     auto result = m_iosWriter->open(
         output, m_settings.m_width, m_settings.m_height,
-        m_settings.m_fps, m_settings.m_bitrate);
+        m_settings.m_fps, m_settings.m_bitrate, sampleRate, channels,
+        m_collectAudio);
     if (result.isErr()) {
         m_iosWriter.reset();
         return result;
@@ -269,7 +279,30 @@ geode::Result<> Renderer::startMobile() {
         static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 3);
     m_mobileRGBAFrame.resize(
         static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 4);
+
+    auto* view = CCEGLView::sharedOpenGLView();
+    m_mobileOriginalFrameSize = view->getFrameSize();
+    const CCSize renderSize{static_cast<float>(m_settings.m_width),
+                            static_cast<float>(m_settings.m_height)};
+    if (auto* base = GJBaseGameLayer::get();
+        base && base->m_shaderLayer && base->m_shaderLayer->m_renderTexture) {
+        silentChangeSize(renderSize);
+        resizeShaderLayer(renderSize, m_mobileOriginalFrameSize);
+        silentChangeSize(m_mobileOriginalFrameSize);
+        m_mobileShaderResized = true;
+    }
+
+#ifdef GEODE_IS_IOS
+    if (m_collectAudio) {
+        AudioRecorder::get()->init();
+        AudioRecorder::get()->attach(m_settings.m_musicVolume,
+                                     m_settings.m_sfxVolume);
+    }
+#endif
     m_mobileNextFrameTime = 0.0;
+    m_mobileArmFrame = Bot::get()->updater().getFrame();
+    m_mobileStartFrame = 0;
+    m_mobileCaptureStarted = false;
     m_endTime = 0.0f;
     m_time = 0.0;
     m_mobileRecording = true;
@@ -280,6 +313,19 @@ geode::Result<> Renderer::startMobile() {
 
 void Renderer::stopMobile() {
 #ifdef GEODE_IS_IOS
+    if (AudioRecorder::get()->m_attached) {
+        auto& pending = AudioRecorder::get()->m_buffer;
+        if (m_iosWriter && !pending.empty()) {
+            auto audioResult = m_iosWriter->appendAudio(pending);
+            if (audioResult.isErr()) {
+                geode::log::error("iOS final audio write failed: {}",
+                                  audioResult.unwrapErr());
+            }
+            pending.clear();
+        }
+        AudioRecorder::get()->detach();
+        AudioRecorder::get()->uninit();
+    }
     if (m_iosWriter) {
         auto result = m_iosWriter->finish();
         if (result.isErr()) {
@@ -304,6 +350,16 @@ void Renderer::stopMobile() {
     }
     m_mobileFrame.clear();
     m_mobileRGBAFrame.clear();
+    auto* base = GJBaseGameLayer::get();
+    if (m_mobileShaderResized && base && base->m_shaderLayer &&
+        base->m_shaderLayer->m_renderTexture &&
+        m_mobileOriginalFrameSize.width > 0.f) {
+        silentChangeSize(m_mobileOriginalFrameSize);
+        resizeShaderLayer(m_mobileOriginalFrameSize,
+                          m_mobileOriginalFrameSize);
+        m_mobileShaderResized = false;
+    }
+    m_mobileCaptureStarted = false;
     m_mobileRecording = false;
     m_recording = false;
     geode::log::info("Mobile render stopped");
@@ -313,7 +369,28 @@ void Renderer::updateMobile(PlayLayer* pl) {
     if (!m_mobileRecording || !pl) return;
 
     const double tps = std::max(Bot::get()->updater().getTps(), 1.0);
-    const double gameTime = Bot::get()->updater().getFrame() / tps;
+    const uint32_t currentFrame = Bot::get()->updater().getFrame();
+    if (!m_mobileCaptureStarted) {
+        if (pl->m_isPaused || !pl->m_started) return;
+
+        // Starting from an existing attempt arms the fully initialized
+        // encoder until Restart creates a fresh frame clock. This prevents
+        // encoder setup time and pause/menu frames from cutting the beginning.
+        if (m_mobileArmFrame > 2 && currentFrame >= m_mobileArmFrame) return;
+
+        m_mobileCaptureStarted = true;
+        m_mobileStartFrame = currentFrame;
+        m_mobileNextFrameTime = 0.0;
+#ifdef GEODE_IS_IOS
+        if (AudioRecorder::get()->m_attached)
+            AudioRecorder::get()->m_buffer.clear();
+#endif
+        geode::log::info("Mobile renderer capture started at frame {}",
+                         currentFrame);
+    }
+
+    const double gameTime =
+        static_cast<double>(currentFrame - m_mobileStartFrame) / tps;
     if (gameTime + 1e-9 < m_mobileNextFrameTime) return;
 
     GLint previousFbo = 0;
@@ -340,9 +417,12 @@ void Renderer::updateMobile(PlayLayer* pl) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Capture the same scene Cocos has just drawn. Visiting the running scene
     // avoids re-entering PlayLayer while its update/draw lifecycle is active.
-    if (auto* scene = CCDirector::get()->m_pRunningScene) {
-        scene->visit();
+    if (!m_settings.m_renderOnlyLevel) {
+        auto* scene = CCDirector::get()->m_pRunningScene;
+        if (scene) scene->visit();
+        else pl->visit();
     } else {
+        // Exclude pause layers, Grape menus, and other scene overlays.
         pl->visit();
     }
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -389,6 +469,24 @@ void Renderer::updateMobile(PlayLayer* pl) {
     if (writtenFrames == 32 && m_mobileNextFrameTime <= gameTime)
         m_mobileNextFrameTime = gameTime + frameDuration;
     m_time = gameTime;
+
+#ifdef GEODE_IS_IOS
+    if (m_collectAudio && AudioRecorder::get()->m_attached) {
+        AudioRecorder::get()->unpause();
+        auto& pcm = AudioRecorder::get()->m_buffer;
+        if (!pcm.empty()) {
+            auto audioResult = m_iosWriter->appendAudio(pcm);
+            if (audioResult.isErr()) {
+                geode::log::error("Mobile render audio failed: {}",
+                                  audioResult.unwrapErr());
+                stopMobile();
+                return;
+            }
+            pcm.clear();
+        }
+        AudioRecorder::get()->m_time = AudioRecorder::get()->m_fmodTime;
+    }
+#endif
 
     if (pl->m_hasCompletedLevel) {
         m_endTime += static_cast<float>(writtenFrames * frameDuration);

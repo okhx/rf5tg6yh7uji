@@ -211,12 +211,6 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
     phys::checkSpawnObjects(pl, player);
     pl->m_effectManager->postCollisionCheck();
 
-    const bool died = (player == m_fakePlayer1) ? m_deadP1 : m_deadP2;
-    if (died) {
-        ++stepCount;
-        return true;
-    }
-
     const float width = m_state->m_width->inner() / pl->m_gameState.m_cameraZoom;
     m_node->drawSegment(
         prevPos, player->getPosition(), width,

@@ -34,7 +34,15 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
 
         LevelEditorLayer::onPlaytest();
 
-        bot->replaySystem().onReset(bot->updater().getFrame());
+        bot->updater().m_editorStartProgress = static_cast<uint32_t>(
+            std::max(0, static_cast<int>(m_gameState.m_currentProgress)));
+        bot->replaySystem().onReset(0);
+        if (bot->isPlaying()) {
+            bot->replaySystem().getCurrentRandomState() =
+                bot->replaySystem().m_startingSeed;
+            bot->replaySystem().m_startingSeedThisAttempt =
+                bot->replaySystem().m_startingSeed;
+        }
         bot->autoclicker().reset();
         bot->trajectory().update(this);
         bot->hitboxes().saveToTrail(this);

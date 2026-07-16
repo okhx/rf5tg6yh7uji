@@ -158,6 +158,9 @@ bool ReplaySystem::processSlc3(Replay& replay) {
     m_inputIndex = 0;
     m_startingSeed = replay.m_meta.m_seed;
     m_startingSeedThisAttempt = m_startingSeed;
+#ifndef GEODE_IS_WINDOWS
+    m_portableRandomState = m_startingSeed;
+#endif
     m_lastInputs.clear();
     updater.resetFrame();
     updater.m_frameOnLastAttempt = 0;
@@ -217,6 +220,9 @@ bool ReplaySystem::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
     m_inputIndex = 0;
     m_startingSeed = replay.m_meta.seed;
     m_startingSeedThisAttempt = m_startingSeed;
+#ifndef GEODE_IS_WINDOWS
+    m_portableRandomState = m_startingSeed;
+#endif
     m_lastInputs.clear();
     updater.resetFrame();
     updater.m_frameOnLastAttempt = 0;

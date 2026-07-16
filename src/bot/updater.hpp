@@ -117,6 +117,7 @@ class BotUpdater {
     // Whether the current input is Death
     bool m_expectsDeath = false;
     uint64_t m_frameOnLastAttempt = 0;
+    uint32_t m_editorStartProgress = 0;
 
     SLValuePtr<bool> m_noMirror =
         SLValue<bool>::create("updater.no_mirror", &_noMirror);

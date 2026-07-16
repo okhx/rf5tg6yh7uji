@@ -471,6 +471,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
     CCNode* m_content = nullptr;
     CCMenu* m_menu = nullptr;
     int m_selected = 0;
+    CCLabelBMFont* m_inputLabel = nullptr;
 
     slc::ActionAtom& atom() {
         return Bot::get()->replaySystem().m_actionAtom;
@@ -488,7 +489,13 @@ class MobileMacroEditorPopup final : public geode::Popup {
             input.recalculateDelta(previous);
             previous = input.m_frame;
         }
-        replay.m_inputIndex = 0;
+        if (Bot::get()->isPlaying()) {
+            replay.seekAfterFrame(Bot::get()->updater().getFrame());
+        } else if (Bot::get()->isRecording()) {
+            replay.m_inputIndex = inputs.size();
+        } else {
+            replay.m_inputIndex = 0;
+        }
         if (inputs.empty()) {
             m_selected = 0;
         } else {
@@ -497,8 +504,8 @@ class MobileMacroEditorPopup final : public geode::Popup {
         }
     }
 
-    void label(std::string const& text, float x, float y,
-               float scale = .34f, ccColor3B color = ccWHITE) {
+    CCLabelBMFont* label(std::string const& text, float x, float y,
+                         float scale = .34f, ccColor3B color = ccWHITE) {
         auto* node = CCLabelBMFont::create(text.c_str(), "bigFont.fnt");
         node->setAnchorPoint({0.f, .5f});
         node->setScale(scale);
@@ -506,6 +513,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
         node->setPosition({x, y});
         node->limitLabelWidth(250.f, scale, .14f);
         m_content->addChild(node);
+        return node;
     }
 
     void button(std::string const& text, float x, float y,
@@ -533,6 +541,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
     }
 
     void rebuild() {
+        m_inputLabel = nullptr;
         m_content->removeAllChildren();
         m_menu = CCMenu::create();
         m_menu->setPosition({0.f, 0.f});
@@ -554,15 +563,18 @@ class MobileMacroEditorPopup final : public geode::Popup {
             m_selected, 0, static_cast<int>(inputs.size()) - 1);
         auto* input = &inputs[m_selected];
         auto* bot = Bot::get();
-        const int currentInput = std::clamp(
-            static_cast<int>(bot->replaySystem().m_inputIndex) - 1, 0,
-            static_cast<int>(inputs.size()) - 1);
+        const int currentInput = bot->replaySystem().m_inputIndex == 0
+            ? -1
+            : std::min(
+                  static_cast<int>(bot->replaySystem().m_inputIndex) - 1,
+                  static_cast<int>(inputs.size()) - 1);
         const bool isCurrent = (bot->isRecording() || bot->isPlaying()) &&
                                m_selected == currentInput;
-        label(fmt::format("Input {} / {}", m_selected + 1, inputs.size()),
-              24.f, 188.f, .38f,
-              isCurrent ? ccColor3B{255, 125, 125}
-                        : ccColor3B{255, 220, 90});
+        m_inputLabel = label(
+            fmt::format("Input {} / {}", m_selected + 1, inputs.size()),
+            24.f, 188.f, .38f,
+            isCurrent ? ccColor3B{255, 125, 125}
+                      : ccColor3B{255, 220, 90});
         button("<", 285.f, 188.f, [this] {
             const int size = static_cast<int>(atom().m_actions.size());
             m_selected = (m_selected + size - 1) % size;
@@ -585,7 +597,9 @@ class MobileMacroEditorPopup final : public geode::Popup {
                 parsed, 0.0,
                 static_cast<double>(std::numeric_limits<uint32_t>::max())));
             atom().m_actions[m_selected].m_frame = target;
-            normalize();
+            // Do not sort/rebuild while the native keyboard is editing. That
+            // moved the selected row and destroyed the TextInput after every
+            // digit, closing the keyboard and making Delete easy to hit.
         });
         frame->setPosition({190.f, 153.f});
         m_content->addChild(frame, 2);
@@ -657,16 +671,27 @@ class MobileMacroEditorPopup final : public geode::Popup {
         auto* bot = Bot::get();
         if ((!bot->isRecording() && !bot->isPlaying()) ||
             atom().m_actions.empty()) {
+            if (m_inputLabel) m_inputLabel->setColor({255, 220, 90});
             return;
         }
 
-        const int active = std::clamp(
-            static_cast<int>(Bot::get()->replaySystem().m_inputIndex) - 1, 0,
-            static_cast<int>(atom().m_actions.size()) - 1);
-        if (active != m_selected) {
-            m_selected = active;
-            rebuild();
+        const auto index = Bot::get()->replaySystem().m_inputIndex;
+        const int active = index == 0
+            ? -1
+            : std::min(static_cast<int>(index) - 1,
+                       static_cast<int>(atom().m_actions.size()) - 1);
+        // Keep selection and the active native TextInput intact. Updating the
+        // existing label avoids closing the keyboard during playback.
+        if (m_inputLabel) {
+            m_inputLabel->setColor(
+                m_selected == active ? ccColor3B{255, 125, 125}
+                                     : ccColor3B{255, 220, 90});
         }
+    }
+
+    void onClose(CCObject* sender) override {
+        normalize();
+        Popup::onClose(sender);
     }
 
    public:
@@ -1273,6 +1298,13 @@ void MobileMenu::buildRenderPage() {
                       std::clamp(value, 0.0, 30.0));
               }, 1);
 
+    addToggle("Level only", 4, 0, settings.m_renderOnlyLevel,
+              [&settings](bool value) {
+                  settings.m_renderOnlyLevel = value;
+              });
+    addToggle("Audio", 4, 1, settings.m_renderAudio,
+              [&settings](bool value) { settings.m_renderAudio = value; });
+
     m_renderSprite = addButton(
         renderer->isRecording() ? "Stop render" : "Start render",
         center, rowY(5), [this, renderer] {
@@ -1282,7 +1314,8 @@ void MobileMenu::buildRenderPage() {
                 return;
             }
             auto result = renderer->start();
-            m_status = result.isOk() ? "Rendering level..."
+            m_status = result.isOk()
+                ? "Renderer ready - start or restart the level"
                                      : result.unwrapErr();
         }, 155.f);
 
