@@ -725,7 +725,7 @@ void MobileMenu::update(float) {
     }
     if (m_frameLabel) {
         m_frameLabel->setString(
-            fmt::format("Frame {}  |  {} inputs", bot->updater().getFrame(),
+            fmt::format("Frame {}  |  {} inputs", bot->updater().getDisplayFrame(),
                         bot->replaySystem().m_actionAtom.length())
                 .c_str());
     }
@@ -926,9 +926,6 @@ void MobileMenu::buildRecordPage() {
                 replay.m_inputIndex = 0;
                 if (auto* playLayer = PlayLayer::get()) {
                     playLayer->resetLevel();
-                } else if (auto* editor = LevelEditorLayer::get()) {
-                    if (editor->m_playbackActive) editor->onStopPlaytest();
-                    editor->onPlaytest();
                 }
             }
             m_playSprite->setString(bot->isPlaying() ? "Stop playback"

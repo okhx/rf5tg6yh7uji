@@ -36,8 +36,6 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
         bot->replaySystem().onReset(bot->updater().getFrame());
         bot->autoclicker().reset();
         bot->trajectory().update(this);
-        bot->hitboxes().clearTrail();
-
         m_queuedButtons.clear();
 
         if (bot->isPlaying()) {
@@ -78,7 +76,7 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
             auto* button = geode::cocos::CCMenuItemExt::createSpriteExtra(
                 sprite, [](CCMenuItemSpriteExtra*) { MobileMenu::open(); });
             const auto winSize = CCDirector::get()->getWinSize();
-            button->setPosition({winSize.width - 88.f,
+            button->setPosition({winSize.width - 112.f,
                                  winSize.height - 20.f});
             menu->addChild(button);
             m_editorUI->addChild(menu, 1000);
@@ -109,6 +107,9 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
     void updateVisibility(float dt) override {
         LevelEditorLayer::updateVisibility(dt);
 
+        if (m_playbackActive) {
+            Bot::get()->hitboxes().saveToTrail(this);
+        }
         Bot::get()->hitboxes().draw(this);
         Bot::get()->trajectory().update(this);
     }

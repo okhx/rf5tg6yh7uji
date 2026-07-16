@@ -1121,7 +1121,7 @@ void UIManager::draw() {
                 auto& rs = Bot::get()->replaySystem();
 
                 slui::text(fmt::format("Frame: {} - Macro Size: {}",
-                                       bot->updater().getFrame(),
+                                       bot->updater().getDisplayFrame(),
                                        rs.m_actionAtom.length()));
 
                 if (ImGui::BeginTable("RecordMode", 2,

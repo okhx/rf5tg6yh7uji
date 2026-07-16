@@ -487,9 +487,8 @@ void Hitboxes::destroy() {
     safeRelease(m_drawNode);
     safeRelease(m_trailDrawNode);
 
-    m_trailP1.clear();
-    m_trailP2.clear();
-    m_trailStepCounter = 0;
-    m_trailDirty = false;
+    // Keep trail data when moving from a play layer into the editor. init()
+    // attaches fresh draw nodes to the new layer and redraws the same trail.
+    m_trailDirty = true;
     m_initialized = false;
 }

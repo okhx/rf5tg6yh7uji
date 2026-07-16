@@ -317,6 +317,21 @@ void Renderer::updateMobile(PlayLayer* pl) {
     GLint viewport[4] = {};
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFbo);
     glGetIntegerv(GL_VIEWPORT, viewport);
+
+    // CCDirector has already completed its onscreen draw by the time this
+    // runs. Restore a projection for the offscreen target before visiting the
+    // scene; otherwise iOS can render an all-black frame after the director
+    // has popped its normal matrix state.
+    auto* director = CCDirector::get();
+    auto* view = CCEGLView::sharedOpenGLView();
+    const CCSize originalSize = view->getFrameSize();
+    const CCSize renderSize{static_cast<float>(m_settings.m_width),
+                            static_cast<float>(m_settings.m_height)};
+    view->CCEGLViewProtocol::setFrameSize(renderSize.width, renderSize.height);
+    director->updateScreenScale(renderSize);
+    director->setViewport();
+    director->setProjection(kCCDirectorProjection2D);
+
     glBindFramebuffer(GL_FRAMEBUFFER, m_mobileFbo);
     glViewport(0, 0, m_settings.m_width, m_settings.m_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -331,6 +346,11 @@ void Renderer::updateMobile(PlayLayer* pl) {
     glReadPixels(0, 0, m_settings.m_width, m_settings.m_height,
                  GL_RGB, GL_UNSIGNED_BYTE, m_mobileFrame.data());
     glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);
+    view->CCEGLViewProtocol::setFrameSize(originalSize.width,
+                                           originalSize.height);
+    director->updateScreenScale(originalSize);
+    director->setViewport();
+    director->setProjection(kCCDirectorProjection2D);
     glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 
     int writtenFrames = 0;

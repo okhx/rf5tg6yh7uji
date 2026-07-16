@@ -274,10 +274,15 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         }
     }
 
-    void restoreHoldOnReset(uint64_t deathFrame) {
+    void restoreHoldOnReset(uint64_t deathFrame, bool restoringBackstep) {
         auto bot = Bot::get();
         bot->practiceFix().updatePlatformerInputs(m_queuedButtons);
         m_queuedButtons.clear();
+
+        // A saved checkpoint already contains the held-button state. Running
+        // the replay queue during its restore advances the cursor and shifts
+        // following actions away from their recorded frames.
+        if (restoringBackstep) return;
 
         if (bot->isPlaying()) {
             if (bot->practiceFix().m_savedCheckpoints.empty()) {
@@ -457,7 +462,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
         bot->trajectory().update(this);
 
-        this->restoreHoldOnReset(deathFrame);
+        this->restoreHoldOnReset(deathFrame, restoredBackstep);
         this->addDeathInput(deathFrame);
 
         if (!bot->updater().m_canDie->inner() && !restoredBackstep) {
@@ -572,6 +577,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
         bot->trajectory().init();
         bot->hitboxes().init(this);
+        bot->hitboxes().clearTrail();
         bot->updater().m_frameOnLastAttempt = 0;
         bot->updater().m_lastTfp = 0.0f;
         bot->labels().m_requiresRefresh = true;
@@ -646,7 +652,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                 !bot->updater().m_noclip->inner() &&
                 gameObject != m_anticheatSpike) {
                 bot->updater().backwardsStep();
-                this->processQueuedButtons(0.0, true);
 
                 if (bot->updater().m_autoFlipOnDeath->inner()) {
                     if (player == m_player1) {
@@ -662,7 +667,8 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                 }
             }
 
-            if (!bot->practiceFix().m_loadCheckpoint) {
+            if (!bot->practiceFix().m_loadCheckpoint &&
+                !bot->practiceFix().m_isBackstep) {
                 bot->practiceFix().m_hasDiedNormally = true;
             }
         }

@@ -385,10 +385,20 @@ uint32_t BotUpdater::getFrame() {
     // No intentional death in editor, use built in frame counter
     if (auto lel = LevelEditorLayer::get(); lel) {
         return static_cast<uint32_t>(std::max(
-            0, static_cast<int>(lel->m_gameState.m_currentProgress * 2) - 1));
+            0, static_cast<int>(lel->m_gameState.m_currentProgress / 2) - 1));
     }
 
     return 0;
+}
+
+uint32_t BotUpdater::getDisplayFrame() {
+    // Replay scheduling uses getFrame's physics-frame scale. The editor UI
+    // intentionally presents the requested doubled progress counter instead.
+    if (auto* lel = LevelEditorLayer::get(); lel) {
+        return static_cast<uint32_t>(std::max(
+            0, static_cast<int>(lel->m_gameState.m_currentProgress * 2) - 1));
+    }
+    return getFrame();
 }
 
 bool BotUpdater::useFastLockDelta() {
@@ -406,9 +416,20 @@ void BotUpdater::backwardsStep(int n) {
     }
 
     if (m_backwardsStepping->inner()) {
+        auto* bot = Bot::get();
+        if (!bot->practiceFix().canRestoreState()) return;
+
+        // Prevent the current death/reset from consuming replay actions before
+        // the saved checkpoint has restored their cursor.
+        bot->practiceFix().m_isBackstep = true;
         this->scheduleFrozenFunction([n](float) {
             auto pl = PlayLayer::get();
             auto bot = Bot::get();
+
+            if (!pl) {
+                bot->practiceFix().m_isBackstep = false;
+                return;
+            }
 
             for (int i = 0;
                  i < n - 1 && bot->practiceFix().m_storedFrames.size() > 1;
@@ -417,10 +438,10 @@ void BotUpdater::backwardsStep(int n) {
             }
 
             if (bot->practiceFix().m_storedFrames.size() <= 1) {
+                bot->practiceFix().m_isBackstep = false;
                 return;
             }
             bot->practiceFix().m_loadCheckpoint = true;
-            bot->practiceFix().m_isBackstep = true;
             pl->resetLevel();
             bot->practiceFix().m_loadCheckpoint = false;
         });

@@ -194,6 +194,7 @@ class BotUpdater {
     inline double getPhysicsDt() { return 1. / m_tps->inner(); };
 
     [[nodiscard]] uint32_t getFrame();
+    [[nodiscard]] uint32_t getDisplayFrame();
 
     /**
      * ONLY USE IF YOU KNOW WHAT YOU ARE DOING.
