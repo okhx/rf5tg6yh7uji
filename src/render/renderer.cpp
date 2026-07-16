@@ -320,7 +320,13 @@ void Renderer::updateMobile(PlayLayer* pl) {
     glBindFramebuffer(GL_FRAMEBUFFER, m_mobileFbo);
     glViewport(0, 0, m_settings.m_width, m_settings.m_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    pl->visit();
+    // Capture the same scene Cocos has just drawn. Visiting the running scene
+    // avoids re-entering PlayLayer while its update/draw lifecycle is active.
+    if (auto* scene = CCDirector::get()->m_pRunningScene) {
+        scene->visit();
+    } else {
+        pl->visit();
+    }
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(0, 0, m_settings.m_width, m_settings.m_height,
                  GL_RGB, GL_UNSIGNED_BYTE, m_mobileFrame.data());

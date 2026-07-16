@@ -593,7 +593,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
                        atom().m_actions[m_selected].m_player2 = value;
                });
 
-        button("Add", 62.f, 78.f, [this] {
+        button("Add", 105.f, 88.f, [this] {
             auto& inputs = atom().m_actions;
             const auto& selected = inputs[m_selected];
             inputs.emplace_back(selected.m_frame + 1, 0,
@@ -603,31 +603,31 @@ class MobileMacroEditorPopup final : public geode::Popup {
             normalize();
             rebuild();
         }, 72.f);
-        button("Delete", 151.f, 78.f, [this] {
+        button("Delete", 265.f, 88.f, [this] {
             auto& inputs = atom().m_actions;
             inputs.erase(inputs.begin() + m_selected);
             normalize();
             rebuild();
         }, 82.f);
-        button("Remove P1", 252.f, 78.f, [this] {
+        button("Remove P1", 105.f, 55.f, [this] {
             std::erase_if(atom().m_actions,
                           [](const auto& action) { return !action.m_player2; });
             normalize();
             rebuild();
         }, 96.f);
-        button("Remove P2", 350.f, 78.f, [this] {
+        button("Remove P2", 265.f, 55.f, [this] {
             std::erase_if(atom().m_actions,
                           [](const auto& action) { return action.m_player2; });
             normalize();
             rebuild();
         }, 96.f);
 
-        button("Flip hold", 105.f, 38.f, [this] {
+        button("Flip hold", 105.f, 22.f, [this] {
             for (auto& action : atom().m_actions)
                 action.m_holding = !action.m_holding;
             rebuild();
         }, 115.f);
-        button("Flip players", 265.f, 38.f, [this] {
+        button("Flip players", 265.f, 22.f, [this] {
             for (auto& action : atom().m_actions)
                 action.m_player2 = !action.m_player2;
             rebuild();
@@ -640,8 +640,25 @@ class MobileMacroEditorPopup final : public geode::Popup {
         m_content = CCNode::create();
         m_content->setPosition({15.f, 20.f});
         m_mainLayer->addChild(m_content);
+        this->scheduleUpdate();
         rebuild();
         return true;
+    }
+
+    void update(float) override {
+        auto* bot = Bot::get();
+        if ((!bot->isRecording() && !bot->isPlaying()) ||
+            atom().m_actions.empty()) {
+            return;
+        }
+
+        const int active = std::clamp(
+            static_cast<int>(Bot::get()->replaySystem().m_inputIndex), 0,
+            static_cast<int>(atom().m_actions.size()) - 1);
+        if (active != m_selected) {
+            m_selected = active;
+            rebuild();
+        }
     }
 
    public:
@@ -693,10 +710,14 @@ void MobileMenu::update(float) {
     if (m_recordSprite) {
         m_recordSprite->setString(bot->isRecording() ? "Stop recording"
                                                      : "Start recording");
+        m_recordSprite->setColor(bot->isRecording()
+            ? ccColor3B{210, 85, 85} : ccWHITE);
     }
     if (m_playSprite) {
         m_playSprite->setString(bot->isPlaying() ? "Stop playback"
                                                  : "Start playback");
+        m_playSprite->setColor(bot->isPlaying()
+            ? ccColor3B{105, 190, 245} : ccWHITE);
     }
     if (m_renderSprite) {
         m_renderSprite->setString(Renderer::get()->isRecording()
@@ -885,6 +906,8 @@ void MobileMenu::buildRecordPage() {
             }
             m_recordSprite->setString(bot->isRecording() ? "Stop recording"
                                                          : "Start recording");
+            m_recordSprite->setColor(bot->isRecording()
+                ? ccColor3B{210, 85, 85} : ccWHITE);
         }, 150.f);
 
     m_playSprite = addButton(
@@ -910,6 +933,8 @@ void MobileMenu::buildRecordPage() {
             }
             m_playSprite->setString(bot->isPlaying() ? "Stop playback"
                                                      : "Start playback");
+            m_playSprite->setColor(bot->isPlaying()
+                ? ccColor3B{105, 190, 245} : ccWHITE);
         }, 150.f);
 
     addNumberInput(

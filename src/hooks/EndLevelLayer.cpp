@@ -12,7 +12,7 @@ struct SLEndLevelLayer : Modify<SLEndLevelLayer, EndLevelLayer> {
         EndLevelLayer::customSetup();
         if (!SLSettings::get()->showEndMenuButton) return;
 
-        auto* sprite = CCSprite::create("silicate-button.png"_spr);
+        auto* sprite = CCSprite::create("grape.png"_spr);
         sprite->setScale(.32f);
         auto* button = CCMenuItemSpriteExtra::create(
             sprite, this, menu_selector(SLEndLevelLayer::onGrape));

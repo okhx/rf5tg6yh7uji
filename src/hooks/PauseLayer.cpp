@@ -40,7 +40,7 @@ struct SLPauseLayer : Modify<SLPauseLayer, PauseLayer> {
     void customSetup() override {
         PauseLayer::customSetup();
 
-        CCSprite* sprite = CCSprite::create("silicate-button.png"_spr);
+        CCSprite* sprite = CCSprite::create("grape.png"_spr);
         sprite->setScale(0.35f);
 
         CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(

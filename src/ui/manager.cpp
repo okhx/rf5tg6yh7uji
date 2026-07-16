@@ -1600,6 +1600,10 @@ void UIManager::draw() {
                 } else {
                     m_state.m_editIndex = std::clamp(
                         m_state.m_editIndex, 0, static_cast<int>(inputs.size()) - 1);
+                    if (Bot::get()->isRecording() || Bot::get()->isPlaying()) {
+                        m_state.m_editIndex = std::clamp(
+                            inputIndex, 0, static_cast<int>(inputs.size()) - 1);
+                    }
                 }
 
                 float btnRows = 3.0f;

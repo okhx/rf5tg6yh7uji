@@ -72,13 +72,13 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
             auto* menu = CCMenu::create();
             menu->setPosition({0.f, 0.f});
             menu->setID("grape-editor-menu");
-            auto* sprite = ButtonSprite::create(
-                "Grape", 58, true, "bigFont.fnt", "GJ_button_01.png",
-                26.f, .5f);
+            auto* sprite = CCSprite::create("grape.png"_spr);
+            if (!sprite) return true;
+            sprite->setScale(.31f);
             auto* button = geode::cocos::CCMenuItemExt::createSpriteExtra(
                 sprite, [](CCMenuItemSpriteExtra*) { MobileMenu::open(); });
             const auto winSize = CCDirector::get()->getWinSize();
-            button->setPosition({winSize.width - 42.f,
+            button->setPosition({winSize.width - 88.f,
                                  winSize.height - 20.f});
             menu->addChild(button);
             m_editorUI->addChild(menu, 1000);

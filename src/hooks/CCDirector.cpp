@@ -25,6 +25,19 @@ struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
             return CCDirector::drawScene();
         }
 
+#ifdef GEODE_IS_MOBILE
+        // The desktop recorder replaces the normal draw loop with a preview
+        // texture. Mobile has no such preview texture: using that path after
+        // a render starts dereferences its uninitialized GL resources. Draw
+        // normally first, then let the mobile renderer capture the frame.
+        if (renderer->isRecording()) {
+            CCDirector::drawScene();
+            renderer->update(playLayer);
+            Bot::get()->updater().runFrozenTick();
+            return;
+        }
+#endif
+
         if (renderer->isRecording() && !playLayer->m_isPaused &&
             (playLayer->m_started ||
              renderer->m_settings.m_firstAttemptPause)) {

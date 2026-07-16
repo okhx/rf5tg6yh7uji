@@ -385,7 +385,7 @@ uint32_t BotUpdater::getFrame() {
     // No intentional death in editor, use built in frame counter
     if (auto lel = LevelEditorLayer::get(); lel) {
         return static_cast<uint32_t>(std::max(
-            0, static_cast<int>(lel->m_gameState.m_currentProgress / 2) - 1));
+            0, static_cast<int>(lel->m_gameState.m_currentProgress * 2) - 1));
     }
 
     return 0;
