@@ -61,12 +61,12 @@ class Trajectory {
     constexpr static int DIRECTION_MASK = 0b11000;
 
    private:
-    cocos2d::CCRenderTexture* m_renderTex;
-    TrajectoryDrawNode* m_node;
+    cocos2d::CCRenderTexture* m_renderTex = nullptr;
+    TrajectoryDrawNode* m_node = nullptr;
 
    public:
-    PlayerObject* m_fakePlayer1;
-    PlayerObject* m_fakePlayer2;
+    PlayerObject* m_fakePlayer1 = nullptr;
+    PlayerObject* m_fakePlayer2 = nullptr;
 
    private:
     std::unordered_set<uintptr_t> m_activatedObjectsP1;
@@ -101,19 +101,39 @@ class Trajectory {
     };
     Signature m_lastSignature;
 
-    bool m_drawing;
-    bool m_deadP1;
-    bool m_deadP2;
+    bool m_drawing = false;
+    bool m_deadP1 = false;
+    bool m_deadP2 = false;
 
-    bool m_p1Holding;
-    bool m_p2Holding;
+    bool m_p1Holding = false;
+    bool m_p2Holding = false;
 
     float m_delta = 0.0;
 
-    Trajectory() = default;
-
    public:
-    TrajectoryState* m_state;
+    Trajectory() = default;
+    ~Trajectory() {
+        m_actions.clear();
+        m_activatedObjectsP1.clear();
+        m_activatedObjectsP2.clear();
+
+        auto releasePlayer = [](PlayerObject*& player) {
+            if (!player) return;
+            if (player->getParent()) player->removeFromParentAndCleanup(true);
+            player->release();
+            player = nullptr;
+        };
+        releasePlayer(m_fakePlayer1);
+        releasePlayer(m_fakePlayer2);
+
+        if (m_node) {
+            if (m_node->getParent()) m_node->removeFromParentAndCleanup(true);
+            m_node->release();
+            m_node = nullptr;
+        }
+    }
+
+    TrajectoryState* m_state = nullptr;
 
     bool drawing() const { return m_drawing; }
     bool enabled() const { return m_state->m_enabled->inner(); }
@@ -302,8 +322,9 @@ class TrajectoryManager {
     }
 
     void init() {
+        if (m_trajectory) uninit();
         m_trajectory = Trajectory::create();
-        m_trajectory->m_state = &m_state;
+        if (m_trajectory) m_trajectory->m_state = &m_state;
     }
 
     void uninit() {

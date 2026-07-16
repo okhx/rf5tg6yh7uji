@@ -477,6 +477,18 @@ class MobileMacroEditorPopup final : public geode::Popup {
         return Bot::get()->replaySystem().m_actionAtom;
     }
 
+    int currentInputIndex() {
+        auto* bot = Bot::get();
+        const auto size = atom().m_actions.size();
+        if (size == 0) return -1;
+        if (bot->isRecording()) return static_cast<int>(size - 1);
+
+        const size_t next = bot->replaySystem().m_inputIndex;
+        return next == 0
+            ? -1
+            : static_cast<int>(std::min(next - 1, size - 1));
+    }
+
     void normalize() {
         auto& replay = Bot::get()->replaySystem();
         auto& inputs = atom().m_actions;
@@ -563,11 +575,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
             m_selected, 0, static_cast<int>(inputs.size()) - 1);
         auto* input = &inputs[m_selected];
         auto* bot = Bot::get();
-        const int currentInput = bot->replaySystem().m_inputIndex == 0
-            ? -1
-            : std::min(
-                  static_cast<int>(bot->replaySystem().m_inputIndex) - 1,
-                  static_cast<int>(inputs.size()) - 1);
+        const int currentInput = currentInputIndex();
         const bool isCurrent = (bot->isRecording() || bot->isPlaying()) &&
                                m_selected == currentInput;
         m_inputLabel = label(
@@ -662,6 +670,13 @@ class MobileMacroEditorPopup final : public geode::Popup {
         m_content = CCNode::create();
         m_content->setPosition({15.f, 20.f});
         m_mainLayer->addChild(m_content);
+
+        // Follow playback/recording once when the editor opens. Navigation
+        // after that remains completely manual.
+        const auto& inputs = atom().m_actions;
+        if (!inputs.empty()) {
+            m_selected = std::max(0, currentInputIndex());
+        }
         this->scheduleUpdate();
         rebuild();
         return true;
@@ -675,11 +690,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
             return;
         }
 
-        const auto index = Bot::get()->replaySystem().m_inputIndex;
-        const int active = index == 0
-            ? -1
-            : std::min(static_cast<int>(index) - 1,
-                       static_cast<int>(atom().m_actions.size()) - 1);
+        const int active = currentInputIndex();
         // Keep selection and the active native TextInput intact. Updating the
         // existing label avoids closing the keyboard during playback.
         if (m_inputLabel) {
@@ -931,11 +942,23 @@ void MobileMenu::buildRecordPage() {
     m_recordSprite = addButton(
         bot->isRecording() ? "Stop recording" : "Start recording",
         columnX(0), rowY(1), [this, bot, &replay, &updater] {
-            bot->setMode(bot->isRecording() ? Bot::Stopped : Bot::Recording);
-            if (PlayLayer::get() && bot->isRecording() &&
-                replay.getInputIndex() < replay.m_actionAtom.length()) {
-                replay.createBackup();
-                replay.m_actionAtom.clipActions(updater.getFrame());
+            if (bot->isRecording()) {
+                bot->setMode(Bot::Stopped);
+            } else {
+                if (!replay.m_actionAtom.m_actions.empty()) {
+                    replay.createBackup();
+                }
+                bot->setMode(Bot::Recording);
+                replay.m_inputIndex = 0;
+                if (auto* playLayer = PlayLayer::get()) {
+                    // Playback always begins from a reset. Recording from the
+                    // middle of an attempt cannot reproduce because the
+                    // preceding player state is absent from the macro.
+                    playLayer->resetLevel();
+                } else {
+                    replay.m_actionAtom.clipActions(0);
+                    updater.resetFrame();
+                }
             }
             m_recordSprite->setString(bot->isRecording() ? "Stop recording"
                                                          : "Start recording");

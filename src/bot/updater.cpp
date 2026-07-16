@@ -415,10 +415,18 @@ uint32_t BotUpdater::getDisplayFrame() {
 }
 
 bool BotUpdater::useFastLockDelta() {
+#ifdef GEODE_IS_MOBILE
+    // Recording already advances mobile gameplay one physics step at a time.
+    // Using the batched performance path only for playback changes which
+    // substep receives an input whenever TPS / display FPS is greater than 1.
+    // At low speed both paths happened to use one step, hiding the mismatch.
+    return false;
+#else
     return this->m_lockDelta->inner() &&
            this->m_lockDeltaMode->inner() ==
                BotUpdater::LockDeltaMode::Performance &&
            Bot::get()->isPlaying() && !Renderer::get()->isRecording();
+#endif
 }
 
 void BotUpdater::backwardsStep(int n) {
