@@ -35,21 +35,24 @@ struct RenderSettings {
 namespace ffmpeg::events::impl {
 class Dummy {};
 
-class CreateRecorderEvent : public geode::Event {
+class CreateRecorderEvent
+    : public geode::Event<CreateRecorderEvent, bool(CreateRecorderEvent*)> {
     void* m_ptr = nullptr;
    public:
     void setPtr(void* ptr) { m_ptr = ptr; }
     void* getPtr() const { return m_ptr; }
 };
 
-class DeleteRecorderEvent : public geode::Event {
+class DeleteRecorderEvent
+    : public geode::Event<DeleteRecorderEvent, bool(DeleteRecorderEvent*)> {
     void* m_ptr;
    public:
     explicit DeleteRecorderEvent(void* ptr) : m_ptr(ptr) {}
     void* getPtr() const { return m_ptr; }
 };
 
-class InitRecorderEvent : public geode::Event {
+class InitRecorderEvent
+    : public geode::Event<InitRecorderEvent, bool(InitRecorderEvent*)> {
     ffmpeg::RenderSettings const* m_settings;
     void* m_ptr;
     geode::Result<> m_result = geode::Err("FFmpeg API event was not handled");
@@ -64,14 +67,17 @@ class InitRecorderEvent : public geode::Event {
     }
 };
 
-class StopRecorderEvent : public geode::Event {
+class StopRecorderEvent
+    : public geode::Event<StopRecorderEvent, bool(StopRecorderEvent*)> {
     void* m_ptr;
    public:
     explicit StopRecorderEvent(void* ptr) : m_ptr(ptr) {}
     void* getPtr() const { return m_ptr; }
 };
 
-class GetWriteFrameFunctionEvent : public geode::Event {
+class GetWriteFrameFunctionEvent
+    : public geode::Event<GetWriteFrameFunctionEvent,
+                          bool(GetWriteFrameFunctionEvent*)> {
    public:
     using WriteFrame = geode::Result<>(Dummy::*)(std::vector<uint8_t> const&);
    private:
@@ -87,28 +93,34 @@ class MobileFFmpegRecorder {
    public:
     MobileFFmpegRecorder() {
         ffmpeg::events::impl::CreateRecorderEvent event;
-        event.post();
+        event.send(&event);
         m_ptr = static_cast<ffmpeg::events::impl::Dummy*>(event.getPtr());
     }
     ~MobileFFmpegRecorder() {
-        if (m_ptr) ffmpeg::events::impl::DeleteRecorderEvent(m_ptr).post();
+        if (m_ptr) {
+            ffmpeg::events::impl::DeleteRecorderEvent event(m_ptr);
+            event.send(&event);
+        }
     }
     bool valid() const { return m_ptr != nullptr; }
     geode::Result<> init(ffmpeg::RenderSettings const& settings) {
         ffmpeg::events::impl::InitRecorderEvent event(m_ptr, &settings);
-        event.post();
+        event.send(&event);
         return event.getResult();
     }
     geode::Result<> writeFrame(std::vector<uint8_t> const& frame) {
         static auto function = [] {
             ffmpeg::events::impl::GetWriteFrameFunctionEvent event;
-            event.post();
+            event.send(&event);
             return event.getFunction();
         }();
         if (!function || !m_ptr) return geode::Err("FFmpeg API writer unavailable");
         return std::invoke(function, m_ptr, frame);
     }
     void stop() {
-        if (m_ptr) ffmpeg::events::impl::StopRecorderEvent(m_ptr).post();
+        if (m_ptr) {
+            ffmpeg::events::impl::StopRecorderEvent event(m_ptr);
+            event.send(&event);
+        }
     }
 };
