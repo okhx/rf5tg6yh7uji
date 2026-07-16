@@ -2,49 +2,41 @@ Run geode-sdk/build-geode-mod@main
 Run DEFAULT_TARGET=Win64
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run actions/cache@v4
-(node:2985) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:1370) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Cache hit for restore-key: cpm-ios-v1-50df6f9104beea704d72afb1d8d48900204f5ffa64fc00d4c490b183b8662599
-(node:2985) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
-Received 824547 of 13407459 (6.1%), 0.8 MBs/sec
-Received 13407459 of 13407459 (100.0%), 8.1 MBs/sec
+(node:1370) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Received 13407459 of 13407459 (100.0%), 81.4 MBs/sec
 Cache Size: ~13 MB (13407459 B)
-/opt/homebrew/bin/gtar -xf /Users/runner/work/_temp/a09aa622-97d9-4403-9fb7-de7b614622cb/cache.tzst -P -C /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji --delay-directory-restore --use-compress-program unzstd
+/opt/homebrew/bin/gtar -xf /Users/runner/work/_temp/a828080d-b8e0-4a7c-9dec-d2521ed5546d/cache.tzst -P -C /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji --delay-directory-restore --use-compress-program unzstd
 Cache restored successfully
 Cache restored from key: cpm-ios-v1-50df6f9104beea704d72afb1d8d48900204f5ffa64fc00d4c490b183b8662599
 Run curl -L https://github.com/ninja-build/ninja/releases/latest/download/ninja-mac.zip -o ninja.zip
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-
-100  306k  100  306k    0     0   841k      0 --:--:-- --:--:-- --:--:--  841k
-
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100  306k  100  306k    0     0   515k      0 --:--:-- --:--:-- --:--:--  515k
 7-Zip [64] 17.05 : Copyright (c) 1999-2021 Igor Pavlov : 2017-08-28
 p7zip Version 17.05 (locale=utf8,Utf16=on,HugeFiles=on,64 bits,3 CPUs LE)
-
 Scanning the drive for archives:
 1 file, 314051 bytes (307 KiB)
-
 Extracting archive: ninja.zip
 --
 Path = ninja.zip
 Type = zip
 Physical Size = 314051
-
 Everything is Ok
-
 Size:       828128
 Compressed: 314051
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run actions/checkout@v4
 Syncing repository: geode-sdk/bindings
 Getting Git version info
-Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/cb749bc2-b93c-4da3-94d1-14532de7312e/.gitconfig'
-Temporarily overriding HOME='/Users/runner/work/_temp/cb749bc2-b93c-4da3-94d1-14532de7312e' before making global git config changes
+Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/952e8eaf-0e9a-48b8-823f-d4b5adf95d83/.gitconfig'
+Temporarily overriding HOME='/Users/runner/work/_temp/952e8eaf-0e9a-48b8-823f-d4b5adf95d83' before making global git config changes
 Adding repository directory to the temporary git global config as a safe directory
 /opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo
 Initializing the repository
@@ -63,238 +55,233 @@ Run if [ "$RUNNER_OS" = "Linux" ]; then
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run robinraju/release-downloader@v1.10
 Fetching latest release for repo geode-sdk/cli
-(node:3318) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:1528) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Found latest release version: v3.8.0
 Downloading file: geode-cli-v3.8.0-mac.zip to: /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/my-epic-geode-cli
 Done: /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/my-epic-geode-cli/geode-cli-v3.8.0-mac.zip
 Run 7z x "my-epic-geode-cli/*-mac.zip" -omy-epic-geode-cli
-
 7-Zip [64] 17.05 : Copyright (c) 1999-2021 Igor Pavlov : 2017-08-28
 p7zip Version 17.05 (locale=utf8,Utf16=on,HugeFiles=on,64 bits,3 CPUs LE)
-
 Scanning the drive for archives:
 1 file, 8219338 bytes (8027 KiB)
-
 Extracting archive: my-epic-geode-cli/geode-cli-v3.8.0-mac.zip
 --
 Path = my-epic-geode-cli/geode-cli-v3.8.0-mac.zip
 Type = zip
 Physical Size = 8219338
-
 Everything is Ok
-
 Size:       21591544
 Compressed: 8219338
 Run export CLI_PROFILE="/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cli-profile"
 | Done | A new profile named 'GithubActions' has been created
 | Info | Downloading SDK
 | Info | Enumerating objects: 59213, done.
-| Info | Counting objects:   0% (1/866)
-| Info | Counting objects:   1% (9/866)
-| Info | Counting objects:   2% (18/866)
-| Info | Counting objects:   3% (26/866)
-| Info | Counting objects:   4% (35/866)
-| Info | Counting objects:   5% (44/866)
-| Info | Counting objects:   6% (52/866)
-| Info | Counting objects:   7% (61/866)
-| Info | Counting objects:   8% (70/866)
-| Info | Counting objects:   9% (78/866)
-| Info | Counting objects:  10% (87/866)
-| Info | Counting objects:  11% (96/866)
-| Info | Counting objects:  12% (104/866)
-| Info | Counting objects:  13% (113/866)
-| Info | Counting objects:  14% (122/866)
-| Info | Counting objects:  15% (130/866)
-| Info | Counting objects:  16% (139/866)
-| Info | Counting objects:  17% (148/866)
-| Info | Counting objects:  18% (156/866)
-| Info | Counting objects:  19% (165/866)
-| Info | Counting objects:  20% (174/866)
-| Info | Counting objects:  21% (182/866)
-| Info | Counting objects:  22% (191/866)
-| Info | Counting objects:  23% (200/866)
-| Info | Counting objects:  24% (208/866)
-| Info | Counting objects:  25% (217/866)
-| Info | Counting objects:  26% (226/866)
-| Info | Counting objects:  27% (234/866)
-| Info | Counting objects:  28% (243/866)
-| Info | Counting objects:  29% (252/866)
-| Info | Counting objects:  30% (260/866)
-| Info | Counting objects:  31% (269/866)
-| Info | Counting objects:  32% (278/866)
-| Info | Counting objects:  33% (286/866)
-| Info | Counting objects:  34% (295/866)
-| Info | Counting objects:  35% (304/866)
-| Info | Counting objects:  36% (312/866)
-| Info | Counting objects:  37% (321/866)
-| Info | Counting objects:  38% (330/866)
-| Info | Counting objects:  39% (338/866)
-Counting objects:  40% (347/866)
-| Info | Counting objects:  41% (356/866)
-| Info | Counting objects:  42% (364/866)
-Counting objects:  43% (373/866)
-| Info | Counting objects:  44% (382/866)
-| Info | Counting objects:  45% (390/866)
-| Info | Counting objects:  46% (399/866)
-| Info | Counting objects:  47% (408/866)
-| Info | Counting objects:  48% (416/866)
-Counting objects:  49% (425/866)
-| Info | Counting objects:  50% (433/866)
-| Info | Counting objects:  51% (442/866)
-Counting objects:  52% (451/866)
-| Info | Counting objects:  53% (459/866)
-| Info | Counting objects:  54% (468/866)
-| Info | Counting objects:  55% (477/866)
-Counting objects:  56% (485/866)
-| Info | Counting objects:  57% (494/866)
-| Info | Counting objects:  58% (503/866)
-| Info | Counting objects:  59% (511/866)
-| Info | Counting objects:  60% (520/866)
-Counting objects:  61% (529/866)
-| Info | Counting objects:  62% (537/866)
-| Info | Counting objects:  63% (546/866)
-| Info | Counting objects:  64% (555/866)
-Counting objects:  65% (563/866)
-| Info | Counting objects:  66% (572/866)
-| Info | Counting objects:  67% (581/866)
-| Info | Counting objects:  68% (589/866)
-| Info | Counting objects:  69% (598/866)
-| Info | Counting objects:  70% (607/866)
-Counting objects:  71% (615/866)
-| Info | Counting objects:  72% (624/866)
-Counting objects:  73% (633/866)
-| Info | Counting objects:  74% (641/866)
-| Info | Counting objects:  75% (650/866)
-| Info | Counting objects:  76% (659/866)
-| Info | Counting objects:  77% (667/866)
-| Info | Counting objects:  78% (676/866)
-| Info | Counting objects:  79% (685/866)
-| Info | Counting objects:  80% (693/866)
-| Info | Counting objects:  81% (702/866)
-| Info | Counting objects:  82% (711/866)
-| Info | Counting objects:  83% (719/866)
-| Info | Counting objects:  84% (728/866)
-| Info | Counting objects:  85% (737/866)
-| Info | Counting objects:  86% (745/866)
-| Info | Counting objects:  87% (754/866)
-| Info | Counting objects:  88% (763/866)
-| Info | Counting objects:  89% (771/866)
-| Info | Counting objects:  90% (780/866)
-| Info | Counting objects:  91% (789/866)
-| Info | Counting objects:  92% (797/866)
-| Info | Counting objects:  93% (806/866)
-| Info | Counting objects:  94% (815/866)
-| Info | Counting objects:  95% (823/866)
-| Info | Counting objects:  96% (832/866)
-| Info | Counting objects:  97% (841/866)
-| Info | Counting objects:  98% (849/866)
-| Info | Counting objects:  99% (858/866)
-| Info | Counting objects: 100% (866/866)
-| Info | Counting objects: 100% (866/866), done.
-| Info | Compressing objects:   0% (1/307)
-| Info | Compressing objects:   1% (4/307)
-| Info | Compressing objects:   2% (7/307)
-| Info | Compressing objects:   3% (10/307)
-| Info | Compressing objects:   4% (13/307)
-| Info | Compressing objects:   5% (16/307)
-| Info | Compressing objects:   6% (19/307)
-| Info | Compressing objects:   7% (22/307)
-| Info | Compressing objects:   8% (25/307)
-| Info | Compressing objects:   9% (28/307)
-| Info | Compressing objects:  10% (31/307)
-| Info | Compressing objects:  11% (34/307)
-| Info | Compressing objects:  12% (37/307)
-| Info | Compressing objects:  13% (40/307)
-| Info | Compressing objects:  14% (43/307)
-| Info | Compressing objects:  15% (47/307)
-| Info | Compressing objects:  16% (50/307)
-| Info | Compressing objects:  17% (53/307)
-| Info | Compressing objects:  18% (56/307)
-| Info | Compressing objects:  19% (59/307)
-| Info | Compressing objects:  20% (62/307)
-| Info | Compressing objects:  21% (65/307)
-| Info | Compressing objects:  22% (68/307)
-| Info | Compressing objects:  23% (71/307)
-| Info | Compressing objects:  24% (74/307)
-| Info | Compressing objects:  25% (77/307)
-| Info | Compressing objects:  26% (80/307)
-| Info | Compressing objects:  27% (83/307)
-| Info | Compressing objects:  28% (86/307)
-| Info | Compressing objects:  29% (90/307)
-| Info | Compressing objects:  30% (93/307)
-| Info | Compressing objects:  31% (96/307)
-| Info | Compressing objects:  32% (99/307)
-| Info | Compressing objects:  33% (102/307)
-| Info | Compressing objects:  34% (105/307)
-| Info | Compressing objects:  35% (108/307)
-| Info | Compressing objects:  36% (111/307)
-| Info | Compressing objects:  37% (114/307)
-| Info | Compressing objects:  38% (117/307)
-| Info | Compressing objects:  39% (120/307)
-| Info | Compressing objects:  40% (123/307)
-| Info | Compressing objects:  41% (126/307)
-| Info | Compressing objects:  42% (129/307)
-| Info | Compressing objects:  43% (133/307)
-| Info | Compressing objects:  44% (136/307)
-| Info | Compressing objects:  45% (139/307)
-| Info | Compressing objects:  46% (142/307)
-| Info | Compressing objects:  47% (145/307)
-| Info | Compressing objects:  48% (148/307)
-| Info | Compressing objects:  49% (151/307)
-| Info | Compressing objects:  50% (154/307)
-| Info | Compressing objects:  51% (157/307)
-| Info | Compressing objects:  52% (160/307)
-| Info | Compressing objects:  53% (163/307)
-| Info | Compressing objects:  54% (166/307)
-| Info | Compressing objects:  55% (169/307)
-| Info | Compressing objects:  56% (172/307)
-| Info | Compressing objects:  57% (175/307)
-| Info | Compressing objects:  58% (179/307)
-| Info | Compressing objects:  59% (182/307)
-| Info | Compressing objects:  60% (185/307)
-| Info | Compressing objects:  61% (188/307)
-| Info | Compressing objects:  62% (191/307)
-| Info | Compressing objects:  63% (194/307)
-| Info | Compressing objects:  64% (197/307)
-| Info | Compressing objects:  65% (200/307)
-| Info | Compressing objects:  66% (203/307)
-| Info | Compressing objects:  67% (206/307)
-| Info | Compressing objects:  68% (209/307)
-| Info | Compressing objects:  69% (212/307)
-| Info | Compressing objects:  70% (215/307)
-| Info | Compressing objects:  71% (218/307)
-| Info | Compressing objects:  72% (222/307)
-| Info | Compressing objects:  73% (225/307)
-| Info | Compressing objects:  74% (228/307)
-| Info | Compressing objects:  75% (231/307)
-| Info | Compressing objects:  76% (234/307)
-| Info | Compressing objects:  77% (237/307)
-| Info | Compressing objects:  78% (240/307)
-| Info | Compressing objects:  79% (243/307)
-| Info | Compressing objects:  80% (246/307)
-| Info | Compressing objects:  81% (249/307)
-| Info | Compressing objects:  82% (252/307)
-| Info | Compressing objects:  83% (255/307)
-| Info | Compressing objects:  84% (258/307)
-| Info | Compressing objects:  85% (261/307)
-| Info | Compressing objects:  86% (265/307)
-| Info | Compressing objects:  87% (268/307)
-| Info | Compressing objects:  88% (271/307)
-| Info | Compressing objects:  89% (274/307)
-| Info | Compressing objects:  90% (277/307)
-| Info | Compressing objects:  91% (280/307)
-| Info | Compressing objects:  92% (283/307)
-| Info | Compressing objects:  93% (286/307)
-| Info | Compressing objects:  94% (289/307)
-| Info | Compressing objects:  95% (292/307)
-| Info | Compressing objects:  96% (295/307)
-| Info | Compressing objects:  97% (298/307)
-| Info | Compressing objects:  98% (301/307)
-| Info | Compressing objects:  99% (304/307)
-| Info | Compressing objects: 100% (307/307)
-| Info | Compressing objects: 100% (307/307), done.
-| Info | Total 59213 (delta 764), reused 559 (delta 559), pack-reused 58347 (from 3)
+| Info | Counting objects:   0% (1/1072)
+| Info | Counting objects:   1% (11/1072)
+| Info | Counting objects:   2% (22/1072)
+| Info | Counting objects:   3% (33/1072)
+| Info | Counting objects:   4% (43/1072)
+| Info | Counting objects:   5% (54/1072)
+| Info | Counting objects:   6% (65/1072)
+| Info | Counting objects:   7% (76/1072)
+| Info | Counting objects:   8% (86/1072)
+| Info | Counting objects:   9% (97/1072)
+| Info | Counting objects:  10% (108/1072)
+| Info | Counting objects:  11% (118/1072)
+| Info | Counting objects:  12% (129/1072)
+| Info | Counting objects:  13% (140/1072)
+| Info | Counting objects:  14% (151/1072)
+| Info | Counting objects:  15% (161/1072)
+| Info | Counting objects:  16% (172/1072)
+| Info | Counting objects:  17% (183/1072)
+| Info | Counting objects:  18% (193/1072)
+| Info | Counting objects:  19% (204/1072)
+| Info | Counting objects:  20% (215/1072)
+| Info | Counting objects:  21% (226/1072)
+| Info | Counting objects:  22% (236/1072)
+| Info | Counting objects:  23% (247/1072)
+| Info | Counting objects:  24% (258/1072)
+| Info | Counting objects:  25% (268/1072)
+| Info | Counting objects:  26% (279/1072)
+| Info | Counting objects:  27% (290/1072)
+| Info | Counting objects:  28% (301/1072)
+| Info | Counting objects:  29% (311/1072)
+| Info | Counting objects:  30% (322/1072)
+| Info | Counting objects:  31% (333/1072)
+| Info | Counting objects:  32% (344/1072)
+| Info | Counting objects:  33% (354/1072)
+| Info | Counting objects:  34% (365/1072)
+| Info | Counting objects:  35% (376/1072)
+| Info | Counting objects:  36% (386/1072)
+| Info | Counting objects:  37% (397/1072)
+| Info | Counting objects:  38% (408/1072)
+| Info | Counting objects:  39% (419/1072)
+| Info | Counting objects:  40% (429/1072)
+| Info | Counting objects:  41% (440/1072)
+| Info | Counting objects:  42% (451/1072)
+| Info | Counting objects:  43% (461/1072)
+| Info | Counting objects:  44% (472/1072)
+| Info | Counting objects:  45% (483/1072)
+| Info | Counting objects:  46% (494/1072)
+| Info | Counting objects:  47% (504/1072)
+| Info | Counting objects:  48% (515/1072)
+| Info | Counting objects:  49% (526/1072)
+| Info | Counting objects:  50% (536/1072)
+| Info | Counting objects:  51% (547/1072)
+| Info | Counting objects:  52% (558/1072)
+| Info | Counting objects:  53% (569/1072)
+| Info | Counting objects:  54% (579/1072)
+| Info | Counting objects:  55% (590/1072)
+| Info | Counting objects:  56% (601/1072)
+| Info | Counting objects:  57% (612/1072)
+| Info | Counting objects:  58% (622/1072)
+| Info | Counting objects:  59% (633/1072)
+| Info | Counting objects:  60% (644/1072)
+| Info | Counting objects:  61% (654/1072)
+| Info | Counting objects:  62% (665/1072)
+Counting objects:  63% (676/1072)
+| Info | Counting objects:  64% (687/1072)
+Counting objects:  65% (697/1072)
+| Info | Counting objects:  66% (708/1072)
+| Info | Counting objects:  67% (719/1072)
+| Info | Counting objects:  68% (729/1072)
+| Info | Counting objects:  69% (740/1072)
+| Info | Counting objects:  70% (751/1072)
+| Info | Counting objects:  71% (762/1072)
+| Info | Counting objects:  72% (772/1072)
+| Info | Counting objects:  73% (783/1072)
+| Info | Counting objects:  74% (794/1072)
+| Info | Counting objects:  75% (804/1072)
+| Info | Counting objects:  76% (815/1072)
+| Info | Counting objects:  77% (826/1072)
+| Info | Counting objects:  78% (837/1072)
+| Info | Counting objects:  79% (847/1072)
+| Info | Counting objects:  80% (858/1072)
+| Info | Counting objects:  81% (869/1072)
+| Info | Counting objects:  82% (880/1072)
+Counting objects:  83% (890/1072)
+| Info | Counting objects:  84% (901/1072)
+| Info | Counting objects:  85% (912/1072)
+| Info | Counting objects:  86% (922/1072)
+| Info | Counting objects:  87% (933/1072)
+| Info | Counting objects:  88% (944/1072)
+| Info | Counting objects:  89% (955/1072)
+| Info | Counting objects:  90% (965/1072)
+| Info | Counting objects:  91% (976/1072)
+| Info | Counting objects:  92% (987/1072)
+| Info | Counting objects:  93% (997/1072)
+| Info | Counting objects:  94% (1008/1072)
+| Info | Counting objects:  95% (1019/1072)
+| Info | Counting objects:  96% (1030/1072)
+| Info | Counting objects:  97% (1040/1072)
+Counting objects:  98% (1051/1072)
+| Info | Counting objects:  99% (1062/1072)
+| Info | Counting objects: 100% (1072/1072)
+| Info | Counting objects: 100% (1072/1072), done.
+| Info | Compressing objects:   0% (1/315)
+| Info | Compressing objects:   1% (4/315)
+| Info | Compressing objects:   2% (7/315)
+| Info | Compressing objects:   3% (10/315)
+| Info | Compressing objects:   4% (13/315)
+| Info | Compressing objects:   5% (16/315)
+| Info | Compressing objects:   6% (19/315)
+| Info | Compressing objects:   7% (23/315)
+| Info | Compressing objects:   8% (26/315)
+| Info | Compressing objects:   9% (29/315)
+| Info | Compressing objects:  10% (32/315)
+| Info | Compressing objects:  11% (35/315)
+| Info | Compressing objects:  12% (38/315)
+| Info | Compressing objects:  13% (41/315)
+| Info | Compressing objects:  14% (45/315)
+| Info | Compressing objects:  15% (48/315)
+| Info | Compressing objects:  16% (51/315)
+| Info | Compressing objects:  17% (54/315)
+| Info | Compressing objects:  18% (57/315)
+| Info | Compressing objects:  19% (60/315)
+| Info | Compressing objects:  20% (63/315)
+| Info | Compressing objects:  21% (67/315)
+| Info | Compressing objects:  22% (70/315)
+| Info | Compressing objects:  23% (73/315)
+| Info | Compressing objects:  24% (76/315)
+| Info | Compressing objects:  25% (79/315)
+| Info | Compressing objects:  26% (82/315)
+| Info | Compressing objects:  27% (86/315)
+| Info | Compressing objects:  28% (89/315)
+| Info | Compressing objects:  29% (92/315)
+| Info | Compressing objects:  30% (95/315)
+| Info | Compressing objects:  31% (98/315)
+| Info | Compressing objects:  32% (101/315)
+| Info | Compressing objects:  33% (104/315)
+| Info | Compressing objects:  34% (108/315)
+| Info | Compressing objects:  35% (111/315)
+| Info | Compressing objects:  36% (114/315)
+| Info | Compressing objects:  37% (117/315)
+| Info | Compressing objects:  38% (120/315)
+| Info | Compressing objects:  39% (123/315)
+| Info | Compressing objects:  40% (126/315)
+| Info | Compressing objects:  41% (130/315)
+| Info | Compressing objects:  42% (133/315)
+| Info | Compressing objects:  43% (136/315)
+| Info | Compressing objects:  44% (139/315)
+| Info | Compressing objects:  45% (142/315)
+| Info | Compressing objects:  46% (145/315)
+| Info | Compressing objects:  47% (149/315)
+| Info | Compressing objects:  48% (152/315)
+| Info | Compressing objects:  49% (155/315)
+| Info | Compressing objects:  50% (158/315)
+| Info | Compressing objects:  51% (161/315)
+| Info | Compressing objects:  52% (164/315)
+| Info | Compressing objects:  53% (167/315)
+| Info | Compressing objects:  54% (171/315)
+| Info | Compressing objects:  55% (174/315)
+| Info | Compressing objects:  56% (177/315)
+| Info | Compressing objects:  57% (180/315)
+| Info | Compressing objects:  58% (183/315)
+| Info | Compressing objects:  59% (186/315)
+| Info | Compressing objects:  60% (189/315)
+| Info | Compressing objects:  61% (193/315)
+| Info | Compressing objects:  62% (196/315)
+| Info | Compressing objects:  63% (199/315)
+| Info | Compressing objects:  64% (202/315)
+| Info | Compressing objects:  65% (205/315)
+| Info | Compressing objects:  66% (208/315)
+| Info | Compressing objects:  67% (212/315)
+| Info | Compressing objects:  68% (215/315)
+| Info | Compressing objects:  69% (218/315)
+| Info | Compressing objects:  70% (221/315)
+| Info | Compressing objects:  71% (224/315)
+| Info | Compressing objects:  72% (227/315)
+| Info | Compressing objects:  73% (230/315)
+| Info | Compressing objects:  74% (234/315)
+| Info | Compressing objects:  75% (237/315)
+| Info | Compressing objects:  76% (240/315)
+| Info | Compressing objects:  77% (243/315)
+| Info | Compressing objects:  78% (246/315)
+| Info | Compressing objects:  79% (249/315)
+| Info | Compressing objects:  80% (252/315)
+| Info | Compressing objects:  81% (256/315)
+| Info | Compressing objects:  82% (259/315)
+| Info | Compressing objects:  83% (262/315)
+| Info | Compressing objects:  84% (265/315)
+| Info | Compressing objects:  85% (268/315)
+| Info | Compressing objects:  86% (271/315)
+| Info | Compressing objects:  87% (275/315)
+| Info | Compressing objects:  88% (278/315)
+| Info | Compressing objects:  89% (281/315)
+| Info | Compressing objects:  90% (284/315)
+| Info | Compressing objects:  91% (287/315)
+| Info | Compressing objects:  92% (290/315)
+| Info | Compressing objects:  93% (293/315)
+| Info | Compressing objects:  94% (297/315)
+| Info | Compressing objects:  95% (300/315)
+| Info | Compressing objects:  96% (303/315)
+| Info | Compressing objects:  97% (306/315)
+| Info | Compressing objects:  98% (309/315)
+| Info | Compressing objects:  99% (312/315)
+| Info | Compressing objects: 100% (315/315)
+| Info | Compressing objects: 100% (315/315), done.
+| Info | Total 59213 (delta 962), reused 757 (delta 757), pack-reused 58141 (from 2)
 | Warn | You may have to restart your terminal application for the environment variable changes to go into effect
 | Info | Set GEODE_SDK environment variable automatically
 | Info | Updating head
@@ -360,23 +347,12 @@ Set SKIP_BUILDING_CODEGEN to OFF to force codegen to build locally.
 -- Downloading Codegen - success
 -- Skipping building Codegen
 -- Running Codegen
-CMake Error at CMakeLists.txt:141 (target_link_libraries):
 './Codegen' 'iOS' '/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo/bindings/2.2081' '/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/bindings/bindings'
-  The keyword signature for target_link_libraries has already been used with
 -- CPM: Adding package glaze@ (main at /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/glaze/b100)
-  the target "grape".  All uses of target_link_libraries with a target must
-  be either all-keyword or all-plain.
 -- CPM: Adding package slc@ (main at /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/slc/26f5)
-
 -- Setting up grape
-  The uses of the keyword signature are here:
 -- Mod okhx.grape is compiling for Geode version 5.7.1
-
 -- Mod okhx.grape is compiling for Geometry Dash version 2.2081
-   * CMakeLists.txt:101 (target_link_libraries)
-
-
-
 | Info | Fetching dependency from index
 | Info | Dependency found: geode.node-ids, version 1.23.3
 | Info | Downloading dependency
@@ -385,5 +361,325 @@ CMake Error at CMakeLists.txt:141 (target_link_libraries):
 | Info | Dependency 'geode.node-ids' found on the index, installing (version '1.23.3')
 | Done | All dependencies resolved
 -- Skipping installing grape
--- Configuring incomplete, errors occurred!
+-- Configuring done (7.8s)
+-- Generating done (0.2s)
+-- Build files have been written to: /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build
+[0/2] Re-checking globbed directories...
+[1/80] Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.o
+[2/80] Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/format.cc.o
+[3/80] Building CXX object _deps/qsox-build/CMakeFiles/qsox.dir/Unity/unity_0_cxx.cxx.o
+[4/80] Building CXX object _deps/asp2-build/CMakeFiles/asp.dir/Unity/unity_0_cxx.cxx.o
+[5/80] Linking CXX static library _deps/fmt-build/libfmt.a
+[6/80] Linking CXX static library _deps/asp2-build/libasp.a
+[7/80] Linking CXX static library _deps/qsox-build/libqsox.a
+[8/80] Building CXX object _deps/arc-build/CMakeFiles/arc.dir/Unity/unity_0_cxx.cxx.o
+[9/80] Linking CXX static library _deps/arc-build/libarc.a
+[10/80] Running Codegen
+[11/80] Building CXX object CMakeFiles/grape.dir/cmake_pch.hxx.pch
+[12/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_14_cxx.cxx.o
+[13/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_13_cxx.cxx.o
+[14/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_12_cxx.cxx.o
+[15/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_11_cxx.cxx.o
+[16/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_9_cxx.cxx.o
+[17/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_6_cxx.cxx.o
+[18/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_8_cxx.cxx.o
+[19/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_7_cxx.cxx.o
+[20/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_10_cxx.cxx.o
+[21/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_5_cxx.cxx.o
+[22/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_4_cxx.cxx.o
+[23/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_3_cxx.cxx.o
+[24/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_2_cxx.cxx.o
+[25/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_1_cxx.cxx.o
+[26/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_0_cxx.cxx.o
+[27/80] Building CXX object CMakeFiles/grape.dir/src/bot/scheduler.cpp.o
+[28/80] Building CXX object CMakeFiles/grape.dir/src/main.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/main.cpp:6:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/main.cpp:9:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    9 | $on_mod(Loaded) {
+      | ^
+2 warnings generated.
+[29/80] Building CXX object CMakeFiles/grape.dir/src/assist/autoclicker.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[30/80] Building CXX object CMakeFiles/grape.dir/src/bot/updater.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.hpp:12:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.cpp:672:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  672 | $execute {
+      | ^
+2 warnings generated.
+[31/80] Building CXX object CMakeFiles/grape.dir/src/assist/hitboxes.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/hitboxes.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/hitboxes.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[32/80] Building CXX object CMakeFiles/grape.dir/src/bot/bot.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[33/80] Building CXX object CMakeFiles/grape.dir/src/hooks/CCActionManager.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/CCActionManager.cpp:3:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[38/80] Building CXX object CMakeFiles/grape.dir/src/hooks/FMODAudioEngine.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/FMODAudioEngine.cpp:3:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../render/dsp.hpp:12:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/FMODAudioEngine.cpp:94:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+   94 | $execute {
+      | ^
+2 warnings generated.
+[39/80] Building CXX object CMakeFiles/grape.dir/src/hooks/GameObject.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GameObject.cpp:8:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[40/80] Building CXX object CMakeFiles/grape.dir/src/hooks/LevelEditorLayer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/LevelEditorLayer.cpp:6:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[41/80] Building CXX object CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:16:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:727:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  727 | $execute {
+      | ^
+2 warnings generated.
+[42/80] Building CXX object CMakeFiles/grape.dir/src/hooks/PauseLayer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PauseLayer.cpp:2:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.hpp:9:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/state.hpp:8:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[43/80] Building CXX object CMakeFiles/grape.dir/src/hooks/PlayLayer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PlayLayer.cpp:4:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PlayLayer.cpp:840:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  840 | $execute {
+      | ^
+2 warnings generated.
+[44/80] Building CXX object CMakeFiles/grape.dir/src/hooks/PlayerObject.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PlayerObject.cpp:3:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[45/80] Building CXX object CMakeFiles/grape.dir/src/hooks/ShaderLayer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/ShaderLayer.cpp:3:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[46/80] Building CXX object CMakeFiles/grape.dir/src/hooks/VideoOptionsLayer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/VideoOptionsLayer.cpp:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[47/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui.cpp.o
+[48/80] Building CXX object CMakeFiles/grape.dir/src/ui/manager.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.hpp:9:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/state.hpp:8:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[49/80] Building CXX object CMakeFiles/grape.dir/src/ui/hook.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/hook.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/hook.hpp:22:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[50/80] Building CXX object CMakeFiles/grape.dir/src/ui/theme.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/theme.cpp:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[51/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui_tables.cpp.o
+[52/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui_draw.cpp.o
+[53/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/misc/cpp/imgui_stdlib.cpp.o
+[54/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui_widgets.cpp.o
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/imgui_widgets.cpp:1185:17: warning: unused variable 'border_top' [-Wunused-variable]
+ 1185 |     const float border_top = (window->Flags & ImGuiWindowFlags_MenuBar)
+      |                 ^~~~~~~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/imgui_widgets.cpp:5641:53: warning: unused parameter 'size_arg' [-Wunused-parameter]
+ 5641 |                         int buf_size, const ImVec2& size_arg,
+      |                                                     ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/imgui_widgets.cpp:7067:16: warning: unused variable 'hdr' [-Wunused-variable]
+ 7067 |     const bool hdr = (flags & ImGuiColorEditFlags_HDR) != 0;
+      |                ^~~
+3 warnings generated.
+[55/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/backends/imgui_impl_opengl3.cpp.o
+[56/80] Building CXX object CMakeFiles/grape.dir/src/replay/replay.cpp.o
+[57/80] Building CXX object CMakeFiles/grape.dir/src/ui/mobile_menu.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/mobile_menu.cpp:11:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[58/80] Building CXX object CMakeFiles/grape.dir/src/physics/gjbasegamelayer.cpp.o
+[59/80] Building CXX object CMakeFiles/grape.dir/src/physics/object.cpp.o
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/physics/object.cpp:20:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+   20 | $execute {
+      | ^
+1 warning generated.
+[60/80] Building CXX object CMakeFiles/grape.dir/src/physics/player.cpp.o
+[61/80] Building CXX object CMakeFiles/grape.dir/src/physics/collisions.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/physics/collisions.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/physics/collisions.hpp:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/physics/collisions.cpp:327:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  327 | $execute {
+      | ^
+2 warnings generated.
+[62/80] Building CXX object CMakeFiles/grape.dir/src/physics/gravity.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/physics/gravity.cpp:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[63/80] Building CXX object CMakeFiles/grape.dir/src/replay/system.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/replay/system.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/replay/system.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/replay/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/replay/system.cpp:399:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  399 | $execute {
+      | ^
+2 warnings generated.
+[64/80] Building CXX object CMakeFiles/grape.dir/src/checkpoint/checkpoint.cpp.o
+[65/80] Building CXX object CMakeFiles/grape.dir/src/render/texture.cpp.o
+[66/80] Building CXX object CMakeFiles/grape.dir/src/label/label.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/label/label.cpp:6:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/label/label.cpp:327:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  327 | $on_mod(Loaded) { Bot::get()->labels().readFromConfig(); }
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/label/label.cpp:329:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  329 | $on_mod(DataSaved) { Bot::get()->labels().writeToConfig(); }
+      | ^
+3 warnings generated.
+[67/80] Building CXX object CMakeFiles/grape.dir/src/checkpoint/fix.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.cpp:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.hpp:16:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.cpp:233:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  233 | $execute {
+      | ^
+2 warnings generated.
+[68/80] Building CXX object CMakeFiles/grape.dir/src/render/pass.cpp.o
+[69/80] Building CXX object CMakeFiles/grape.dir/src/util/crash_log.cpp.o
+[70/80] Building CXX object CMakeFiles/grape.dir/src/trajectory/trajectory.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.hpp:10:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[71/80] Building OBJCXX object CMakeFiles/grape.dir/src/render/ios_video_writer.mm.o
+[72/80] Building CXX object CMakeFiles/grape.dir/src/render/dsp.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.hpp:12:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[73/80] Building CXX object CMakeFiles/grape.dir/src/render/renderer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.hpp:4:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[74/80] Linking CXX static library bindings/libGeodeBindings.a
+[75/80] Building CXX object CMakeFiles/grape.dir/geode-sdk-clone/entry.cpp.o
+[76/80] Building CXX object CMakeFiles/grape.dir/src/hooks/GJEffectManager.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJEffectManager.cpp:7:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[77/80] Building CXX object CMakeFiles/grape.dir/src/ui/touch_overlay.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/touch_overlay.cpp:2:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[78/80] Linking CXX shared library okhx.grape.ios.dylib
+FAILED: [code=1] okhx.grape.ios.dylib 
+: && /usr/bin/clang++ -O3 -DNDEBUG -flto=thin -arch arm64 -isysroot /Applications/Xcode_26.5.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -miphoneos-version-min=14.0 -dynamiclib -Wl,-headerpad_max_install_names -dead_strip -o okhx.grape.ios.dylib -install_name @rpath/okhx.grape.ios.dylib CMakeFiles/grape.dir/src/main.cpp.o CMakeFiles/grape.dir/src/bot/bot.cpp.o CMakeFiles/grape.dir/src/bot/updater.cpp.o CMakeFiles/grape.dir/src/bot/scheduler.cpp.o CMakeFiles/grape.dir/src/assist/autoclicker.cpp.o CMakeFiles/grape.dir/src/assist/hitboxes.cpp.o CMakeFiles/grape.dir/src/hooks/CCActionManager.cpp.o CMakeFiles/grape.dir/src/hooks/CCDirector.cpp.o CMakeFiles/grape.dir/src/hooks/CCScheduler.cpp.o CMakeFiles/grape.dir/src/hooks/EndLevelLayer.cpp.o CMakeFiles/grape.dir/src/hooks/EnhancedGameObject.cpp.o CMakeFiles/grape.dir/src/hooks/FMODAudioEngine.cpp.o CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o CMakeFiles/grape.dir/src/hooks/GameObject.cpp.o CMakeFiles/grape.dir/src/h
+Undefined symbols for architecture arm64:
+  "IOSVideoWriter::open(std::__1::__fs::filesystem::path const&, int, int, int, unsigned int)", referenced from:
+      Renderer::startMobile() in 
+  "IOSVideoWriter::finish()", referenced from:
+      Renderer::startMobile() in 
+      Renderer::stopMobile() in 
+  "IOSVideoWriter::appendRGB(std::__1::vector<unsigned char, std::__1::allocator<unsigned char>> const&)", referenced from:
+      Renderer::updateMobile(PlayLayer*) in 
+  "IOSVideoWriter::IOSVideoWriter()", referenced from:
+      Renderer::startMobile() in 
+  "IOSVideoWriter::~IOSVideoWriter()", referenced from:
+      Renderer::~Renderer() in 
+      Renderer::startMobile() in 
+      Renderer::startMobile() in 
+      std::__1::unique_ptr<IOSVideoWriter, std::__1::default_delete<IOSVideoWriter>>::reset[abi:nqe210106](IOSVideoWriter*) in 
+      Renderer::stopMobile() in 
+ld: symbol(s) not found for architecture arm64
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
 Error: Process completed with exit code 1.
