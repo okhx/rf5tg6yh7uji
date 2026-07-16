@@ -77,6 +77,7 @@ void Renderer::saveSettings(fs::path& path) const {
         settings, geode::utils::string::pathToString(path), std::string{});
 }
 
+#ifndef GEODE_IS_IOS
 enum class GPUVendor {
     NVIDIA,
     AMD,
@@ -148,6 +149,7 @@ static std::string getDefaultCodec() {
             return "libx264";
     }
 }
+#endif
 
 void Renderer::initializeDefaults() {
 #ifdef GEODE_IS_IOS
