@@ -406,7 +406,14 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
             return PlayLayer::resetLevel();
         }
-		
+
+        const bool restartingCompleted =
+            m_hasCompletedLevel || m_levelEndAnimationStarted;
+        if (restartingCompleted && !bot->isRecording() &&
+            !bot->replaySystem().m_actionAtom.m_actions.empty()) {
+            bot->setMode(Bot::Playing);
+        }
+
         m_practiceMusicSync = true;
 
         bot->updater().m_tpsOverflow = 0.0;
@@ -492,6 +499,9 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         }
 
         auto bot = Bot::get();
+        // Frame stepping is local to this level instance.
+        bot->updater().setPaused(false);
+        bot->updater().m_stepOnce->inner() = false;
 
         // deallocate trajectory and hitbox nodes before the PlayLayer gets destroyed
         bot->trajectory().uninit();
@@ -576,6 +586,8 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         bot->hitboxes().clearTrail();
         bot->updater().m_frameOnLastAttempt = 0;
         bot->updater().m_lastTfp = 0.0f;
+        bot->updater().setPaused(false);
+        bot->updater().m_stepOnce->inner() = false;
         bot->labels().m_requiresRefresh = true;
 
         if (bot->isRecording()) {

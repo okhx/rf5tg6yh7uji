@@ -114,7 +114,7 @@ class MobileFeaturePopup final : public geode::Popup {
     }
 
     void toggle(std::string const& text, int row, bool value,
-                std::function<void(bool)> callback, float x = 185.f) {
+                std::function<void(bool)> callback, float x = 275.f) {
         const float y = rowY(row);
         settingLabel(text, y);
         auto* item =
@@ -130,7 +130,7 @@ class MobileFeaturePopup final : public geode::Popup {
 
     TextInput* number(std::string const& text, int row, double value,
                       std::function<void(double)> setter, double minimum,
-                      double maximum, int decimals = 2, float x = 185.f) {
+                      double maximum, int decimals = 2, float x = 260.f) {
         const float y = rowY(row);
         settingLabel(text, y);
         auto* input = TextInput::create(92.f, "Value");
@@ -158,7 +158,7 @@ class MobileFeaturePopup final : public geode::Popup {
         input->setCommonFilter(CommonFilter::ID);
         input->setString(value);
         input->setCallback(std::move(setter));
-        input->setPosition({255.f, y});
+        input->setPosition({297.5f, y});
         m_content->addChild(input, 2);
         return input;
     }
@@ -166,7 +166,7 @@ class MobileFeaturePopup final : public geode::Popup {
     void color(std::string const& text, int row,
                std::array<float, 4>* target) {
         settingLabel(text, rowY(row));
-        button("Color", 260.f, rowY(row),
+        button("Color", 330.f, rowY(row),
                [target] { openColorPicker(target); }, 80.f);
     }
 
@@ -311,7 +311,7 @@ class MobileFeaturePopup final : public geode::Popup {
                                                    "Both"};
         int player = std::clamp(static_cast<int>(autoclicker->m_player), 0, 2);
         settingLabel("Player", rowY(0));
-        button(players[player], 255.f, rowY(0), [this, autoclicker] {
+        button(players[player], 310.f, rowY(0), [this, autoclicker] {
             int next = (static_cast<int>(autoclicker->m_player) + 1) % 3;
             autoclicker->m_player =
                 static_cast<Autoclicker::PlayerToggle>(next);
@@ -352,7 +352,7 @@ class MobileFeaturePopup final : public geode::Popup {
                                                    "Both"};
         int player = std::clamp(static_cast<int>(updater->m_noclipType), 0, 2);
         settingLabel("Affected player", rowY(0));
-        button(players[player], 255.f, rowY(0), [this, updater] {
+        button(players[player], 310.f, rowY(0), [this, updater] {
             int next = (static_cast<int>(updater->m_noclipType) + 1) % 3;
             updater->m_noclipType =
                 static_cast<BotUpdater::NoclipType>(next);
@@ -553,8 +553,16 @@ class MobileMacroEditorPopup final : public geode::Popup {
         m_selected = std::clamp(
             m_selected, 0, static_cast<int>(inputs.size()) - 1);
         auto* input = &inputs[m_selected];
+        auto* bot = Bot::get();
+        const int currentInput = std::clamp(
+            static_cast<int>(bot->replaySystem().m_inputIndex) - 1, 0,
+            static_cast<int>(inputs.size()) - 1);
+        const bool isCurrent = (bot->isRecording() || bot->isPlaying()) &&
+                               m_selected == currentInput;
         label(fmt::format("Input {} / {}", m_selected + 1, inputs.size()),
-              24.f, 188.f, .38f, {255, 220, 90});
+              24.f, 188.f, .38f,
+              isCurrent ? ccColor3B{255, 125, 125}
+                        : ccColor3B{255, 220, 90});
         button("<", 285.f, 188.f, [this] {
             const int size = static_cast<int>(atom().m_actions.size());
             m_selected = (m_selected + size - 1) % size;
@@ -653,7 +661,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
         }
 
         const int active = std::clamp(
-            static_cast<int>(Bot::get()->replaySystem().m_inputIndex), 0,
+            static_cast<int>(Bot::get()->replaySystem().m_inputIndex) - 1, 0,
             static_cast<int>(atom().m_actions.size()) - 1);
         if (active != m_selected) {
             m_selected = active;

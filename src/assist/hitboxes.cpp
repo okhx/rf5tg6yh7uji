@@ -316,14 +316,6 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
 
     m_drawNode->clear();
 
-    if (!m_enabled->inner()) {
-        if (m_trailDirty) {
-            m_trailDrawNode->clear();
-            m_trailDirty = false;
-        }
-        return;
-    }
-
     if (!m_trailEnabled->inner()) {
         m_trailDrawNode->clear();
         // Keep it dirty so re-enabling the option redraws preserved data.
@@ -417,6 +409,9 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
         }
     }
 
+    // Hitbox trail is independent from current/object hitboxes.
+    if (!m_enabled->inner()) return;
+
     {
         auto& hbs = SLSettings::get()->hitboxes;
         using Type = SLSettings::HitboxSettings::Type;
@@ -474,7 +469,7 @@ static void appendTrailUnit(std::deque<HitboxTrailUnit>& trail,
 
 void Hitboxes::saveToTrail(GJBaseGameLayer* pl) {
     if (pl->m_levelEndAnimationStarted) return;
-    if (!m_enabled->inner() || !m_trailEnabled->inner()) return;
+    if (!m_trailEnabled->inner()) return;
 
     auto& hbs      = SLSettings::get()->hitboxes;
     int   maxLen   = std::clamp(hbs.trailMaxLength, 50, 8000);

@@ -211,6 +211,12 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
     phys::checkSpawnObjects(pl, player);
     pl->m_effectManager->postCollisionCheck();
 
+    const bool died = (player == m_fakePlayer1) ? m_deadP1 : m_deadP2;
+    if (died) {
+        ++stepCount;
+        return true;
+    }
+
     const float width = m_state->m_width->inner() / pl->m_gameState.m_cameraZoom;
     m_node->drawSegment(
         prevPos, player->getPosition(), width,
@@ -242,7 +248,10 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
     std::array<PlayerObject*, 2> activePlayers = {player, other};
     const int activeCount = dualBoth ? 2 : 1;
 
-    if (bot->isRecording()) {
+    // Apply each requested alternative in every bot mode. Previously these
+    // branches were only applied while recording, so normal gameplay mostly
+    // predicted the player's already-current movement.
+    {
         for (int i = 0; i < activeCount; ++i) {
             PlayerObject* plr = activePlayers[i];
             switch (mode & CLICK_MASK) {

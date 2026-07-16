@@ -269,7 +269,8 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         }
 
         float modDelta = GJBaseGameLayer::getModifiedDelta(dt);
-        if (auto lel = LevelEditorLayer::get(); lel && lel->m_playbackActive) {
+        // Never force bot TPS onto the editor or its playtest/UI scheduler.
+        if (LevelEditorLayer::get()) {
             return modDelta;
         }
 

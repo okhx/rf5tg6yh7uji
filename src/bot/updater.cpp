@@ -243,6 +243,15 @@ void BotUpdater::runUpdates(std::function<void(float)> update, float realDt,
         return;
     }
 
+    // The editor UI, popups, and playtest share the same Cocos scheduler.
+    // Let that scheduler run normally and gate only updateEditor() while
+    // frame stepping; otherwise popup animations freeze with the playtest.
+    if (!isPlayLayer) {
+        m_tpsOverflow = 0.0;
+        update(realDt);
+        return;
+    }
+
     if (auto renderer = Renderer::get();
         renderer->isRecording() && renderer->m_collectAudio) {
         realDt = renderer->getDt();
@@ -642,6 +651,7 @@ static void frameUpdateMidhook(SafetyHookContext&) {
 static void physDtMidhook(SafetyHookContext& ctx) {
     auto pl = GJBaseGameLayer::get();
     if (!pl) return;
+    if (LevelEditorLayer::get()) return;
 
     auto bot = Bot::get();
     if (!bot->isEnabled()) return;
@@ -652,6 +662,7 @@ static void physDtMidhook(SafetyHookContext& ctx) {
 }
 
 static void physStepCountMidhook(SafetyHookContext& ctx) {
+    if (LevelEditorLayer::get()) return;
     auto bot = Bot::get();
     if (!bot->isEnabled()) return;
     bool fastBypass = bot->updater().useFastLockDelta() ||
@@ -664,6 +675,7 @@ static void physStepCountMidhook(SafetyHookContext& ctx) {
 static void restorePhysDtHook(SafetyHookContext& ctx) {
     auto pl = GJBaseGameLayer::get();
     if (!pl) return;
+    if (LevelEditorLayer::get()) return;
 
     auto bot = Bot::get();
     if (!bot->isEnabled()) return;

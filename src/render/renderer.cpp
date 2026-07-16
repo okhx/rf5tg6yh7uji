@@ -233,10 +233,10 @@ geode::Result<> Renderer::startMobile() {
 #endif
 
     std::vector<uint8_t> blank(
-        static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 3, 0);
+        static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 4, 0);
     m_mobileTexture = new CCTexture2D();
     if (!m_mobileTexture->initWithData(
-            blank.data(), kCCTexture2DPixelFormat_RGB888,
+            blank.data(), kCCTexture2DPixelFormat_RGBA8888,
             m_settings.m_width, m_settings.m_height,
             {static_cast<float>(m_settings.m_width),
              static_cast<float>(m_settings.m_height)})) {
@@ -267,6 +267,8 @@ geode::Result<> Renderer::startMobile() {
 
     m_mobileFrame.resize(
         static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 3);
+    m_mobileRGBAFrame.resize(
+        static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 4);
     m_mobileNextFrameTime = 0.0;
     m_endTime = 0.0f;
     m_time = 0.0;
@@ -301,6 +303,7 @@ void Renderer::stopMobile() {
         m_mobileTexture = nullptr;
     }
     m_mobileFrame.clear();
+    m_mobileRGBAFrame.clear();
     m_mobileRecording = false;
     m_recording = false;
     geode::log::info("Mobile render stopped");
@@ -344,7 +347,18 @@ void Renderer::updateMobile(PlayLayer* pl) {
     }
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(0, 0, m_settings.m_width, m_settings.m_height,
-                 GL_RGB, GL_UNSIGNED_BYTE, m_mobileFrame.data());
+                 GL_RGBA, GL_UNSIGNED_BYTE, m_mobileRGBAFrame.data());
+
+    // RGB render targets are not reliably color-renderable on iOS OpenGL ES
+    // and can read back as zeroes. Capture RGBA8, then pack it for the video
+    // writers, both of which accept RGB24.
+    const size_t pixels = static_cast<size_t>(m_settings.m_width) *
+                          m_settings.m_height;
+    for (size_t i = 0; i < pixels; ++i) {
+        m_mobileFrame[i * 3]     = m_mobileRGBAFrame[i * 4];
+        m_mobileFrame[i * 3 + 1] = m_mobileRGBAFrame[i * 4 + 1];
+        m_mobileFrame[i * 3 + 2] = m_mobileRGBAFrame[i * 4 + 2];
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);
     view->CCEGLViewProtocol::setFrameSize(originalSize.width,
                                            originalSize.height);

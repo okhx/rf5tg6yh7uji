@@ -264,6 +264,7 @@ class Renderer {
     cocos2d::CCTexture2D* m_mobileTexture = nullptr;
     GLuint m_mobileFbo = 0;
     std::vector<uint8_t> m_mobileFrame;
+    std::vector<uint8_t> m_mobileRGBAFrame;
     double m_mobileNextFrameTime = 0.0;
     bool m_mobileRecording = false;
 #endif

@@ -8,6 +8,7 @@
 #include "bot/bot.hpp"
 #include "bot/updater.hpp"
 #include "replay/system.hpp"
+#include "render/renderer.hpp"
 #include "trajectory/trajectory.hpp"
 #ifdef GEODE_IS_MOBILE
 #include "ui/mobile_menu.hpp"
@@ -120,14 +121,23 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
     }
 
     void updateEditor(float dt) {
+        auto* bot = Bot::get();
+        if (m_playbackActive && bot->updater().isPaused() &&
+            !Renderer::get()->isRecording() &&
+            !bot->updater().consumeStep()) {
+            bot->hitboxes().draw(this);
+            bot->trajectory().update(this);
+            return;
+        }
+
         LevelEditorLayer::updateEditor(dt);
 
         // Editor playtests are advanced through updateEditor rather than the
         // regular GJBaseGameLayer update on every platform.
         if (m_playbackActive) {
-            Bot::get()->hitboxes().saveToTrail(this);
-            Bot::get()->hitboxes().draw(this);
-            Bot::get()->trajectory().update(this);
+            bot->hitboxes().saveToTrail(this);
+            bot->hitboxes().draw(this);
+            bot->trajectory().update(this);
         }
     }
 };
