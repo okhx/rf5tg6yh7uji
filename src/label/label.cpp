@@ -36,7 +36,8 @@ LabelManager::LabelManager() {
     addLabel("frame", "Tick",
              []() {
                  auto& updater = Bot::get()->updater();
-                 return fmt::format("Tick: {}", updater.getFrame());
+                 return fmt::format(
+                     "Tick: {}", static_cast<uint64_t>(updater.getFrame()) * 2);
              },
              {});
 

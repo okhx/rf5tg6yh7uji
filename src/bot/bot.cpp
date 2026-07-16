@@ -59,6 +59,29 @@ BOT_GETTER(LabelManager, labels)
 Bot::Bot() : m_impl(std::make_unique<Impl>()) {}
 Bot::~Bot() = default;
 
+void Bot::setMode(Mode mode) {
+    const Mode previous = m_mode;
+    m_mode = mode;
+
+    if (mode == Playing && previous != Playing) {
+        // Starting midway through an editor playtest must begin at the first
+        // action due at or after the current physics frame.
+        replaySystem().onReset(updater().getFrame());
+    }
+
+    if (previous == Playing && mode != Playing) {
+        replaySystem().m_lastInputs.clear();
+        replaySystem().m_forceNextInput = false;
+        replaySystem().m_flipProcessingInputs = false;
+
+        if (auto* layer = GJBaseGameLayer::get()) {
+            layer->m_queuedButtons.clear();
+            if (layer->m_player1) layer->m_player1->releaseAllButtons();
+            if (layer->m_player2) layer->m_player2->releaseAllButtons();
+        }
+    }
+}
+
 void Bot::initialize() {
 #ifdef SILICATE_PROTECT
     VMProtectBegin("BotInitialize");

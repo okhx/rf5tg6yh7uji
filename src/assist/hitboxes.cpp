@@ -305,6 +305,9 @@ void Hitboxes::init(GJBaseGameLayer* pl) {
     m_drawNode      = makeNode(base + 10000, "hitbox-node"_spr);
     m_trailDrawNode = makeNode(base + 9998,  "hitbox-trail-node"_spr);
 
+    // A new layer has a new draw node even when the trail data was preserved.
+    // Force the complete trail to be rebuilt on that node immediately.
+    m_trailDirty = true;
     m_initialized = true;
 }
 
@@ -321,7 +324,11 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
         return;
     }
 
-    if (m_trailEnabled->inner() && m_trailDirty) {
+    if (!m_trailEnabled->inner()) {
+        m_trailDrawNode->clear();
+        // Keep it dirty so re-enabling the option redraws preserved data.
+        m_trailDirty = true;
+    } else if (m_trailDirty) {
         m_trailDrawNode->clear();
         m_trailDirty = false;
 
@@ -332,11 +339,6 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
         const float scale  = pl->m_objectLayer->getScale();
         const float objX   = pl->m_objectLayer->getPositionX();
         const float objY   = pl->m_objectLayer->getPositionY();
-
-        const float minX = (-objX - pl->m_cameraWidth)  / scale;
-        const float maxX = (-objX + pl->m_cameraWidth)  / scale;
-        const float minY = (-objY - pl->m_cameraHeight) / scale;
-        const float maxY = (-objY + pl->m_cameraHeight) / scale;
 
         const bool eRotated = HB_ENABLED(Type::PlayerRotated);
         const bool eSolid   = HB_ENABLED(Type::Player);
@@ -357,8 +359,6 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
                 int  lastPx  = 0, lastPy = 0;
 
                 for (const auto& unit : trail) {
-                    if (!unit.shouldDraw(minX, maxX, minY, maxY)) continue;
-
                     const int px = static_cast<int>(
                         (unit.m_rect.getMidX() * scale + objX) * 2.0f);
                     const int py = static_cast<int>(
@@ -444,14 +444,30 @@ static void appendTrailUnit(std::deque<HitboxTrailUnit>& trail,
                             PlayerObject*                 player,
                             int                           maxLength) {
     auto* box = player->getOrientedBox();
-    trail.push_back({
+    HitboxTrailUnit unit{
         .m_rect    = player->getObjectRect(),
         .m_scaled  = player->getObjectRect(0.3f, 0.3f),
         .m_rotated = box ? box->m_corners
                          : std::array<cocos2d::CCPoint, 4>{},
         .m_holding = player->m_jumpBuffered ||
                      player->m_holdingButtons[1],
-    });
+    };
+
+    // LevelEditorLayer can pass through both update and updateEditor for the
+    // same physics state. Do not let duplicate samples consume the configured
+    // trail length and make the visible trail appear randomly cut short.
+    if (!trail.empty()) {
+        const auto& last = trail.back();
+        if (last.m_rect.origin.x == unit.m_rect.origin.x &&
+            last.m_rect.origin.y == unit.m_rect.origin.y &&
+            last.m_rect.size.width == unit.m_rect.size.width &&
+            last.m_rect.size.height == unit.m_rect.size.height &&
+            last.m_holding == unit.m_holding) {
+            return;
+        }
+    }
+
+    trail.push_back(std::move(unit));
     while (static_cast<int>(trail.size()) > maxLength)
         trail.pop_front();
 }

@@ -1132,8 +1132,8 @@ void UIManager::draw() {
                         ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
                     if (ImGui::Button(recording ? "Stop Recording" : "Start Recording",
                                       ImVec2(-FLT_MIN, 0.0f))) {
-                        bot->m_mode = recording ? Bot::Mode::Stopped
-                                                : Bot::Mode::Recording;
+                        bot->setMode(recording ? Bot::Mode::Stopped
+                                               : Bot::Mode::Recording);
                         if (PlayLayer::get() &&
                             bot->isRecording() &&
                             rs.getInputIndex() < rs.m_actionAtom.length()) {
@@ -1150,8 +1150,8 @@ void UIManager::draw() {
                         ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
                     if (ImGui::Button(playing ? "Stop Playing" : "Start Playing",
                                       ImVec2(-FLT_MIN, 0.0f))) {
-                        bot->m_mode = playing ? Bot::Mode::Stopped
-                                              : Bot::Mode::Playing;
+                        bot->setMode(playing ? Bot::Mode::Stopped
+                                             : Bot::Mode::Playing);
                     }
                     if (playing) ImGui::PopStyleColor();
                     ImGui::EndTable();
@@ -1298,9 +1298,6 @@ void UIManager::draw() {
                 slui::text("Assist", m_bold);
 
                 slui::divider(false);
-
-                slui::text(fmt::format("Frame: {}",
-                                       bot->updater().getDisplayFrame()));
 
                 slui::text("Macro Merge", m_medium);
                 if (slui::input_text_autocomplete(

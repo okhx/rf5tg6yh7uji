@@ -119,5 +119,15 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
         Bot::get()->trajectory().update(this);
     }
 
-    void updateEditor(float dt) { LevelEditorLayer::updateEditor(dt); }
+    void updateEditor(float dt) {
+        LevelEditorLayer::updateEditor(dt);
+
+        // Editor playtests are advanced through updateEditor rather than the
+        // regular GJBaseGameLayer update on every platform.
+        if (m_playbackActive) {
+            Bot::get()->hitboxes().saveToTrail(this);
+            Bot::get()->hitboxes().draw(this);
+            Bot::get()->trajectory().update(this);
+        }
+    }
 };
