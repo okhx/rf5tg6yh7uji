@@ -24,6 +24,7 @@
 #include "Geode/utils/random.hpp"
 #include "Geode/utils/string.hpp"
 #include "bot/bot.hpp"
+#include "bot/updater.hpp"
 #include "colorspace/nv12.hpp"
 #include "colorspace/rgb0.hpp"
 #include "colorspace/rgb24.hpp"
