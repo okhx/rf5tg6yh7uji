@@ -50,8 +50,6 @@ void FMOD_System_update(FMOD::System* self) {
         return;
     }
 
-    auto renderer = Renderer::get();
-
     unsigned int bufferLength;
     int bufferCount;
     self->getDSPBufferSize(&bufferLength, &bufferCount);
@@ -78,6 +76,7 @@ void FMOD_System_update(FMOD::System* self) {
         // the native writer. The desktop FFmpeg contexts do not exist here.
         break;
 #else
+        auto renderer = Renderer::get();
         uint64_t pts = (uint64_t)(audio->m_index * frameSize);
 
         auto result = renderer->writeAudio(audio->m_buffer, pts);
