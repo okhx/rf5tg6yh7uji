@@ -98,7 +98,7 @@ if (GEODE_TARGET_PLATFORM STREQUAL "iOS")
     find_library(AVFOUNDATION_FRAMEWORK AVFoundation REQUIRED)
     find_library(COREMEDIA_FRAMEWORK CoreMedia REQUIRED)
     find_library(COREVIDEO_FRAMEWORK CoreVideo REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
+    target_link_libraries(${PROJECT_NAME}
         ${AVFOUNDATION_FRAMEWORK}
         ${COREMEDIA_FRAMEWORK}
         ${COREVIDEO_FRAMEWORK}
