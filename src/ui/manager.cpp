@@ -1299,6 +1299,9 @@ void UIManager::draw() {
 
                 slui::divider(false);
 
+                slui::text(fmt::format("Frame: {}",
+                                       bot->updater().getDisplayFrame()));
+
                 slui::text("Macro Merge", m_medium);
                 if (slui::input_text_autocomplete(
                         "Merge Replay", "Replay to merge",

@@ -31,6 +31,7 @@ SavedCheckpoint PracticeFix::createCheckpoint(CheckpointObject* obj,
             .m_stackSize = m_platformerCheckpoints.size(),
             .m_attemptStartFrame = attemptStartFrame,
             .m_frame = Bot::get()->updater().getFrame(),
+            .m_replayInputIndex = Bot::get()->replaySystem().m_inputIndex,
             .m_seedState = Bot::get()->replaySystem().getCurrentRandomState(),
             .m_shakeRandomState = Bot::get()->replaySystem().m_shakeRandomState,
             .m_tps = Bot::get()->updater().m_tps->inner(),
@@ -82,6 +83,9 @@ void PracticeFix::applyCheckpoint(SavedCheckpoint& cp) {
         auto& updater = bot->updater();
         updater.m_frameOnLastAttempt = cp.m_attemptStartFrame;
         updater.setFrame(cp.m_frame - cp.m_attemptStartFrame);
+        bot->replaySystem().m_inputIndex = std::min(
+            cp.m_replayInputIndex,
+            bot->replaySystem().m_actionAtom.m_actions.size());
         bot->replaySystem().getCurrentRandomState() = cp.m_seedState;
         bot->replaySystem().m_shakeRandomState = cp.m_shakeRandomState;
         if (cp.m_tps != bot->updater().m_tps->inner()) {

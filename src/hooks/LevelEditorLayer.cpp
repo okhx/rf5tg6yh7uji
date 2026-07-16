@@ -36,14 +36,12 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
         bot->replaySystem().onReset(bot->updater().getFrame());
         bot->autoclicker().reset();
         bot->trajectory().update(this);
+        bot->hitboxes().saveToTrail(this);
         m_queuedButtons.clear();
 
         if (bot->isPlaying()) {
             m_player1->releaseAllButtons();
             m_player2->releaseAllButtons();
-
-            this->processQueuedButtons(0.0, true);
-
             return;
         }
 
@@ -104,12 +102,19 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
     //     LevelEditorLayer::playerTookDamage(player);
     // }
 
-    void updateVisibility(float dt) override {
-        LevelEditorLayer::updateVisibility(dt);
+    void update(float dt) override {
+        LevelEditorLayer::update(dt);
 
         if (m_playbackActive) {
             Bot::get()->hitboxes().saveToTrail(this);
+            Bot::get()->hitboxes().draw(this);
+            Bot::get()->trajectory().update(this);
         }
+    }
+
+    void updateVisibility(float dt) override {
+        LevelEditorLayer::updateVisibility(dt);
+
         Bot::get()->hitboxes().draw(this);
         Bot::get()->trajectory().update(this);
     }

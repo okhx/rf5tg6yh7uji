@@ -17,6 +17,10 @@
 using namespace geode::prelude;
 
 void ReplaySystem::onReset(uint32_t newFrame) {
+    m_lastInputs.clear();
+    m_forceNextInput = false;
+    m_flipProcessingInputs = false;
+
     if (Bot::get()->isRecording()) {
         m_actionAtom.clipActions(newFrame);
 
@@ -81,7 +85,12 @@ uint64_t& ReplaySystem::getCurrentShakeState() {
     return this->m_shakeRandomState;
 }
 
-void ReplaySystem::onExit() { m_inputIndex = 0; }
+void ReplaySystem::onExit() {
+    m_inputIndex = 0;
+    m_lastInputs.clear();
+    m_forceNextInput = false;
+    m_flipProcessingInputs = false;
+}
 
 using Replay = slc::v3::Replay<>;
 
@@ -160,7 +169,7 @@ bool ReplaySystem::processSlc3(Replay& replay) {
             ? replay.m_meta.m_tps
             : 240.0;
     updater.m_tps->notifyChange();
-    Bot::get()->setMode(Bot::Mode::Playing);
+    Bot::get()->setMode(Bot::Mode::Stopped);
     return true;
 }
 
@@ -218,7 +227,7 @@ bool ReplaySystem::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
         std::isfinite(replay.m_tps) && replay.m_tps > 0.0 ? replay.m_tps
                                                           : 240.0;
     updater.m_tps->notifyChange();
-    Bot::get()->setMode(Bot::Mode::Playing);
+    Bot::get()->setMode(Bot::Mode::Stopped);
     return true;
 }
 

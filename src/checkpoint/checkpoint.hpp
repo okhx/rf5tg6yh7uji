@@ -270,6 +270,7 @@ struct SavedCheckpoint {
 
     uint64_t m_attemptStartFrame;
     uint64_t m_frame;
+    size_t m_replayInputIndex;
     uint64_t m_seedState;
     uint64_t m_shakeRandomState;
 

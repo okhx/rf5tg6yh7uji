@@ -1049,6 +1049,13 @@ void MobileMenu::buildAssistPage() {
     auto& hitboxes = bot->hitboxes();
     auto& trajectory = bot->trajectory();
 
+    m_frameLabel = CCLabelBMFont::create("", "bigFont.fnt");
+    m_frameLabel->setAnchorPoint({0.f, .5f});
+    m_frameLabel->setScale(.34f);
+    m_frameLabel->setColor({255, 220, 90});
+    m_frameLabel->setPosition({18.f, rowY(0) + 14.f});
+    m_pageNode->addChild(m_frameLabel);
+
     addToggleWithSettings(
         "Show hitboxes", 0, 0, hitboxes.m_enabled->inner(),
         [&hitboxes](bool value) { hitboxes.m_enabled->inner() = value; },

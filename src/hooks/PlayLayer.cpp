@@ -451,12 +451,8 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         }
 
         const bool restoredBackstep = bot->practiceFix().m_isBackstep;
-        bot->replaySystem().onReset(bot->updater().getFrame());
-        if (restoredBackstep && bot->isPlaying()) {
-            // The saved checkpoint already contains every input through its
-            // frame. Keep backstepping from replaying those inputs and moving
-            // the macro cursor forward during the restore itself.
-            bot->replaySystem().seekAfterFrame(bot->updater().getFrame());
+        if (!restoredBackstep) {
+            bot->replaySystem().onReset(bot->updater().getFrame());
         }
         bot->autoclicker().reset();
 
@@ -653,7 +649,8 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                 gameObject != m_anticheatSpike) {
                 bot->updater().backwardsStep();
 
-                if (bot->updater().m_autoFlipOnDeath->inner()) {
+                if (bot->updater().m_autoFlipOnDeath->inner() &&
+                    !bot->practiceFix().m_isBackstep) {
                     if (player == m_player1) {
                         this->queueButton(1, !player->m_jumpBuffered, false,
                                           0.0);
