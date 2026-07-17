@@ -159,10 +159,6 @@ class Renderer {
     geode::Result<> startMobile();
     void stopMobile();
     void updateMobile(PlayLayer* pl);
-    // Flushes copies of the last captured frame. On iOS this returns false
-    // while AVFoundation is busy, allowing the director to hold gameplay at
-    // that exact frame instead of dropping the interval.
-    bool drainMobileFrames();
 #endif
 
     std::atomic<bool> m_halting = false;
@@ -274,7 +270,6 @@ class Renderer {
     std::vector<uint8_t> m_mobileFrame;
     std::vector<uint8_t> m_mobileRGBAFrame;
     double m_mobileNextFrameTime = 0.0;
-    int m_mobilePendingFrames = 0;
     uint32_t m_mobileArmFrame = 0;
     uint32_t m_mobileStartFrame = 0;
     cocos2d::CCSize m_mobileOriginalFrameSize{};

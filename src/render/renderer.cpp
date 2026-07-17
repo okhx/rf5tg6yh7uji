@@ -302,7 +302,6 @@ geode::Result<> Renderer::startMobile() {
     }
 #endif
     m_mobileNextFrameTime = 0.0;
-    m_mobilePendingFrames = 0;
     m_mobileArmFrame = Bot::get()->updater().getFrame();
     m_mobileStartFrame = 0;
     m_mobileCaptureStarted = false;
@@ -363,32 +362,9 @@ void Renderer::stopMobile() {
         m_mobileShaderResized = false;
     }
     m_mobileCaptureStarted = false;
-    m_mobilePendingFrames = 0;
     m_mobileRecording = false;
     m_recording = false;
     geode::log::info("Mobile render stopped");
-}
-
-bool Renderer::drainMobileFrames() {
-#ifdef GEODE_IS_IOS
-    if (!m_mobileRecording || !m_iosWriter) return true;
-
-    const double frameDuration = 1.0 / m_settings.m_fps;
-    while (m_mobilePendingFrames > 0) {
-        auto result = m_iosWriter->appendRGB(m_mobileFrame);
-        if (result.isErr()) {
-            geode::log::error("Mobile render frame failed: {}",
-                              result.unwrapErr());
-            stopMobile();
-            return false;
-        }
-        if (!result.unwrap()) return false;
-
-        --m_mobilePendingFrames;
-        m_mobileNextFrameTime += frameDuration;
-    }
-#endif
-    return true;
 }
 
 void Renderer::updateMobile(PlayLayer* pl) {
@@ -495,17 +471,23 @@ void Renderer::updateMobile(PlayLayer* pl) {
     int writtenFrames = 0;
     const double frameDuration = 1.0 / m_settings.m_fps;
 #ifdef GEODE_IS_IOS
-    // Schedule copies of this exact captured frame, then hold gameplay if the
-    // encoder cannot accept them all yet. This is bounded and uses one RGB
-    // frame regardless of render length or resolution.
-    while (m_mobileNextFrameTime +
-               static_cast<double>(m_mobilePendingFrames) * frameDuration <=
-           gameTime + 1e-9 &&
-           m_mobilePendingFrames < 32) {
-        ++m_mobilePendingFrames;
+    while (m_mobileNextFrameTime <= gameTime + 1e-9 &&
+           writtenFrames < 32) {
+        auto result = m_iosWriter->appendRGB(m_mobileFrame);
+        if (result.isErr()) {
+            geode::log::error("Mobile render frame failed: {}",
+                              result.unwrapErr());
+            stopMobile();
+            return;
+        }
+
         ++writtenFrames;
+        m_mobileNextFrameTime += frameDuration;
+        // AVFoundation backpressure is temporary. Advancing exactly one video
+        // timestamp avoids freezing gameplay and avoids the old 32-copy
+        // catch-up burst that alternated recorded and missing one-second spans.
+        if (!result.unwrap()) break;
     }
-    if (!drainMobileFrames()) return;
 #else
     while (m_mobileNextFrameTime <= gameTime + 1e-9 &&
            writtenFrames < 32) {

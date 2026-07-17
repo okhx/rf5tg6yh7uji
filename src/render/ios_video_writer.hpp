@@ -21,8 +21,8 @@ class IOSVideoWriter {
     geode::Result<> open(const std::filesystem::path& output, int width,
                          int height, int fps, uint32_t bitrate,
                          int sampleRate, int channels, bool includeAudio);
-    // false means AVFoundation is temporarily applying backpressure; callers
-    // should retry the frame on a later draw instead of ending the render.
+    // False means AVFoundation skipped this image under temporary
+    // backpressure; its output timestamp has still been reserved.
     geode::Result<bool> appendRGB(const std::vector<uint8_t>& rgb);
     // False means AVFoundation is temporarily busy; retry the same PCM later.
     geode::Result<bool> appendAudio(const std::vector<float>& pcm);

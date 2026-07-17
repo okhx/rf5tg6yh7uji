@@ -210,7 +210,13 @@ geode::Result<bool> IOSVideoWriter::appendRGB(
     if (m_impl->writer.status == AVAssetWriterStatusFailed)
         return geode::Err(errorText(m_impl->writer.error,
                                     "iOS video encoder failed"));
-    if (!m_impl->input.readyForMoreMediaData) return geode::Ok(false);
+    if (!m_impl->input.readyForMoreMediaData) {
+        // Preserve the output timeline even when this image cannot be accepted.
+        // The previous encoded image remains visible for this timestamp rather
+        // than shortening the finished movie or forcing a catch-up burst.
+        ++m_impl->frame;
+        return geode::Ok(false);
+    }
 
     CVPixelBufferRef pixel = nullptr;
     const CVReturn created = CVPixelBufferPoolCreatePixelBuffer(
@@ -252,6 +258,16 @@ geode::Result<bool> IOSVideoWriter::appendRGB(
 geode::Result<> IOSVideoWriter::finish() {
     if (!m_impl->writer || m_impl->finished) return geode::Ok();
     m_impl->finished = true;
+    // A final image may have been skipped while the encoder was busy. End the
+    // session at the reserved timestamp so AVFoundation holds the last valid
+    // frame instead of shortening the movie.
+    CMTime endTime = CMTimeMake(m_impl->frame, m_impl->fps);
+    if (m_impl->audioFrame > 0) {
+        const CMTime audioEnd =
+            CMTimeMake(m_impl->audioFrame, m_impl->sampleRate);
+        if (CMTimeCompare(audioEnd, endTime) > 0) endTime = audioEnd;
+    }
+    [m_impl->writer endSessionAtSourceTime:endTime];
     [m_impl->input markAsFinished];
     if (m_impl->audioInput) [m_impl->audioInput markAsFinished];
 
