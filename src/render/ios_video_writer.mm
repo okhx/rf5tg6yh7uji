@@ -6,9 +6,7 @@
 #import <CoreVideo/CoreVideo.h>
 #import <dispatch/dispatch.h>
 
-#include <chrono>
 #include <cstring>
-#include <thread>
 
 namespace {
 std::string errorText(NSError* error, const char* fallback) {
@@ -200,7 +198,8 @@ geode::Result<bool> IOSVideoWriter::appendAudio(
     return geode::Ok(true);
 }
 
-geode::Result<> IOSVideoWriter::appendRGB(const std::vector<uint8_t>& rgb) {
+geode::Result<bool> IOSVideoWriter::appendRGB(
+    const std::vector<uint8_t>& rgb) {
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
     const size_t expected = static_cast<size_t>(m_impl->width) *
@@ -208,17 +207,10 @@ geode::Result<> IOSVideoWriter::appendRGB(const std::vector<uint8_t>& rgb) {
     if (rgb.size() != expected)
         return geode::Err("Captured frame has an invalid size");
 
-    const auto deadline = std::chrono::steady_clock::now() +
-                          std::chrono::seconds(5);
-    while (!m_impl->input.readyForMoreMediaData) {
-        if (m_impl->writer.status == AVAssetWriterStatusFailed) {
-            return geode::Err(errorText(m_impl->writer.error,
-                                        "iOS video encoder failed"));
-        }
-        if (std::chrono::steady_clock::now() >= deadline)
-            return geode::Err("Timed out waiting for the iOS video encoder");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
+    if (m_impl->writer.status == AVAssetWriterStatusFailed)
+        return geode::Err(errorText(m_impl->writer.error,
+                                    "iOS video encoder failed"));
+    if (!m_impl->input.readyForMoreMediaData) return geode::Ok(false);
 
     CVPixelBufferRef pixel = nullptr;
     const CVReturn created = CVPixelBufferPoolCreatePixelBuffer(
@@ -254,7 +246,7 @@ geode::Result<> IOSVideoWriter::appendRGB(const std::vector<uint8_t>& rgb) {
     if (!appended)
         return geode::Err(errorText(m_impl->writer.error,
                                     "Unable to append iOS video frame"));
-    return geode::Ok();
+    return geode::Ok(true);
 }
 
 geode::Result<> IOSVideoWriter::finish() {

@@ -397,8 +397,11 @@ void Renderer::updateMobile(PlayLayer* pl) {
 
     GLint previousFbo = 0;
     GLint viewport[4] = {};
+    GLint scissorBox[4] = {};
+    const GLboolean scissorEnabled = glIsEnabled(GL_SCISSOR_TEST);
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFbo);
     glGetIntegerv(GL_VIEWPORT, viewport);
+    glGetIntegerv(GL_SCISSOR_BOX, scissorBox);
 
     // CCDirector has already completed its onscreen draw by the time this
     // runs. Restore a projection for the offscreen target before visiting the
@@ -416,6 +419,9 @@ void Renderer::updateMobile(PlayLayer* pl) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_mobileFbo);
     glViewport(0, 0, m_settings.m_width, m_settings.m_height);
+    // Cocos may leave a scissor rectangle sized for the physical phone
+    // framebuffer. Applying it to a larger render target clips the right edge.
+    glDisable(GL_SCISSOR_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Capture the same scene Cocos has just drawn. Visiting the running scene
     // avoids re-entering PlayLayer while its update/draw lifecycle is active.
@@ -448,6 +454,9 @@ void Renderer::updateMobile(PlayLayer* pl) {
     director->setViewport();
     director->setProjection(kCCDirectorProjection2D);
     glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+    glScissor(scissorBox[0], scissorBox[1], scissorBox[2], scissorBox[3]);
+    if (scissorEnabled) glEnable(GL_SCISSOR_TEST);
+    else glDisable(GL_SCISSOR_TEST);
 
     int writtenFrames = 0;
     const double frameDuration = 1.0 / m_settings.m_fps;
@@ -464,6 +473,12 @@ void Renderer::updateMobile(PlayLayer* pl) {
             stopMobile();
             return;
         }
+#ifdef GEODE_IS_IOS
+        // Encoder saturation is normal for high resolutions. Keep the render
+        // active and retry this timestamp next draw instead of timing out and
+        // finalizing a one-second video.
+        if (!result.unwrap()) break;
+#endif
         ++writtenFrames;
         m_mobileNextFrameTime += frameDuration;
     }
