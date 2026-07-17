@@ -127,27 +127,22 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
     return geode::Ok();
 }
 
-geode::Result<> IOSVideoWriter::appendAudio(
+geode::Result<bool> IOSVideoWriter::appendAudio(
     const std::vector<float>& pcm) {
-    if (!m_impl->audioInput || pcm.empty()) return geode::Ok();
+    if (!m_impl->audioInput || pcm.empty()) return geode::Ok(true);
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
 
     const size_t frames = pcm.size() / static_cast<size_t>(m_impl->channels);
-    if (frames == 0) return geode::Ok();
+    if (frames == 0) return geode::Ok(true);
     const size_t bytes = frames * static_cast<size_t>(m_impl->channels) *
                          sizeof(float);
 
-    const auto deadline = std::chrono::steady_clock::now() +
-                          std::chrono::seconds(5);
-    while (!m_impl->audioInput.readyForMoreMediaData) {
-        if (m_impl->writer.status == AVAssetWriterStatusFailed)
-            return geode::Err(errorText(m_impl->writer.error,
-                                        "iOS audio encoder failed"));
-        if (std::chrono::steady_clock::now() >= deadline)
-            return geode::Err("Timed out waiting for the iOS audio encoder");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
+    if (m_impl->writer.status == AVAssetWriterStatusFailed)
+        return geode::Err(errorText(m_impl->writer.error,
+                                    "iOS audio encoder failed"));
+    if (!m_impl->audioInput.readyForMoreMediaData)
+        return geode::Ok(false);
 
     AudioStreamBasicDescription format{};
     format.mSampleRate = m_impl->sampleRate;
@@ -202,7 +197,7 @@ geode::Result<> IOSVideoWriter::appendAudio(
         return geode::Err(errorText(m_impl->writer.error,
                                     "Unable to append iOS audio"));
     m_impl->audioFrame += static_cast<int64_t>(frames);
-    return geode::Ok();
+    return geode::Ok(true);
 }
 
 geode::Result<> IOSVideoWriter::appendRGB(const std::vector<uint8_t>& rgb) {

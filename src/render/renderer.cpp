@@ -287,7 +287,9 @@ geode::Result<> Renderer::startMobile() {
     if (auto* base = GJBaseGameLayer::get();
         base && base->m_shaderLayer && base->m_shaderLayer->m_renderTexture) {
         silentChangeSize(renderSize);
-        resizeShaderLayer(renderSize, m_mobileOriginalFrameSize);
+        // Use the output aspect itself. Using the phone display aspect here
+        // expands the shader texture and shifts/crops the encoded frame.
+        resizeShaderLayer(renderSize, renderSize);
         silentChangeSize(m_mobileOriginalFrameSize);
         m_mobileShaderResized = true;
     }
@@ -321,7 +323,7 @@ void Renderer::stopMobile() {
                 geode::log::error("iOS final audio write failed: {}",
                                   audioResult.unwrapErr());
             }
-            pending.clear();
+            if (audioResult.isOk() && audioResult.unwrap()) pending.clear();
         }
         AudioRecorder::get()->detach();
         AudioRecorder::get()->uninit();
@@ -482,7 +484,7 @@ void Renderer::updateMobile(PlayLayer* pl) {
                 stopMobile();
                 return;
             }
-            pcm.clear();
+            if (audioResult.unwrap()) pcm.clear();
         }
         AudioRecorder::get()->m_time = AudioRecorder::get()->m_fmodTime;
     }

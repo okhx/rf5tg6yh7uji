@@ -22,7 +22,8 @@ class IOSVideoWriter {
                          int height, int fps, uint32_t bitrate,
                          int sampleRate, int channels, bool includeAudio);
     geode::Result<> appendRGB(const std::vector<uint8_t>& rgb);
-    geode::Result<> appendAudio(const std::vector<float>& pcm);
+    // False means AVFoundation is temporarily busy; retry the same PCM later.
+    geode::Result<bool> appendAudio(const std::vector<float>& pcm);
     geode::Result<> finish();
 };
 
