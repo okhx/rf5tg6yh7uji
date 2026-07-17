@@ -302,6 +302,7 @@ geode::Result<> Renderer::startMobile() {
     }
 #endif
     m_mobileNextFrameTime = 0.0;
+    m_mobilePendingFrames = 0;
     m_mobileArmFrame = Bot::get()->updater().getFrame();
     m_mobileStartFrame = 0;
     m_mobileCaptureStarted = false;
@@ -362,9 +363,32 @@ void Renderer::stopMobile() {
         m_mobileShaderResized = false;
     }
     m_mobileCaptureStarted = false;
+    m_mobilePendingFrames = 0;
     m_mobileRecording = false;
     m_recording = false;
     geode::log::info("Mobile render stopped");
+}
+
+bool Renderer::drainMobileFrames() {
+#ifdef GEODE_IS_IOS
+    if (!m_mobileRecording || !m_iosWriter) return true;
+
+    const double frameDuration = 1.0 / m_settings.m_fps;
+    while (m_mobilePendingFrames > 0) {
+        auto result = m_iosWriter->appendRGB(m_mobileFrame);
+        if (result.isErr()) {
+            geode::log::error("Mobile render frame failed: {}",
+                              result.unwrapErr());
+            stopMobile();
+            return false;
+        }
+        if (!result.unwrap()) return false;
+
+        --m_mobilePendingFrames;
+        m_mobileNextFrameTime += frameDuration;
+    }
+#endif
+    return true;
 }
 
 void Renderer::updateMobile(PlayLayer* pl) {
@@ -410,10 +434,18 @@ void Renderer::updateMobile(PlayLayer* pl) {
     auto* director = CCDirector::get();
     auto* view = CCEGLView::sharedOpenGLView();
     const CCSize originalSize = view->getFrameSize();
+    const CCSize originalDesign = view->getDesignResolutionSize();
+    const auto originalPolicy = view->m_eResolutionPolicy;
     const CCSize renderSize{static_cast<float>(m_settings.m_width),
                             static_cast<float>(m_settings.m_height)};
     view->CCEGLViewProtocol::setFrameSize(renderSize.width, renderSize.height);
+    // Preserve every part of the phone's logical game view. Reusing its
+    // no-border/fixed-height policy for a 16:9 output crops one horizontal
+    // edge; exact-fit scales the complete native view into the requested
+    // resolution instead.
     director->updateScreenScale(renderSize);
+    view->setDesignResolutionSize(originalDesign.width, originalDesign.height,
+                                  kResolutionExactFit);
     director->setViewport();
     director->setProjection(kCCDirectorProjection2D);
 
@@ -451,6 +483,8 @@ void Renderer::updateMobile(PlayLayer* pl) {
     view->CCEGLViewProtocol::setFrameSize(originalSize.width,
                                            originalSize.height);
     director->updateScreenScale(originalSize);
+    view->setDesignResolutionSize(originalDesign.width, originalDesign.height,
+                                  originalPolicy);
     director->setViewport();
     director->setProjection(kCCDirectorProjection2D);
     glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
@@ -460,31 +494,35 @@ void Renderer::updateMobile(PlayLayer* pl) {
 
     int writtenFrames = 0;
     const double frameDuration = 1.0 / m_settings.m_fps;
+#ifdef GEODE_IS_IOS
+    // Schedule copies of this exact captured frame, then hold gameplay if the
+    // encoder cannot accept them all yet. This is bounded and uses one RGB
+    // frame regardless of render length or resolution.
+    while (m_mobileNextFrameTime +
+               static_cast<double>(m_mobilePendingFrames) * frameDuration <=
+           gameTime + 1e-9 &&
+           m_mobilePendingFrames < 32) {
+        ++m_mobilePendingFrames;
+        ++writtenFrames;
+    }
+    if (!drainMobileFrames()) return;
+#else
     while (m_mobileNextFrameTime <= gameTime + 1e-9 &&
            writtenFrames < 32) {
-#ifdef GEODE_IS_IOS
-        auto result = m_iosWriter->appendRGB(m_mobileFrame);
-#else
         auto result = m_mobileRecorder->writeFrame(m_mobileFrame);
-#endif
         if (result.isErr()) {
             geode::log::error("Mobile render frame failed: {}",
                               result.unwrapErr());
             stopMobile();
             return;
         }
-#ifdef GEODE_IS_IOS
-        // Encoder saturation is normal for high resolutions. Keep the render
-        // active and retry this timestamp next draw instead of timing out and
-        // finalizing a one-second video.
-        if (!result.unwrap()) break;
-#endif
         ++writtenFrames;
         m_mobileNextFrameTime += frameDuration;
     }
     // Avoid an unbounded catch-up loop after a long app suspension.
     if (writtenFrames == 32 && m_mobileNextFrameTime <= gameTime)
         m_mobileNextFrameTime = gameTime + frameDuration;
+#endif
     m_time = gameTime;
 
 #ifdef GEODE_IS_IOS

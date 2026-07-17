@@ -31,6 +31,16 @@ struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
         // a render starts dereferences its uninitialized GL resources. Draw
         // normally first, then let the mobile renderer capture the frame.
         if (renderer->isRecording()) {
+#ifdef GEODE_IS_IOS
+            // Offline rendering must not advance the level while the native
+            // encoder still owns the previous timestamp. Otherwise the next
+            // available frame replaces the missing interval, producing the
+            // visible one-second-on / one-second-off cuts.
+            if (!renderer->drainMobileFrames()) {
+                this->m_pobOpenGLView->swapBuffers();
+                return;
+            }
+#endif
             CCDirector::drawScene();
             renderer->update(playLayer);
             Bot::get()->updater().runFrozenTick();
