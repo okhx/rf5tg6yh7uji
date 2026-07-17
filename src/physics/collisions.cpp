@@ -58,8 +58,14 @@ int checkPlayerCollisions(GJBaseGameLayer* gameLayer, PlayerObject* player) {
     float unkAngleHalved = unkAngle * 0.5;
     float angleTransformed = (unkAngleHalved + 90.0) - someValue;
 
+    // The iOS bindings omit this unknown-layout field, so use normal level
+    // bounds for trajectory prediction instead of reading unavailable memory.
+    bool cameraFreeMode = false;
+#ifndef GEODE_IS_IOS
+    cameraFreeMode = gameLayer->m_gameState.m_unkBool8;
+#endif
     bool groundExists =
-        !gameLayer->m_gameState.m_unkBool8 &&
+        !cameraFreeMode &&
         (player->m_isShip || player->m_isBird || player->m_isDart ||
          player->m_isSwing || player->m_isBall || player->m_isSpider ||
          gameLayer->m_gameState.m_isDualMode);
