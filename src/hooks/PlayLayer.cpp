@@ -18,7 +18,9 @@
 #include "util/midhook.hpp"
 #endif
 #include "util/profile.hpp"
+#ifdef GEODE_IS_MOBILE
 #include "ui/touch_overlay.hpp"
+#endif
 
 using namespace geode::prelude;
 
@@ -474,9 +476,11 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void onQuit() {
+#ifdef GEODE_IS_MOBILE
         if (auto overlay = TouchOverlay::get()) {
             overlay->hide();
         }
+#endif
         if (Renderer::get()->isRecording()) {
             Renderer::get()->signalStop();
         }
@@ -675,9 +679,11 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
             dt = CCDirector::get()->getDeltaTime();
         }
 
+#ifdef GEODE_IS_MOBILE
         if (auto overlay = TouchOverlay::get()) {
             overlay->updateVisibility();
         }
+#endif
 
         PlayLayer::updateVisibility(dt);
         if (updater.m_layoutMode->inner()) {
@@ -742,11 +748,13 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         Renderer* renderer = Renderer::get();
         renderer->startIfQueued();
 
+#ifdef GEODE_IS_MOBILE
         if (auto overlay = TouchOverlay::get()) {
             if (!overlay->getParent()) {
                 this->addChild(overlay, 1000);
             }
         }
+#endif
 
         return PlayLayer::setupHasCompleted();
     }

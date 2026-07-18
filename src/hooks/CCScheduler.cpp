@@ -3,7 +3,9 @@
 #include "bot/bot.hpp"
 #include "bot/updater.hpp"
 #include "render/renderer.hpp"
+#ifdef GEODE_IS_MOBILE
 #include "ui/touch_overlay.hpp"
+#endif
 
 using namespace geode::prelude;
 

@@ -6,7 +6,9 @@
 #import <CoreVideo/CoreVideo.h>
 #import <dispatch/dispatch.h>
 
+#include <chrono>
 #include <cstring>
+#include <thread>
 
 namespace {
 std::string errorText(NSError* error, const char* fallback) {
@@ -28,8 +30,79 @@ struct IOSVideoWriter::Impl {
     int channels = 2;
     int64_t frame = 0;
     int64_t audioFrame = 0;
+    std::vector<float> pendingAudio;
     bool finished = false;
+
+    geode::Result<bool> flushAudio();
 };
+
+geode::Result<bool> IOSVideoWriter::Impl::flushAudio() {
+    if (!audioInput || pendingAudio.empty()) return geode::Ok(true);
+    if (!audioInput.readyForMoreMediaData) return geode::Ok(false);
+
+    const size_t frames =
+        pendingAudio.size() / static_cast<size_t>(channels);
+    if (frames == 0) return geode::Ok(true);
+    const size_t sampleCount = frames * static_cast<size_t>(channels);
+    const size_t bytes = sampleCount * sizeof(float);
+
+    AudioStreamBasicDescription format{};
+    format.mSampleRate = sampleRate;
+    format.mFormatID = kAudioFormatLinearPCM;
+    format.mFormatFlags = kAudioFormatFlagIsFloat |
+                          kAudioFormatFlagIsPacked;
+    format.mBytesPerPacket = sizeof(float) * channels;
+    format.mFramesPerPacket = 1;
+    format.mBytesPerFrame = sizeof(float) * channels;
+    format.mChannelsPerFrame = channels;
+    format.mBitsPerChannel = 32;
+
+    CMAudioFormatDescriptionRef description = nullptr;
+    if (CMAudioFormatDescriptionCreate(
+            kCFAllocatorDefault, &format, 0, nullptr, 0, nullptr, nullptr,
+            &description) != noErr) {
+        return geode::Err("Unable to describe captured iOS audio");
+    }
+
+    CMBlockBufferRef block = nullptr;
+    OSStatus status = CMBlockBufferCreateWithMemoryBlock(
+        kCFAllocatorDefault, nullptr, bytes, kCFAllocatorDefault, nullptr,
+        0, bytes, 0, &block);
+    if (status == kCMBlockBufferNoErr) {
+        status = CMBlockBufferReplaceDataBytes(
+            pendingAudio.data(), block, 0, bytes);
+    }
+    if (status != kCMBlockBufferNoErr) {
+        if (block) CFRelease(block);
+        CFRelease(description);
+        return geode::Err("Unable to allocate captured iOS audio");
+    }
+
+    CMSampleTimingInfo timing{
+        .duration = CMTimeMake(1, sampleRate),
+        .presentationTimeStamp = CMTimeMake(audioFrame, sampleRate),
+        .decodeTimeStamp = kCMTimeInvalid,
+    };
+    CMSampleBufferRef sample = nullptr;
+    status = CMSampleBufferCreateReady(
+        kCFAllocatorDefault, block, description,
+        static_cast<CMItemCount>(frames), 1, &timing, 0,
+        nullptr, &sample);
+    CFRelease(block);
+    CFRelease(description);
+    if (status != noErr || !sample)
+        return geode::Err("Unable to create an iOS audio sample");
+
+    const BOOL appended = [audioInput appendSampleBuffer:sample];
+    CFRelease(sample);
+    if (!appended)
+        return geode::Err(errorText(writer.error,
+                                    "Unable to append iOS audio"));
+    audioFrame += static_cast<int64_t>(frames);
+    pendingAudio.erase(pendingAudio.begin(),
+                       pendingAudio.begin() + sampleCount);
+    return geode::Ok(true);
+}
 
 IOSVideoWriter::IOSVideoWriter() : m_impl(std::make_unique<Impl>()) {}
 
@@ -75,7 +148,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->input = [AVAssetWriterInput
             assetWriterInputWithMediaType:AVMediaTypeVideo
                             outputSettings:settings];
-        m_impl->input.expectsMediaDataInRealTime = YES;
+        m_impl->input.expectsMediaDataInRealTime = NO;
 
         NSDictionary* attributes = @{
             (__bridge NSString*)kCVPixelBufferPixelFormatTypeKey :
@@ -101,7 +174,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
             m_impl->audioInput = [AVAssetWriterInput
                 assetWriterInputWithMediaType:AVMediaTypeAudio
                                 outputSettings:audioSettings];
-            m_impl->audioInput.expectsMediaDataInRealTime = YES;
+            m_impl->audioInput.expectsMediaDataInRealTime = NO;
             if (![m_impl->writer canAddInput:m_impl->audioInput])
                 return geode::Err("iOS encoder rejected the audio settings");
             [m_impl->writer addInput:m_impl->audioInput];
@@ -120,6 +193,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->channels = channels;
         m_impl->frame = 0;
         m_impl->audioFrame = 0;
+        m_impl->pendingAudio.clear();
         m_impl->finished = false;
     }
     return geode::Ok();
@@ -130,71 +204,10 @@ geode::Result<bool> IOSVideoWriter::appendAudio(
     if (!m_impl->audioInput || pcm.empty()) return geode::Ok(true);
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
-
-    const size_t frames = pcm.size() / static_cast<size_t>(m_impl->channels);
-    if (frames == 0) return geode::Ok(true);
-    const size_t bytes = frames * static_cast<size_t>(m_impl->channels) *
-                         sizeof(float);
-
-    if (m_impl->writer.status == AVAssetWriterStatusFailed)
-        return geode::Err(errorText(m_impl->writer.error,
-                                    "iOS audio encoder failed"));
-    if (!m_impl->audioInput.readyForMoreMediaData)
-        return geode::Ok(false);
-
-    AudioStreamBasicDescription format{};
-    format.mSampleRate = m_impl->sampleRate;
-    format.mFormatID = kAudioFormatLinearPCM;
-    format.mFormatFlags = kAudioFormatFlagIsFloat |
-                          kAudioFormatFlagIsPacked;
-    format.mBytesPerPacket = sizeof(float) * m_impl->channels;
-    format.mFramesPerPacket = 1;
-    format.mBytesPerFrame = sizeof(float) * m_impl->channels;
-    format.mChannelsPerFrame = m_impl->channels;
-    format.mBitsPerChannel = 32;
-
-    CMAudioFormatDescriptionRef description = nullptr;
-    if (CMAudioFormatDescriptionCreate(
-            kCFAllocatorDefault, &format, 0, nullptr, 0, nullptr, nullptr,
-            &description) != noErr) {
-        return geode::Err("Unable to describe captured iOS audio");
-    }
-
-    CMBlockBufferRef block = nullptr;
-    OSStatus status = CMBlockBufferCreateWithMemoryBlock(
-        kCFAllocatorDefault, nullptr, bytes, kCFAllocatorDefault, nullptr,
-        0, bytes, 0, &block);
-    if (status == kCMBlockBufferNoErr) {
-        status = CMBlockBufferReplaceDataBytes(pcm.data(), block, 0, bytes);
-    }
-    if (status != kCMBlockBufferNoErr) {
-        if (block) CFRelease(block);
-        CFRelease(description);
-        return geode::Err("Unable to allocate captured iOS audio");
-    }
-
-    CMSampleTimingInfo timing{
-        .duration = CMTimeMake(1, m_impl->sampleRate),
-        .presentationTimeStamp =
-            CMTimeMake(m_impl->audioFrame, m_impl->sampleRate),
-        .decodeTimeStamp = kCMTimeInvalid,
-    };
-    CMSampleBufferRef sample = nullptr;
-    status = CMSampleBufferCreateReady(
-        kCFAllocatorDefault, block, description,
-        static_cast<CMItemCount>(frames), 1, &timing, 0,
-        nullptr, &sample);
-    CFRelease(block);
-    CFRelease(description);
-    if (status != noErr || !sample)
-        return geode::Err("Unable to create an iOS audio sample");
-
-    const BOOL appended = [m_impl->audioInput appendSampleBuffer:sample];
-    CFRelease(sample);
-    if (!appended)
-        return geode::Err(errorText(m_impl->writer.error,
-                                    "Unable to append iOS audio"));
-    m_impl->audioFrame += static_cast<int64_t>(frames);
+    m_impl->pendingAudio.insert(m_impl->pendingAudio.end(), pcm.begin(),
+                                pcm.end());
+    auto result = m_impl->flushAudio();
+    if (result.isErr()) return result;
     return geode::Ok(true);
 }
 
@@ -207,13 +220,21 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
     if (rgba.size() != expected)
         return geode::Err("Captured frame has an invalid size");
 
-    if (m_impl->writer.status == AVAssetWriterStatusFailed)
-        return geode::Err(errorText(m_impl->writer.error,
-                                    "iOS video encoder failed"));
-    if (!m_impl->input.readyForMoreMediaData) {
-        ++m_impl->frame;
-        return geode::Ok(false);
+    while (!m_impl->input.readyForMoreMediaData) {
+        const auto status = m_impl->writer.status;
+        if (status == AVAssetWriterStatusFailed)
+            return geode::Err(errorText(m_impl->writer.error,
+                                        "iOS video encoder failed"));
+        if (status == AVAssetWriterStatusCancelled ||
+            status == AVAssetWriterStatusCompleted)
+            return geode::Err("iOS video encoder stopped unexpectedly");
+        auto audioResult = m_impl->flushAudio();
+        if (audioResult.isErr()) return geode::Err(audioResult.unwrapErr());
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+
+    auto audioResult = m_impl->flushAudio();
+    if (audioResult.isErr()) return geode::Err(audioResult.unwrapErr());
 
     CVPixelBufferRef pixel = nullptr;
     const CVReturn created = CVPixelBufferPoolCreatePixelBuffer(
@@ -254,6 +275,17 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
 
 geode::Result<> IOSVideoWriter::finish() {
     if (!m_impl->writer || m_impl->finished) return geode::Ok();
+    while (!m_impl->pendingAudio.empty()) {
+        const auto status = m_impl->writer.status;
+        if (status == AVAssetWriterStatusFailed)
+            return geode::Err(errorText(m_impl->writer.error,
+                                        "iOS audio encoder failed"));
+        auto audioResult = m_impl->flushAudio();
+        if (audioResult.isErr())
+            return geode::Err(audioResult.unwrapErr());
+        if (!audioResult.unwrap())
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
     m_impl->finished = true;
     CMTime endTime = CMTimeMake(m_impl->frame, m_impl->fps);
     if (m_impl->audioFrame > 0) {

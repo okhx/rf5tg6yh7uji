@@ -59,7 +59,6 @@ constexpr int VK_OEM_7 = 0xDE;
 #include "imgui.h"
 #include "util/paths.hpp"
 #include "imgui_helpers.hpp"
-#include "lib/stb_image.h"
 
 #ifdef SILICATE_PROTECT
 #include "VMProtect/VMProtectSDK.h"
@@ -1014,43 +1013,31 @@ void UIManager::draw() {
     
     static GLuint logoTex = 0;
     static int logoWidth = 1, logoHeight = 1;
+    static ImVec2 logoUv(1.0f, 1.0f);
     if (logoTex == 0) {
-        GLint oldActiveTexture;
-        GLint oldTexture;
-        GLint oldUnpackAlignment;
-        glGetIntegerv(GL_ACTIVE_TEXTURE, &oldActiveTexture);
-        glActiveTexture(GL_TEXTURE0);
-        glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
-        glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldUnpackAlignment);
-
-        int channels;
-        auto logoPath = geode::Mod::get()->getResourcesDir() / "img" / "logo.png";
+        auto logoPath = geode::Mod::get()->getResourcesDir() / "grape.png";
         if (!std::filesystem::exists(logoPath)) {
-            logoPath = geode::Mod::get()->getResourcesDir() / "logo.png";
+            logoPath = geode::Mod::get()->getResourcesDir() / "img" / "logo.png";
         }
         if (!std::filesystem::exists(logoPath)) {
             logoPath = geode::Mod::get()->getResourcesDir() / "title_new.png";
         }
-        uint8_t* data = stbi_load(logoPath.string().c_str(), &logoWidth, &logoHeight, &channels, 4);
-        if (data) {
-            glGenTextures(1, &logoTex);
-            glBindTexture(GL_TEXTURE_2D, logoTex);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, logoWidth, logoHeight, 0,
-                         GL_RGBA, GL_UNSIGNED_BYTE, data);
-            stbi_image_free(data);
+        const auto path = logoPath.string();
+        auto* texture = cocos2d::CCTextureCache::sharedTextureCache()->addImage(
+            path.c_str(), true);
+        if (texture) {
+            const auto size = texture->getContentSizeInPixels();
+            logoTex = texture->getName();
+            logoWidth = static_cast<int>(size.width);
+            logoHeight = static_cast<int>(size.height);
+            logoUv = ImVec2(texture->getMaxS(), texture->getMaxT());
         } else {
             logoTex = (GLuint)-1;
         }
-
-        glPixelStorei(GL_UNPACK_ALIGNMENT, oldUnpackAlignment);
-        glBindTexture(GL_TEXTURE_2D, oldTexture);
-        glActiveTexture(oldActiveTexture);
     }
 
     ImTextureID tex = (logoTex != 0 && logoTex != (GLuint)-1) ? (ImTextureID)(intptr_t)logoTex : (ImTextureID)(intptr_t)0;
-    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), [this, bot, popupShaderFn]() {
+    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv, [this, bot, popupShaderFn]() {
         {
             ImGui::GetWindowDrawList()->AddRectFilled(
                 ImGui::GetWindowPos(),

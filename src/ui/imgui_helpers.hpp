@@ -182,7 +182,8 @@ template <class F> void fraction(double count, F&& fn, double = 0.0) {
 template <class T, class F> void tab(T current, T expected, F&& fn) {
     if (current == expected) fn();
 }
-template <class F> void window(ImTextureID logoTex, ImVec2 logoSize, F&& fn) {
+template <class F>
+void window(ImTextureID logoTex, ImVec2 logoSize, ImVec2 logoUv, F&& fn) {
     const float scale = Config::get().uiScale;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     if (Config::get().fitWindowToContent) {
@@ -226,9 +227,9 @@ template <class F> void window(ImTextureID logoTex, ImVec2 logoSize, F&& fn) {
             ImVec2 shadowOffset(2.0f, 2.0f);
             draw->AddImage(logoTex, ImVec2(pMin.x + shadowOffset.x, pMin.y + shadowOffset.y), 
                            ImVec2(pMax.x + shadowOffset.x, pMax.y + shadowOffset.y), 
-                           ImVec2(0,0), ImVec2(1,1), IM_COL32(0, 0, 0, 180));
+                           ImVec2(0,0), logoUv, IM_COL32(0, 0, 0, 180));
                            
-            draw->AddImage(logoTex, pMin, pMax, ImVec2(0,0), ImVec2(1,1), IM_COL32(255, 255, 255, 255));
+            draw->AddImage(logoTex, pMin, pMax, ImVec2(0,0), logoUv, IM_COL32(255, 255, 255, 255));
         }
         constexpr std::string_view credit = "Silicate \xe2\x99\xa5";
         const ImVec2 creditSize = ImGui::CalcTextSize(

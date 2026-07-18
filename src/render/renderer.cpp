@@ -453,6 +453,24 @@ void Renderer::updateMobile(PlayLayer* pl) {
     if (scissorEnabled) glEnable(GL_SCISSOR_TEST);
     else glDisable(GL_SCISSOR_TEST);
 
+#ifdef GEODE_IS_IOS
+    if (m_collectAudio && AudioRecorder::get()->m_attached) {
+        AudioRecorder::get()->unpause();
+        auto& pcm = AudioRecorder::get()->m_buffer;
+        if (!pcm.empty()) {
+            auto audioResult = m_iosWriter->appendAudio(pcm);
+            if (audioResult.isErr()) {
+                geode::log::error("Mobile render audio failed: {}",
+                                  audioResult.unwrapErr());
+                stopMobile();
+                return;
+            }
+            if (audioResult.unwrap()) pcm.clear();
+        }
+        AudioRecorder::get()->m_time = AudioRecorder::get()->m_fmodTime;
+    }
+#endif
+
     int writtenFrames = 0;
     const double frameDuration = 1.0 / m_settings.m_fps;
 #ifdef GEODE_IS_IOS
@@ -487,24 +505,6 @@ void Renderer::updateMobile(PlayLayer* pl) {
         m_mobileNextFrameTime = gameTime + frameDuration;
 #endif
     m_time = gameTime;
-
-#ifdef GEODE_IS_IOS
-    if (m_collectAudio && AudioRecorder::get()->m_attached) {
-        AudioRecorder::get()->unpause();
-        auto& pcm = AudioRecorder::get()->m_buffer;
-        if (!pcm.empty()) {
-            auto audioResult = m_iosWriter->appendAudio(pcm);
-            if (audioResult.isErr()) {
-                geode::log::error("Mobile render audio failed: {}",
-                                  audioResult.unwrapErr());
-                stopMobile();
-                return;
-            }
-            if (audioResult.unwrap()) pcm.clear();
-        }
-        AudioRecorder::get()->m_time = AudioRecorder::get()->m_fmodTime;
-    }
-#endif
 
     if (pl->m_hasCompletedLevel) {
         m_endTime += static_cast<float>(writtenFrames * frameDuration);
