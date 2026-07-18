@@ -5,7 +5,6 @@
 
 namespace phys {
 cocos2d::CCArray* getGroup(GJBaseGameLayer* pl, int groupID) {
-    // i'm too lazy to wait for geode to merge a bindings commit so yea
 
     if (groupID < 0) groupID = 0;
     if (groupID > 9999) groupID = 9999;
@@ -23,7 +22,6 @@ cocos2d::CCArray* getGroup(GJBaseGameLayer* pl, int groupID) {
 float redirectPlayerForce(PlayerObject* player, float force,
                           float /* forceMod */, float /* forceMin */,
                           float /* forceMax */) {
-    // float forceSmaller = force * 0.01745329;
     cocos2d::CCPoint velocityCoords = cocos2d::CCPoint{
         (float)player->m_platformerXVelocity, (float)player->m_yVelocity};
 
@@ -42,10 +40,7 @@ float redirectPlayerForce(PlayerObject* player, float force,
 
     velocityCoords = p;
 
-    // float length = velocityCoords.getLength();
-    // if (forceMax > 0.0 && length > forceMax) {
 
-    // }
 
     if (player->m_isSideways) {
         float x = velocityCoords.x;
@@ -63,7 +58,6 @@ float redirectPlayerForce(PlayerObject* player, float force,
     return player->m_yVelocity;
 }
 
-// this function is a nightmare
 void teleportPlayer(GJBaseGameLayer* pl, TeleportPortalObject* object,
                     PlayerObject* player) {
     if (!player) {
@@ -185,7 +179,7 @@ void teleportPlayer(GJBaseGameLayer* pl, TeleportPortalObject* object,
                 cocos2d::CCPoint p = CCPoint{
                     (float)std::cos(((float)forceMod)),
                     (float)std::sin(((float)forceMod)),
-                };  // ccpForAngle isn't defined on macOS fsr
+                };
 #endif
 
                 float length = p.getLength();
@@ -220,4 +214,4 @@ void teleportPlayer(GJBaseGameLayer* pl, TeleportPortalObject* object,
         player->m_lastGroundedPos = player->getPosition();
     }
 }
-}  // namespace phys
+}

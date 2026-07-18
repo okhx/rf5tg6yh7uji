@@ -59,9 +59,6 @@ void ReplaySystem::seekAfterFrame(uint32_t frame) {
 
     auto& input = m_actionAtom.m_actions.at(m_inputIndex);
 #ifdef GEODE_IS_MOBILE
-    // Mobile advances the replay clock in logical TPS-sized steps because it
-    // cannot install the desktop physics-step hook. Deliver every action up
-    // to that step so short taps are not stranded between display frames.
     if (input.m_frame <= frame) {
 #else
     if (input.m_frame == frame) {
@@ -108,7 +105,6 @@ void ReplaySystem::save(std::filesystem::path path, bool noOverwrite) {
 
     uint64_t previousFrame = 0;
     for (auto& action : m_actionAtom.m_actions) {
-        // recalculate delta for all actions
         action.recalculateDelta(previousFrame);
         previousFrame = action.m_frame;
     }
@@ -274,7 +270,6 @@ void ReplaySystem::merge(std::filesystem::path path, MergeMode mode) {
         return;
     }
 
-    // Load the other replay into a temporary atom
     std::ifstream fd(path, std::ios::binary);
     slc::ActionAtom otherAtom;
 
@@ -297,7 +292,6 @@ void ReplaySystem::merge(std::filesystem::path path, MergeMode mode) {
             geode::log::error("Merge failed: could not parse other replay");
             return;
         }
-        // Convert v2 to v3 actions
         uint64_t currentFrame = 0;
         for (const auto& input : v2Replay.value().getInputs()) {
             if (input.m_button == slc::v2::Input::InputType::Skip) {
@@ -315,11 +309,8 @@ void ReplaySystem::merge(std::filesystem::path path, MergeMode mode) {
         }
     }
 
-    // determine which player flag to strip from each source
-    // current: we keep inputs where m_player2 != stripFromCurrent
-    // other:   we keep inputs where m_player2 != stripFromOther (then optionally swap)
-    bool keepCurrentP1 = true;  // keep P1 (m_player2==false) from current
-    bool keepCurrentP2 = true;  // keep P2 (m_player2==true)  from current
+    bool keepCurrentP1 = true;
+    bool keepCurrentP2 = true;
     bool keepOtherP1   = true;
     bool keepOtherP2   = true;
     bool swapOther     = false;
@@ -353,12 +344,11 @@ void ReplaySystem::merge(std::filesystem::path path, MergeMode mode) {
             if (isP2 && !keepOtherP2) continue;
             if (!isP2 && !keepOtherP1) continue;
         } else {
-            action.m_player2 = !isP2;  // swap
+            action.m_player2 = !isP2;
         }
         merged.push_back(action);
     }
 
-    // frame sort
     std::stable_sort(merged.begin(), merged.end(),
                      [](const auto& a, const auto& b) {
                          return a.m_frame < b.m_frame;
@@ -372,7 +362,6 @@ void ReplaySystem::merge(std::filesystem::path path, MergeMode mode) {
 
     m_actionAtom.m_actions = std::move(merged);
 	
-	// don't works, anyway doesn't matter
     geode::log::info("Macro merge complete. Total inputs after merge: {}",
                      m_actionAtom.m_actions.size());
 }

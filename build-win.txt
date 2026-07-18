@@ -1,0 +1,50 @@
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Run actions/checkout@v4
+  with:
+    repository: okhx/rf5tg6yh7uji
+    token: ***
+    ssh-strict: true
+    ssh-user: git
+    persist-credentials: true
+    clean: true
+    sparse-checkout-cone-mode: true
+    fetch-depth: 1
+    fetch-tags: false
+    show-progress: true
+    lfs: false
+    submodules: false
+    set-safe-directory: true
+Syncing repository: okhx/rf5tg6yh7uji
+Getting Git version info
+  Working directory is 'D:\a\rf5tg6yh7uji\rf5tg6yh7uji'
+  "C:\Program Files\Git\bin\git.exe" version
+  git version 2.55.0.windows.2
+Temporarily overriding HOME='D:\a\_temp\d4d7ec7a-628a-4705-b0c5-409b6613a120' before making global git config changes
+Adding repository directory to the temporary git global config as a safe directory
+"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\rf5tg6yh7uji\rf5tg6yh7uji
+Deleting the contents of 'D:\a\rf5tg6yh7uji\rf5tg6yh7uji'
+Initializing the repository
+  "C:\Program Files\Git\bin\git.exe" init D:\a\rf5tg6yh7uji\rf5tg6yh7uji
+  Initialized empty Git repository in D:/a/rf5tg6yh7uji/rf5tg6yh7uji/.git/
+  "C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/okhx/rf5tg6yh7uji
+Disabling automatic garbage collection
+  "C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+Setting up auth
+  "C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+  "C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+  "C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+  "C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+  "C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+  "C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+  "C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+Fetching the repository
+  "C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c178f0e33d50945e1d426158c1c6a55df8f3c8e4:refs/remotes/origin/main
+  From https://github.com/okhx/rf5tg6yh7uji
+   * [new ref]         c178f0e33d50945e1d426158c1c6a55df8f3c8e4 -> origin/main
+Determining the checkout info
+"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+Checking out the ref
+  "C:\Program Files\Git\bin\git.exe" checkout --progress --force -B main refs/remotes/origin/main
+  Error: error: invalid path '.forgejo/workflows/geode.yml:Zone.Identifier'
+  Error: The process 'C:\Program Files\Git\bin\git.exe' failed with exit code 128

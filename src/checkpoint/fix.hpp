@@ -1,6 +1,3 @@
-//
-// Created by peony on 29.10.2024.
-//
 
 #ifndef FIX_HPP
 #define FIX_HPP
@@ -33,8 +30,6 @@ class PracticeFix {
     std::deque<std::pair<CheckpointObject*, CheckpointGameObject*>>
         m_platformerCheckpoints;
 
-    // CheckpointObject* m_platformerCheckpoint = nullptr;
-    // CheckpointGameObject* m_platformerCheckpointGame = nullptr;
 
     std::vector<GameObject*> m_brokenObjects;
 
@@ -69,4 +64,4 @@ class PracticeFix {
     bool m_shouldLoadPlatformer = false;
 };
 
-#endif  // FIX_HPP
+#endif

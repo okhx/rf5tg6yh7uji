@@ -113,7 +113,7 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
     }
 
     void removePendingCheckpoint() {
-        return;  // don't, we don't use pending checkpoints anywhere
+        return;
     }
 
     void tryPlaceCheckpoint() {

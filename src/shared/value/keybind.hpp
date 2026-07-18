@@ -16,7 +16,6 @@ struct RawKeybind {
     std::string m_value;
 };
 
-// clang-format off
 template <>
 struct glz::meta<RawKeybind> {
     using T = RawKeybind;
@@ -29,7 +28,6 @@ struct glz::meta<RawKeybind> {
         "active", &T::m_active
     );
 };
-// clang-format on
 
 class KeybindControl {
    protected:
@@ -83,7 +81,6 @@ class SLKeybind : public KeybindControl {
     static constexpr bool MODIFIER_ALT = 0b100;
 
    private:
-    // What value to set when the keybind is pressed
     T m_value;
 
    public:
@@ -176,7 +173,6 @@ class SLKeybind : public KeybindControl {
     friend glz::meta<SLKeybind<T>>;
 };
 
-// clang-format off
 template <>
 struct glz::meta<KeybindControl> {
     using T = KeybindControl;
@@ -190,7 +186,6 @@ struct glz::meta<KeybindControl> {
         "enabled", hide{&T::m_enabled}
     );
 };
-// clang-format on
 
 template <typename T>
 using KeybindPtr = std::shared_ptr<SLKeybind<T>>;

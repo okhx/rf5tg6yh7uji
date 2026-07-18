@@ -45,9 +45,7 @@ inline bool activatingPortal(GJBaseGameLayer* pl, PlayerObject* player,
                 player->m_isDart || player->m_isSpider || player->m_isSwing)));
 
         cocos2d::CCPoint position = player->getPosition();
-        // if (portal->m_objectType == GameObjectType::CubePortal) {
         player->switchedToMode(portal->m_objectType);
-        // }
 
         switch (portal->m_objectType) {
             case GameObjectType::ShipPortal:
@@ -92,40 +90,9 @@ inline bool activatingPortal(GJBaseGameLayer* pl, PlayerObject* player,
 void bumpPlayerFromGJBGL(GJBaseGameLayer* pl, PlayerObject* player,
                          EffectGameObject* object);
 
-// int handleRotatedCollisionInternal(
-//     PlayerObject* player,
-//     float dt,
-//     GameObject* object,
-//     cocos2d::CCRect* rect,
-//     bool p3,
-//     bool p4,
-//     bool isSlope
-// ) {
-//     cocos2d::CCPoint p1 = player->getPosition();
-//     player->rotateGameplayObject(object);
-//     for (auto& obj : player->m_maybeRotatedObjectsMap) {
-//         player->rotateGameplayObject(obj.second);
-//     }
 
-//     int ret = 0;
-//     if (isSlope) {
-//         player->collidedWithSlopeInternal(dt, object, p4);
-//     } else {
-//         ret = player->collidedWithObjectInternal(dt, object, *rect, p3);
-//     }
 
-//     cocos2d::CCPoint newPos = {
-//         player->getPosition().y - p1.y + p1.x,
-//         p1.y - player->getPosition().x + p1.x,
-//     };
-//     player->setPosition(newPos);
-//     player->unrotateGameplayObject(object);
-//     for (auto& obj : player->m_maybeRotatedObjectsMap) {
-//         player->unrotateGameplayObject(obj.second);
-//     }
 
-//     return ret;
-// }
 
 void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
                            gd::vector<GameObject*>* objects, int objectCount,
@@ -134,4 +101,4 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
 void triggerObject(EffectGameObject* obj, GJBaseGameLayer* pl,
                    PlayerObject* player);
 void checkSpawnObjects(GJBaseGameLayer* pl, PlayerObject* player);
-}  // namespace phys
+}

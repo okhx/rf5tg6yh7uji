@@ -19,4 +19,4 @@
         *res;                          \
     })
 
-#endif  // UTIL_TRY_HPP
+#endif

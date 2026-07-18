@@ -1,6 +1,3 @@
-//
-// Created by peony on 29.10.2024.
-//
 
 #include "fix.hpp"
 
@@ -61,8 +58,6 @@ void PracticeFix::applyCheckpoint(SavedCheckpoint& cp) {
         pl->m_calcNonEffectObjectsSize = cp.m_calcNonEffectObjectsSize;
 
         while (cp.m_stackSize < m_platformerCheckpoints.size()) {
-            // if platformer checkpoint is in stack earlier then don't actually
-            // reset
             bool isEarlier = std::any_of(
                 m_platformerCheckpoints.begin(),
                 m_platformerCheckpoints.end() - 1, [this](const auto& pair) {
@@ -190,8 +185,6 @@ void PracticeFix::clearPlatformer(bool assumeLoaded) {
                 false;
             m_platformerCheckpoints.back().second->resetCheckpoint();
 
-            // release
-            // m_platformerCheckpoints.top().first->release();
         }
 
         m_platformerCheckpoints.pop_back();

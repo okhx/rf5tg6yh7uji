@@ -30,7 +30,6 @@ using namespace geode::prelude;
 
 #ifdef GEODE_IS_WINDOWS
 $execute {
-    // Patch GJBaseGameLayer::resetLevelVariables to not release buttons
     geode::log::info("Patching {} (GJBaseGameLayer::resetLevelVariables)",
                      base::get() + 0x23B4EA);
     if (!Mod::get()->patch(reinterpret_cast<void*>(base::get() + 0x23B4EA),
@@ -133,11 +132,9 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         using Mode = SLSettings::TrajectorySettings::Mode;
         auto* t = Bot::get()->trajectory().unsafeInner();
 
-        // reset player rotation for predictions
         m_player1->setRotation(m_fields->m_lastActualP1.m_rotation);
         m_player2->setRotation(m_fields->m_lastActualP2.m_rotation);
 
-        // predict player 1 and player 2 positions in next frame
         Mode m = m_player1->m_jumpBuffered ? Mode::Hold : Mode::Release;
         auto prediction = t->simulate(this, true, Mode::Player1 | m, true,
                                       {
@@ -152,11 +149,8 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
                                            .m_maxLength = 0,
                                        });
 
-        // % of current frame "completion" - if halfway between this and next
-        // frame, this is 0.5
         float framePosition = updater.m_tpsOverflow / updater.getPhysicsDt();
 
-        // lerp positions based on frame position
         CCPoint lerped = prediction.position * framePosition +
                          m_player1->m_position * (1 - framePosition);
         float lerpedRot =
@@ -174,8 +168,6 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         this->m_player1->setRotation(lerpedRot);
         this->m_player2->setRotation(lerpedRot2);
 
-        // update gjbgl (updateCamera only sets gameState variables so it's
-        // easily restorable)
         this->updateCamera(dt60);
         this->updateVisibility(dt);
 
@@ -206,7 +198,6 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         }
 
         if (!updater.isLockDelta() || !PlayLayer::get()) {
-            // Must be lock delta off OR is editor
             updater.calculateSteps(dt, updater.getPhysicsDt());
         }
 
@@ -269,7 +260,6 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         }
 
         float modDelta = GJBaseGameLayer::getModifiedDelta(dt);
-        // Never force bot TPS onto the editor or its playtest/UI scheduler.
         if (LevelEditorLayer::get()) {
             return modDelta;
         }
@@ -306,8 +296,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     void performMaintainGravity() {
         auto bot = Bot::get();
 
-        m_queuedButtons.clear();  // we're maintaining gravity so we're
-                                  // overriding queued buttons anyway
+        m_queuedButtons.clear();
 
         auto p1 = this->m_player1;
         auto p2 = this->m_player2;
@@ -405,8 +394,6 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         }
     }
 
-    // Returns true when the action replaced/reset the active PlayLayer. The
-    // caller must stop processing the stale pre-reset queue in that case.
     bool processReplayAction(slc::Action& action) {
         auto bot = Bot::get();
 
@@ -504,11 +491,8 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         } else if (!LevelEditorLayer::get() || bot->isPlaying()) {
             uint32_t frame = bot->updater().getFrame();
 
-            // Remove the ELL if the current input is a RestartFull on the
-            // endscreen
             if (auto input = bot->replaySystem().getCurrentQueuedInput();
                 input.has_value()) {
-                // FIXME: this doesn't work
                 uint32_t delayInFrames = bot->updater().m_tps->inner() * 0.5;
 
                 if (input.value().m_type ==
@@ -517,7 +501,6 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
                     if (auto ell = this->getChildByID("EndLevelLayer"); ell) {
                         FMODAudioEngine::sharedEngine()->clearAllAudio();
                         FMODAudioEngine::sharedEngine()->playEffect(
-                            // @geode-ignore(unknown-resource)
                             "playSound_01.ogg", 1.0, 0.0, 0.3);
                         ((GJDropDownLayer*)ell)->exitLayer(nullptr);
                     }
@@ -672,7 +655,6 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         GJBaseGameLayer::createGroundLayer(ground, lineType);
     }
 
-    // :(
     void updateColor(cocos2d::ccColor3B& color, float fadeTime, int colorID,
                      bool blending, float opacity, cocos2d::ccHSVValue& copyHSV,
                      int colorIDToCopy, bool copyOpacity,

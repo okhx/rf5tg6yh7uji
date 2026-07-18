@@ -223,7 +223,6 @@ template <class F> void window(ImTextureID logoTex, ImVec2 logoSize, F&& fn) {
                                  titlePos.y + (titleHeight - drawHeight) * 0.5f);
             ImVec2 pMax = ImVec2(pMin.x + drawWidth, pMin.y + drawHeight);
             
-            // Drop shadow to make the logo stand out
             ImVec2 shadowOffset(2.0f, 2.0f);
             draw->AddImage(logoTex, ImVec2(pMin.x + shadowOffset.x, pMin.y + shadowOffset.y), 
                            ImVec2(pMax.x + shadowOffset.x, pMax.y + shadowOffset.y), 
@@ -257,4 +256,4 @@ template <class F> void section(std::string_view id, F&& fn,
     }
 }
 
-}  // namespace slui
+}

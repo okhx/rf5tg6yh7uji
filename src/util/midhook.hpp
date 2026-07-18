@@ -24,4 +24,4 @@ class MidhookManager {
 
 void midhook(uintptr_t address, std::string_view label,
              void (*callback)(safetyhook::Context&));
-}  // namespace util
+}

@@ -35,4 +35,4 @@ void toggleFlyMode(PlayerObject* player, bool isFly);
 void toggleBirdMode(PlayerObject* player, bool isBird);
 void toggleSwingMode(PlayerObject* player, bool isSwing);
 
-}  // namespace phys
+}

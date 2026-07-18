@@ -57,12 +57,9 @@ void BotUpdater::calculateSteps(float dt, float targetDt) {
     int stepLimit = m_stepLimit;
 
     if (m_respawnTimer > 0) {
-        // steps = 0;
-        // dt = 0.0f;             // but also don't add overflow
-        m_tpsOverflow = 0.0f;  // reset overflow
+        m_tpsOverflow = 0.0f;
     }
 
-    // Aka "how many steps can we take in one VISUAL frame"
     if (m_useVisualUpdates->inner() && !m_dynamicUpr->inner()) {
         float fps = GameManager::get()->m_customFPSTarget;
         if (fps <= 10.0) {
@@ -74,7 +71,6 @@ void BotUpdater::calculateSteps(float dt, float targetDt) {
         stepLimit *= std::max(1, modifier);
     }
 
-    // Rendering shouldn't have an UPR limit
     bool rendering = Renderer::get()->isRecording();
 
     if (!m_realTime->inner() && !rendering) {
@@ -84,8 +80,6 @@ void BotUpdater::calculateSteps(float dt, float targetDt) {
     m_tpsOverflow = dt - steps * wantedDt;
     m_shouldRender = false;
 
-    // Again, rendering doesn't have an UPR limit so no need
-    // to reset tps overflow here
     if (!m_realTime->inner() && !rendering) {
         if (steps == stepLimit) {
             m_tpsOverflow = 0.0;
@@ -93,11 +87,11 @@ void BotUpdater::calculateSteps(float dt, float targetDt) {
     }
 
     if (isPaused() && !rendering) {
-        steps = 1;  // ALWAYS frame advance one step
+        steps = 1;
         m_tpsOverflow = 0;
         m_shouldRender = true;
         if (PlayLayer::get()) {
-            PlayLayer::get()->m_extraDelta = 0.0f;  // reset extra delta
+            PlayLayer::get()->m_extraDelta = 0.0f;
         }
     }
 
@@ -115,16 +109,11 @@ static void runFastLockDeltaUpdates(float realDt,
     SCOPED_TIMER("fastLockDelta")
     updater.m_allowedToProcessActions = false;
     if (!nextInput.has_value()) {
-        // run updates normally
         updater.calculateSteps(
             realDt * updater.getTimeWarp() * updater.m_speedhack->inner(),
             updater.getPhysicsDt());
 
         if (updater.estimatedStepCount >= 1) {
-            // Use the accumulated fixed-step time, not the latest display
-            // delta. When display FPS is above TPS, several tiny display
-            // deltas are intentionally skipped; forwarding only the final
-            // tiny delta made the game run at TPS / FPS speed.
             update(updater.getPhysicsDt() * updater.estimatedStepCount);
         }
     } else {
@@ -199,8 +188,7 @@ static void runSlowLockDeltaUpdates(float realDt,
                 updater.m_lastTfp = new_tfx;
                 updater.calculateSteps(realDt * updater.getTimeWarp() *
                                            updater.m_speedhack->inner(),
-                                       ssbDelta);  // yes we have to actively
-                                                   // recalculate steps
+                                       ssbDelta);
             }
         }
     }
@@ -216,7 +204,6 @@ void BotUpdater::runUpdates(std::function<void(float)> update, float realDt,
     auto bot = Bot::get();
     m_allowedToProcessActions = true;
 
-    // Frozen updates are with dt=0 and shouldn't run any physics updates
     if (frozen) {
         SCOPED_TIMER("frozenGameUpdate")
         m_onlyRefresh = true;
@@ -239,13 +226,10 @@ void BotUpdater::runUpdates(std::function<void(float)> update, float realDt,
 
     if (!pl || (isPlayLayer && ((PlayLayer*)pl)->m_isPaused)) {
         this->m_tpsOverflow = 0;
-        update(realDt);  // be quiet
+        update(realDt);
         return;
     }
 
-    // The editor UI, popups, and playtest share the same Cocos scheduler.
-    // Let that scheduler run normally and gate only updateEditor() while
-    // frame stepping; otherwise popup animations freeze with the playtest.
     if (!isPlayLayer) {
         m_tpsOverflow = 0.0;
         update(realDt);
@@ -292,8 +276,6 @@ void BotUpdater::runUpdates(std::function<void(float)> update, float realDt,
         if (m_respawnTimer > 0) {
             m_tpsOverflow = 0.0;
             pl->m_extraDelta = 0.0;
-            // this->estimatedStepCount = 0;
-            // this->totalStepCount = 0;
         }
 
         update(realDt * m_speedhack->inner());
@@ -310,7 +292,6 @@ void BotUpdater::runUpdates(std::function<void(float)> update, float realDt,
             std::chrono::duration<double>(endTime - startTime).count() /
             this->totalStepCount;
         double dynamicDt = m_fpsTarget->inner() * secondsPerStep;
-        // guard against non-finite results before the int cast
         if (std::isfinite(dynamicDt) && dynamicDt > 0.0) {
             m_stepLimit =
                 std::max(1, static_cast<int>(std::floor(1.0 / dynamicDt)));
@@ -364,7 +345,7 @@ void BotUpdater::updateAudioSpeedhack() {
 
 void BotUpdater::runFrozenTick() {
     if (m_frozenScheduledFunctions.empty()) {
-        return;  // no need to waste resources
+        return;
     }
 
     for (auto& func : m_frozenScheduledFunctions) {
@@ -378,7 +359,6 @@ void BotUpdater::runFrozenTick() {
         0.0f, true);
 
     m_frozenScheduledFunctions.clear();
-    // CCEGLView::get()->swapBuffers();
 }
 
 inline double BotUpdater::getVisualDt() {
@@ -386,12 +366,10 @@ inline double BotUpdater::getVisualDt() {
 }
 
 uint32_t BotUpdater::getFrame() {
-    // Playing a level, with intentional death
     if (auto pl = PlayLayer::get(); pl) {
         return m_frame + m_frameOnLastAttempt;
     }
 
-    // No intentional death in editor, use built in frame counter
     if (auto lel = LevelEditorLayer::get(); lel) {
         const uint32_t progress = static_cast<uint32_t>(
             std::max(0, static_cast<int>(lel->m_gameState.m_currentProgress)));
@@ -405,8 +383,6 @@ uint32_t BotUpdater::getFrame() {
 }
 
 uint32_t BotUpdater::getDisplayFrame() {
-    // Replay scheduling uses getFrame's physics-frame scale. The editor UI
-    // intentionally presents the requested doubled progress counter instead.
     if (auto* lel = LevelEditorLayer::get(); lel) {
         return static_cast<uint32_t>(std::max(
             0, static_cast<int>(lel->m_gameState.m_currentProgress * 2) - 1));
@@ -416,10 +392,6 @@ uint32_t BotUpdater::getDisplayFrame() {
 
 bool BotUpdater::useFastLockDelta() {
 #ifdef GEODE_IS_MOBILE
-    // Recording already advances mobile gameplay one physics step at a time.
-    // Using the batched performance path only for playback changes which
-    // substep receives an input whenever TPS / display FPS is greater than 1.
-    // At low speed both paths happened to use one step, hiding the mismatch.
     return false;
 #else
     return this->m_lockDelta->inner() &&
@@ -440,8 +412,6 @@ void BotUpdater::backwardsStep(int n) {
         auto* bot = Bot::get();
         if (!bot->practiceFix().canRestoreState()) return;
 
-        // Prevent the current death/reset from consuming replay actions before
-        // the saved checkpoint has restored their cursor.
         bot->practiceFix().m_isBackstep = true;
         this->scheduleFrozenFunction([n](float) {
             auto pl = PlayLayer::get();
@@ -519,8 +489,6 @@ void BotUpdater::findBestFrameCandidate() {
 
     m_predicting = false;
 
-    // this->stepOnce();
-    // CCScheduler::get()->update(this->getPhysicsDt());
 }
 
 void BotUpdater::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
@@ -540,10 +508,6 @@ void BotUpdater::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
             }
         }
 
-        // Desktop adjusts Geometry Dash's physics loop with midhooks. Mobile
-        // has no equivalent hook, so keep the macro clock in TPS time while
-        // the game remains at its supported display cadence. This prevents a
-        // 240-TPS replay from taking roughly four times too long on 60 Hz.
         uint32_t logicalSteps = 1;
         if (!m_paused->inner()) {
             const double steps = m_tps->inner() * visualDt;
@@ -559,16 +523,7 @@ void BotUpdater::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
     bot->autoclicker().update(playLayer);
 }
 
-// THE tps bypass
 
-// DEAR GEODE REVIEWER or whoever is reading this
-//
-// this does NOT conflict with geode's hooking system / other mods
-// these specific places in memory will NOT be hooked by other mods
-// (at least i don't think so)
-//
-// everything DOES work fine with this bypass
-// anyways yea yapping over heres the code:::::::::::::
 
 #ifdef GEODE_IS_WINDOWS
 static void earlyUpdateMidhook(SafetyHookContext&) {

@@ -2,7 +2,6 @@
 
 #include "../bot/bot.hpp"
 #include "bot/updater.hpp"
-// #include "../recorder/recorder.hpp"
 
 using namespace geode::prelude;
 

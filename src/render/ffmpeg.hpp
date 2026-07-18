@@ -110,7 +110,6 @@ inline void* loadFunction(HMODULE* modules, size_t moduleSize,
     }
 
     if (fn != 0) {
-        // geode::log::info("[RENDERER] Successfully loaded symbol {}", name);
     } else {
         geode::log::error("[RENDERER] Failed to load symbol {}", name);
     }

@@ -605,9 +605,6 @@ class MobileMacroEditorPopup final : public geode::Popup {
                 parsed, 0.0,
                 static_cast<double>(std::numeric_limits<uint32_t>::max())));
             atom().m_actions[m_selected].m_frame = target;
-            // Do not sort/rebuild while the native keyboard is editing. That
-            // moved the selected row and destroyed the TextInput after every
-            // digit, closing the keyboard and making Delete easy to hit.
         });
         frame->setPosition({190.f, 153.f});
         m_content->addChild(frame, 2);
@@ -671,8 +668,6 @@ class MobileMacroEditorPopup final : public geode::Popup {
         m_content->setPosition({15.f, 20.f});
         m_mainLayer->addChild(m_content);
 
-        // Follow playback/recording once when the editor opens. Navigation
-        // after that remains completely manual.
         const auto& inputs = atom().m_actions;
         if (!inputs.empty()) {
             m_selected = std::max(0, currentInputIndex());
@@ -691,8 +686,6 @@ class MobileMacroEditorPopup final : public geode::Popup {
         }
 
         const int active = currentInputIndex();
-        // Keep selection and the active native TextInput intact. Updating the
-        // existing label avoids closing the keyboard during playback.
         if (m_inputLabel) {
             m_inputLabel->setColor(
                 m_selected == active ? ccColor3B{255, 125, 125}
@@ -716,7 +709,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
         }
     }
 };
-}  // namespace
+}
 
 bool MobileMenu::init() {
     const auto winSize = CCDirector::get()->getWinSize();
@@ -951,9 +944,6 @@ void MobileMenu::buildRecordPage() {
                 bot->setMode(Bot::Recording);
                 replay.m_inputIndex = 0;
                 if (auto* playLayer = PlayLayer::get()) {
-                    // Playback always begins from a reset. Recording from the
-                    // middle of an attempt cannot reproduce because the
-                    // preceding player state is absent from the macro.
                     playLayer->resetLevel();
                 } else {
                     replay.m_actionAtom.clipActions(0);
@@ -1074,8 +1064,6 @@ void MobileMenu::buildRecordPage() {
     addToggleWithSettings(
         "Frame stepper", 5, 0, updater.m_paused->inner(),
         [&updater](bool value) {
-            // Frame advance and the stepper are one mode on mobile: enabling
-            // it pauses the level and keeps a checkpoint history for backstep.
             updater.setPaused(value);
             updater.m_backwardsStepping->inner() = value;
         },

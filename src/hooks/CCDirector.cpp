@@ -26,10 +26,6 @@ struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
         }
 
 #ifdef GEODE_IS_MOBILE
-        // The desktop recorder replaces the normal draw loop with a preview
-        // texture. Mobile has no such preview texture: using that path after
-        // a render starts dereferences its uninitialized GL resources. Draw
-        // normally first, then let the mobile renderer capture the frame.
         if (renderer->isRecording()) {
             CCDirector::drawScene();
             renderer->update(playLayer);
@@ -55,7 +51,6 @@ struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
 
             SL_LOG_DEV("Updating because not collected yet...");
 
-            // nuh uh
             if (!m_bPaused) {
                 m_pScheduler->update(dt);
             }
@@ -75,44 +70,8 @@ struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
 
             return;
         }
-        //
-        // auto& pf = Bot::get()->pathfinder();
-        // if (pf.isRunning()) {
-        //     pf.tick();
-        //
-        //     Bot::get()->updater().runFrozenTick();
-        //
-        //     if (pf.m_renderPreview) {
-        //         CCDirector::drawScene();
-        //     } else {
-        //         this->m_pobOpenGLView->swapBuffers();
-        //     }
-        //
-        //     Bot::get()->updater().runFrozenTick();
-        //     return;
-        // }
-        //
         CCDirector::drawScene();
         Bot::get()->updater().runFrozenTick();
     }
 
-    // CCSize getWinSize() {
-    //     if (auto renderer = Renderer::get(); renderer->isRecording()) {
-    //         float aspectRatio = (float)renderer->m_settings.m_width /
-    //                             (float)renderer->m_settings.m_height;
-    //
-    //         cocos2d::CCSize size = CCDirector::getWinSize();
-    //         float realAspectRatio = size.width / size.height;
-    //
-    //         if (realAspectRatio < aspectRatio) {
-    //             size.height = size.width / aspectRatio;
-    //         } else if (realAspectRatio > aspectRatio) {
-    //             size.width = size.height * aspectRatio;
-    //         }
-    //
-    //         return size;
-    //     }
-    //
-    //     return CCDirector::getWinSize();
-    // }
 };

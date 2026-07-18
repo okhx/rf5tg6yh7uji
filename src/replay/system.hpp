@@ -38,7 +38,6 @@ class ReplaySystem {
     uint64_t m_startingSeedThisAttempt = 0;
     uint64_t m_shakeRandomState = 0;
 #ifndef GEODE_IS_WINDOWS
-    // The Windows random-state address is not valid on other platforms.
     uint64_t m_portableRandomState = 0;
 #endif
     bool m_flipProcessingInputs = false;
@@ -74,7 +73,6 @@ class ReplaySystem {
     uint64_t& getCurrentShakeState();
 
     [[nodiscard]] const std::optional<slc::Action> getNextQueuedInput() {
-        // m_inputIndex always points at the next unprocessed action.
         if (m_inputIndex >= m_actionAtom.m_actions.size())
             return std::nullopt;
 
@@ -92,9 +90,6 @@ class ReplaySystem {
     void load(std::filesystem::path path);
     void save(std::filesystem::path path, bool noOverwrite = false);
 
-    //   P1FromOther - replace current P1 inputs with other replay's P1 inputs
-    //   P2FromOther - replace current P2 inputs with other replay's P2 inputs
-    //   SwapPlayers - take other replay's inputs with P1/P2 flags swapped, merge all
     enum class MergeMode { P1FromOther, P2FromOther, SwapPlayers };
     void merge(std::filesystem::path path, MergeMode mode = MergeMode::P2FromOther);
 
@@ -103,4 +98,4 @@ class ReplaySystem {
     void createBackup();
 };
 
-#endif  // REPLAY_SYSTEM_HPP
+#endif

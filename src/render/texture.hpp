@@ -33,8 +33,8 @@ class RenderTexture {
     uint32_t m_pbo[RING_SIZE];
     bool m_slotMapped[RING_SIZE] = {};
     size_t m_bufferSize = 0;
-    int m_writeIndex = 0;     // slot the next readback writes into
-    int m_inflightSlot = -1;  // slot awaiting delivery, -1 if none
+    int m_writeIndex = 0;
+    int m_inflightSlot = -1;
 
     uint32_t m_program;
 };

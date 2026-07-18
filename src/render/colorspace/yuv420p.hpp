@@ -6,7 +6,7 @@ class YUV420PColorspace : public Colorspace {
    public:
     const std::vector<RenderPass> getPasses() override {
         const uintptr_t yPlaneSize = m_alignedWidth * m_alignedHeight;
-        const uintptr_t uvPlaneSize = yPlaneSize / 4;  // YUV 4:2:0
+        const uintptr_t uvPlaneSize = yPlaneSize / 4;
 
         const char* vertexShader = R"(#version 130
         in vec4 a_position;
@@ -43,7 +43,6 @@ class YUV420PColorspace : public Colorspace {
 
                     float y = dot(rgb, coeffY);
 
-                    // convert range to bt709
                     y = y * 219.0 / 255.0 + 16.0 / 255.0;
 
                     gl_FragData[0] = vec4(y, 0.0, 0.0, 1.0);
@@ -72,7 +71,6 @@ class YUV420PColorspace : public Colorspace {
 
                 float u = dot(rgb, coeffU) + 0.5;
 
-                // convert range to bt709
                 u = u * 224.0 / 255.0 + 16.0 / 255.0;
 
                 gl_FragData[0] = vec4(u, 0.0, 0.0, 1.0);
@@ -104,7 +102,6 @@ class YUV420PColorspace : public Colorspace {
 
                 float v = dot(rgb, coeffV) + 0.5;
 
-                // convert range to bt709
                 v = v * 224.0 / 255.0 + 16.0 / 255.0;
 
                 gl_FragData[0] = vec4(v, 0.0, 0.0, 1.0);

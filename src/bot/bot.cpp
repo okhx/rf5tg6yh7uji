@@ -112,8 +112,6 @@ void Bot::initialize() {
         std::clamp(settings.noclipPlayer, 0, 2));
 
 #ifdef GEODE_IS_MOBILE
-    // The regular queued-input hook depends on desktop-specific timing.
-    // Mobile always records through GJBaseGameLayer::handleButton instead.
     settings.useAlternateHook = true;
 #endif
 

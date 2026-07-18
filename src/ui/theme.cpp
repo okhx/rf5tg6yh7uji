@@ -27,8 +27,6 @@ void main() {
 
 void Theme::initialize() {
 #ifdef GEODE_IS_MOBILE
-    // Theme textures belong to the ImGui renderer. The mobile UI uses Cocos
-    // sprites exclusively, so it must not touch raw OpenGL state here.
     return;
 #endif
 
@@ -62,15 +60,11 @@ void Theme::initialize() {
     }
     stbi_image_free(data);
 
-    // Cocos2d caches the current texture binding. Do not leave a theme icon
-    // bound (or leave a custom unpack alignment) after this raw GL upload.
     glPixelStorei(GL_UNPACK_ALIGNMENT, oldUnpackAlignment);
     glBindTexture(GL_TEXTURE_2D, oldTexture);
     glActiveTexture(oldActiveTexture);
 
 #ifdef GEODE_IS_MOBILE
-    // Mobile uses the native Cocos menu; these desktop postprocess shaders
-    // are never initialized in its OpenGL ES context.
     return;
 #else
     m_postprocessPass =

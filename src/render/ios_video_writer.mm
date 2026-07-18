@@ -75,9 +75,6 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->input = [AVAssetWriterInput
             assetWriterInputWithMediaType:AVMediaTypeVideo
                             outputSettings:settings];
-        // This renderer feeds frames continuously from the game loop. Real-time
-        // mode avoids the large burst/drain buffering cycle seen with offline
-        // mode on iOS hardware encoders.
         m_impl->input.expectsMediaDataInRealTime = YES;
 
         NSDictionary* attributes = @{
@@ -214,9 +211,6 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
         return geode::Err(errorText(m_impl->writer.error,
                                     "iOS video encoder failed"));
     if (!m_impl->input.readyForMoreMediaData) {
-        // Preserve the output timeline even when this image cannot be accepted.
-        // The previous encoded image remains visible for this timestamp rather
-        // than shortening the finished movie or forcing a catch-up burst.
         ++m_impl->frame;
         return geode::Ok(false);
     }
@@ -261,9 +255,6 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
 geode::Result<> IOSVideoWriter::finish() {
     if (!m_impl->writer || m_impl->finished) return geode::Ok();
     m_impl->finished = true;
-    // A final image may have been skipped while the encoder was busy. End the
-    // session at the reserved timestamp so AVFoundation holds the last valid
-    // frame instead of shortening the movie.
     CMTime endTime = CMTimeMake(m_impl->frame, m_impl->fps);
     if (m_impl->audioFrame > 0) {
         const CMTime audioEnd =

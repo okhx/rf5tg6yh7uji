@@ -8,9 +8,6 @@
 #include <string>
 #include <vector>
 
-// ABI-compatible subset of eclipse.ffmpeg-api v2, based on the renderer
-// source supplied with the project. Keeping this event based means iOS uses
-// the separately signed encoder mod instead of loading desktop DLLs.
 namespace ffmpeg {
 inline namespace v2 {
 enum class HardwareAccelerationType : int { NONE = 0 };
@@ -29,8 +26,8 @@ struct RenderSettings {
     uint16_t m_fps = 60;
     std::filesystem::path m_outputFile;
 };
-}  // namespace v2
-}  // namespace ffmpeg
+}
+}
 
 namespace ffmpeg::events::impl {
 class Dummy {};
@@ -86,7 +83,7 @@ class GetWriteFrameFunctionEvent
     void setFunction(WriteFrame function) { m_function = function; }
     WriteFrame getFunction() const { return m_function; }
 };
-}  // namespace ffmpeg::events::impl
+}
 
 class MobileFFmpegRecorder {
     ffmpeg::events::impl::Dummy* m_ptr = nullptr;

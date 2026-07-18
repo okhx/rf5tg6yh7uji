@@ -93,23 +93,9 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
         return true;
     }
 
-    // void destroyPlayer(PlayerObject* player, GameObject* gameObject) {
-    //     auto bot = Bot::get();
 
-    //     if (!bot->trajectory().hasDied(player)) {
-    //         LevelEditorLayer::destroyPlayer(player, gameObject);
-    //     }
-    // }
 
-    // void playerTookDamage(PlayerObject* player) override {
-    //     auto& t = Bot::get()->trajectory();
-    //     if (t.isFakePlayer(player)) {
-    //         t.hasDied(player);
-    //         return;
-    //     }
 
-    //     LevelEditorLayer::playerTookDamage(player);
-    // }
 
     void update(float dt) override {
         LevelEditorLayer::update(dt);
@@ -140,8 +126,6 @@ struct SLLevelEditorLayer : Modify<SLLevelEditorLayer, LevelEditorLayer> {
 
         LevelEditorLayer::updateEditor(dt);
 
-        // Editor playtests are advanced through updateEditor rather than the
-        // regular GJBaseGameLayer update on every platform.
         if (m_playbackActive) {
             bot->hitboxes().saveToTrail(this);
             bot->hitboxes().draw(this);

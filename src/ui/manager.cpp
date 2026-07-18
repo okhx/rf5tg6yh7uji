@@ -3,8 +3,6 @@
 #ifdef GEODE_IS_WINDOWS
 #include <winuser.h>
 #else
-// Keep saved Windows keybinds readable on platforms where winuser.h is not
-// available. These are the documented Windows virtual-key values.
 constexpr int VK_BACK = 0x08;
 constexpr int VK_TAB = 0x09;
 constexpr int VK_RETURN = 0x0D;
@@ -240,7 +238,6 @@ static std::vector<Theme> s_themes = {
         layout(location = 3) uniform vec4 u_window;
         layout(location = 4) uniform float u_time;
 
-        // Adapted from https://www.shadertoy.com/view/4st3DM
         void main() {
             fragColor = texture2D(u_texture, v_texCoord);
             float gray = 0.299 * fragColor.x + 0.587 * fragColor.y + 0.114 * fragColor.z;
@@ -280,11 +277,6 @@ static std::vector<Theme> s_themes = {
             vec4 mixed = (fragColor * vec4(mix(two, one, (sin(u_time) + 1.0) / 2.0), 1.0));
             fragColor = mix(fragColor, mixed, clamp(light - 0.6, 0.0, 1.0));
 
-            // fragColor -= vec4(
-            //     sin(eh*0.7+(y+n*1.2)*5.-n*5.),
-            //     sin(eh*0.7+(y+n*1.2)*5.-n*5.),
-            //     sin(eh*0.7+(y+n*1.2)*5.-n*5.),
-            // 1.0) * phase * vec4(0.2);
         }
         )",
           2.0),
@@ -616,6 +608,8 @@ void UIManager::setup() {
 
     m_state.m_bgColorState.colors = SLSettings::get()->layoutBgColor;
     m_state.m_groundColorState.colors = SLSettings::get()->layoutGroundColor;
+    m_state.m_holdingTrailColorState.colors =
+        SLSettings::get()->hitboxes.holdingTrailColor;
 
     for (auto& theme : s_themes) {
         theme.initialize();
@@ -663,8 +657,6 @@ static void renderBlurBg(float rounding = 24.0f, float borderSize = 2.5f,
                          bool useShader = true, float bgOpacity = 0.15f,
                          bool pp = false) {
 #ifdef GEODE_IS_MOBILE
-    // The blur renderer needs desktop framebuffer blitting APIs that are not
-    // available in Geometry Dash's iOS OpenGL ES context.
     useShader = false;
 #endif
     rounding *= slui::Config::get().uiScale;
@@ -1052,9 +1044,6 @@ void UIManager::draw() {
             logoTex = (GLuint)-1;
         }
 
-        // Texture uploads use raw GL, whereas Cocos2d tracks texture state in
-        // its own cache. Restore every state we touched before returning to
-        // Cocos so the next sprite draw still sees its own atlas texture.
         glPixelStorei(GL_UNPACK_ALIGNMENT, oldUnpackAlignment);
         glBindTexture(GL_TEXTURE_2D, oldTexture);
         glActiveTexture(oldActiveTexture);
@@ -1346,12 +1335,26 @@ void UIManager::draw() {
                 keybindRightClick("hitboxes.trail_enabled");
 
                 if (Bot::get()->hitboxes().m_trailEnabled->inner()) {
+                    auto& hitboxSettings = SLSettings::get()->hitboxes;
+                    slui::checkbox("Show Holding##Hitboxes",
+                                   hitboxSettings.holdingTrailEnabled);
+                    m_state.m_holdingTrailColorState.colors =
+                        hitboxSettings.holdingTrailColor;
+                    slui::color("Holding Color##Hitboxes",
+                                m_state.m_holdingTrailColorState, [&]() {
+                                    renderBlurBg(
+                                        12.0f, 1.5f,
+                                        m_state.m_useShader->inner());
+                                });
+                    hitboxSettings.holdingTrailColor =
+                        m_state.m_holdingTrailColorState.colors;
+
                     slui::drag("Trail Length##Hitboxes",
-                                SLSettings::get()->hitboxes.trailMaxLength,
+                                hitboxSettings.trailMaxLength,
                                 50, 4000, 1.0f, "{:d}");
 
                     slui::drag("Trail Quality##Hitboxes",
-                                SLSettings::get()->hitboxes.trailRebuildInterval,
+                                hitboxSettings.trailRebuildInterval,
                                 1, 10, 1.0f, "Rebuild every {:d} steps");
                 }
 

@@ -29,4 +29,4 @@ public:
     void show();
 };
 
-#endif // TOUCH_OVERLAY_HPP
+#endif

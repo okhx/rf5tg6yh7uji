@@ -248,7 +248,6 @@ struct SavedPlayerCheckpoint {
     bool m_inputsLocked;
     bool m_gv0123;
     int m_iconRequestID;
-    // cocos2d::CCArray* m_unk958;
     int m_unkUnused;
     bool m_isOutOfBounds;
     float m_fallStartY;
@@ -265,7 +264,6 @@ struct SavedCheckpoint {
     SavedPlayerCheckpoint m_player2;
     CheckpointObject* m_checkpoint;
 
-    // for platformer checkpoints
     size_t m_stackSize;
 
     uint64_t m_attemptStartFrame;
@@ -276,7 +274,6 @@ struct SavedCheckpoint {
 
     double m_tps;
 
-    // Additional GJEffectManager state
     std::unordered_map<int, int> m_persistentItemMap;
     std::array<float, 2000> m_varianceValues;
 
@@ -286,4 +283,4 @@ struct SavedCheckpoint {
     std::vector<GameObject*> m_brokenObjects;
 };
 
-#endif  // CHECKPOINT_HPP
+#endif

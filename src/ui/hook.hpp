@@ -4,13 +4,11 @@
 #include <Windows.h>
 #endif
 
-// #include "backends/imgui_impl_win32.h"
 
 #ifndef IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #define IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #endif
 
-// #include "backends/imgui_impl_opengl3.h"
 #include <Geode/Geode.hpp>
 #include <Geode/modify/CCEGLView.hpp>
 #include "render/gl.hpp"

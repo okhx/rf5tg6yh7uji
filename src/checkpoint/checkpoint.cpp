@@ -25,10 +25,6 @@ void SavedPlayerCheckpoint::apply(PlayerObject* p) {
     p->m_slopeStartTime = m_slopeStartTime;
     p->m_justPlacedStreak = m_justPlacedStreak;
     p->m_maybeLastGroundObject = m_maybeLastGroundObject;
-    // p->m_collisionLogTop = m_collisionLogTop;
-    // p->m_collisionLogBottom = m_collisionLogBottom;
-    // p->m_collisionLogLeft = m_collisionLogLeft;
-    // p->m_collisionLogRight = m_collisionLogRight;
     p->m_lastCollisionBottom = m_lastCollisionBottom;
     p->m_lastCollisionTop = m_lastCollisionTop;
     p->m_lastCollisionLeft = m_lastCollisionLeft;
@@ -253,7 +249,6 @@ void SavedPlayerCheckpoint::apply(PlayerObject* p) {
     p->m_inputsLocked = m_inputsLocked;
     p->m_gv0123 = m_gv0123;
     p->m_iconRequestID = m_iconRequestID;
-    // p->m_unk958 = m_unk958;
     p->m_unkUnused = m_unkUnused;
     p->m_isOutOfBounds = m_isOutOfBounds;
     p->m_fallStartY = m_fallStartY;
@@ -279,7 +274,6 @@ SavedPlayerCheckpoint SavedPlayerCheckpoint::create(PlayerObject* p) {
 #endif
 
     SavedPlayerCheckpoint c;
-    // m_ccPosition = p->getPosition();
     c.m_ccRotation = p->getRotation();
     c.m_mainLayer = p->m_mainLayer;
     c.m_wasTeleported = p->m_wasTeleported;

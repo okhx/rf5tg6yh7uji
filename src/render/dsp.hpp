@@ -24,20 +24,18 @@ class AudioMonitorRing {
         m_write.store(0, std::memory_order_relaxed);
     }
 
-    // producer side only
     void push(const float* src, size_t n) {
         if (m_capacity == 0) return;
         const size_t w = m_write.load(std::memory_order_relaxed);
         const size_t r = m_read.load(std::memory_order_acquire);
         const size_t space = m_capacity - (w - r);
-        if (n > space) n = space;  // drop the overflow to bound latency
+        if (n > space) n = space;
         for (size_t i = 0; i < n; ++i) {
             m_data[(w + i) % m_capacity] = src[i];
         }
         m_write.store(w + n, std::memory_order_release);
     }
 
-    // consumer side only; returns how many samples were actually written
     size_t pop(float* dst, size_t n) {
         if (m_capacity == 0) return 0;
         const size_t r = m_read.load(std::memory_order_relaxed);
@@ -135,7 +133,6 @@ class AudioRecorder {
     float m_previousMusicVolume = 0.0;
     float m_previousSFXVolume = 0.0;
 
-    // montior stuffs
     FMOD::System* m_monSystem = nullptr;
     FMOD::Sound* m_monSound = nullptr;
     FMOD::Channel* m_monChannel = nullptr;
@@ -143,4 +140,4 @@ class AudioRecorder {
     std::atomic<float> m_monVolume{1.0f};
 };
 
-#endif  // RECORDER_DSP_HPP
+#endif

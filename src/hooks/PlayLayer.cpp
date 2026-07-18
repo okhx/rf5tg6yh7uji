@@ -54,7 +54,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
             return PlayLayer::storeCheckpoint(obj);
         }
 
-        // this->m_activatedCheckpoint is reset in postUpdate
         if (this->m_activatedCheckpoint) {
             obj->retain();
             addToSection(obj->m_physicalCheckpointObject);
@@ -65,7 +64,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         }
 
         obj->retain();
-        // m_checkpointArray->addObject(obj);
         addToSection(obj->m_physicalCheckpointObject);
         Bot::get()->practiceFix().saveCurrent(
             obj, Bot::get()->updater().m_frameOnLastAttempt);
@@ -124,14 +122,12 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void fakeFullReset() {
-        // naive decompilation without removing checkpoints etc
         auto winSize = CCDirector::sharedDirector()->getWinSize();
         this->m_gameState.m_totalTime = 0.0;
         this->m_gameState.m_unkDouble3 = 0.0;
         this->m_gameState.m_levelTime = 0.0;
         this->m_player1->m_totalTime = 0.0;
         this->m_player2->m_totalTime = 0.0;
-        // this->m_queueInterval = 0.0;
         this->m_attempts = 0;
         this->m_jumps = 0;
         this->m_objectsDeactivated = true;
@@ -184,9 +180,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         const bool isDue = input->m_frame == deathFrame;
 #endif
         if (isDue) {
-            // Only consume the Death marker here. The old getNextInput loop
-            // also consumed the first non-death action at this frame, which
-            // could discard a Restart or button input and desync the macro.
             replay.advanceInputIndex();
             bot->updater().m_expectsDeath = true;
         }
@@ -279,9 +272,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         bot->practiceFix().updatePlatformerInputs(m_queuedButtons);
         m_queuedButtons.clear();
 
-        // A saved checkpoint already contains the held-button state. Running
-        // the replay queue during its restore advances the cursor and shifts
-        // following actions away from their recorded frames.
         if (restoringBackstep) return;
 
         if (bot->isPlaying()) {
@@ -395,7 +385,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         updater.m_expectsDeath = false;
         updater.m_fullReset = false;
         updater.m_tpsOverflow = 0.0;
-        // updater.m_respawning = false;
     }
 
     void resetLevel() override {
@@ -427,9 +416,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
         bool hasAddedCheckpoint = this->handleResetWithCheckpoints(deathFrame);
 
-        // bot->replaySystem().m_forceNextInput = true;
-        // this->processQueuedButtons();
-        // bot->replaySystem().m_forceNextInput = false;
 
         bot->updater().resetFrame();
 
@@ -437,9 +423,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
         this->updateRandomSeedOnReset();
 
-        // mod::emit(mod::events::LevelRestart{
-        //     .intentional = bot->updater().m_canDie->inner(),
-        // });
 
         PlayLayer::resetLevel();
 
@@ -499,11 +482,9 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         }
 
         auto bot = Bot::get();
-        // Frame stepping is local to this level instance.
         bot->updater().setPaused(false);
         bot->updater().m_stepOnce->inner() = false;
 
-        // deallocate trajectory and hitbox nodes before the PlayLayer gets destroyed
         bot->trajectory().uninit();
         bot->hitboxes().destroy();
 
@@ -671,7 +652,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                                           0.0);
                     }
 
-                    // bot->updater().stepOnce();
                     bot->updater().setPaused(false);
                 }
             }
@@ -749,7 +729,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         if (std::filesystem::exists(path)) {
             replay.createBackup();
         } else {
-            replay.save(path, true);  // don't overwrite existing replays
+            replay.save(path, true);
         }
     }
 
@@ -785,7 +765,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
         if (OTHER_OBJECT_IDS.contains(obj->m_objectID)) {
             obj->m_isHide = true;
-            // return;
         } else {
             obj->setOpacity(255);
             obj->m_isHide = false;
@@ -805,7 +784,6 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 #ifdef GEODE_IS_WINDOWS
 constexpr int QUEUE_CHECKPOINT_OFFSET = 0x4ce060;
 
-// this basically removes the one frame delay with placing checkpoints
 void PlayLayer_queueCheckpoint(void* unk, void* unk2) {
     if (!Bot::get()->isEnabled()) {
         return reinterpret_cast<void (*)(void*, void*)>(
@@ -834,16 +812,13 @@ $execute {
 #ifdef GEODE_IS_WINDOWS
 static void resetLevelSeedMidhook(SafetyHookContext&) {
     if (!Bot::get()->isEnabled()) {
-        return;  // don't modify rng
+        return;
     }
 
     Bot::get()->replaySystem().getCurrentRandomState() =
         Bot::get()->replaySystem().m_startingSeedThisAttempt;
     Bot::get()->replaySystem().m_shakeRandomState =
         Bot::get()->replaySystem().m_startingSeedThisAttempt & 0x7FFF;
-    // queueInMainThread([]() {
-    //     srand(Bot::get()->replaySystem().m_startingSeed);
-    // });
 }
 
 $execute {

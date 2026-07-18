@@ -20,16 +20,6 @@ struct SLEnhancedGameObject : Modify<SLEnhancedGameObject, EnhancedGameObject> {
         } else {
             EnhancedGameObject::activatedByPlayer(player);
 
-            // const GJBaseGameLayer* gjbgl = GJBaseGameLayer::get();
-            // const bool activated = hasBeenActivatedByPlayer(gjbgl->m_player1)
-            // &&
-            //     (!gjbgl->m_gameState.m_isDualMode ||
-            //     hasBeenActivatedByPlayer(gjbgl->m_player2));
-            // if (activated && bot->updater().m_layoutMode->inner()) {
-            //     m_opacityMod = 0.5;
-            //     m_opacityMod2 = 0.5;
-            //     m_hasNoEffects = true;
-            // }
         }
     }
 };

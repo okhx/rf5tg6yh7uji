@@ -22,7 +22,6 @@ $execute {
         reinterpret_cast<void*>(geode::base::get() + 0x1a1b70);
 }
 
-// this doesn't work in trajectory for some odd reason
 bool hasBeenActivatedByPlayer(PlayerObject* player,
                               EnhancedGameObject* object) {
     bool activatedPlatformer =
@@ -37,8 +36,5 @@ bool hasBeenActivatedByPlayer(PlayerObject* player,
 
     return object->m_activatedByPlayer2;
 
-    // auto func = reinterpret_cast<bool (*)(EnhancedGameObject*,
-    // PlayerObject*)>(hasBeenActivatedByPlayerOrig); return func(object,
-    // player);
 }
-}  // namespace phys
+}

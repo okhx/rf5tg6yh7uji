@@ -53,4 +53,4 @@ inline std::filesystem::path file(std::string_view name) {
     return dataRoot() / name;
 }
 
-}  // namespace silicate::paths
+}

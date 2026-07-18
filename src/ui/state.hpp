@@ -196,6 +196,7 @@ struct UIState {
                                  HitboxType::InteractableActive};
 
     slui::ColorState m_hitboxColorState;
+    slui::ColorState m_holdingTrailColorState;
     slui::ColorState m_groundColorState;
     slui::ColorState m_bgColorState;
 

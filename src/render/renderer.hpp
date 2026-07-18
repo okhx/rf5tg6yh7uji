@@ -10,8 +10,6 @@
 #elif defined(GEODE_IS_MOBILE)
 #include "mobile_ffmpeg_api.hpp"
 #endif
-// #include "render_texture.hpp"
-// #include "dsp.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -34,7 +32,7 @@ struct RendererSettings {
 
     int m_fps = 60;
 
-    float m_afterEndTime = 5.0f;  // in seconds
+    float m_afterEndTime = 5.0f;
     bool m_colorFix = true;
 
     std::string m_outputPath = "output";
@@ -101,7 +99,6 @@ class Renderer {
     geode::Result<> start();
     geode::Result<> encode(uint8_t* data, size_t size);
     geode::Result<> write();
-    // geode::Result<float> writeAudio(std::vector<float>& data);
     geode::Result<> writeAudio(std::vector<float>& data, uint64_t pts);
     geode::Result<> stop();
 
@@ -174,26 +171,6 @@ class Renderer {
     ff_t* ff = 0;
 
    private:
-    // AVBufferRef* m_hwDeviceCtx = nullptr;
-    // AVBufferRef* m_hwFramesCtx = nullptr;
-    // const AVCodec* m_codec = nullptr;
-    // const AVCodec* m_audioCodec = nullptr;
-    // AVFormatContext* m_formatCtx = nullptr;
-    // AVCodecContext* m_videoCodecCtx = nullptr;
-    // AVStream* m_videoStream = nullptr;
-    // AVStream* m_audioStream = nullptr;
-    // AVFrame* m_frame = nullptr;
-    // AVFrame* m_dstFrame = nullptr;
-    // AVFrame* m_filterFrame = nullptr;
-    // AVFrame* m_audioFrame = nullptr;
-    // AVPacket* m_pkt = nullptr;
-    // AVPacket* m_audioPkt = nullptr;
-    // SwsContext* m_swsCtx = nullptr;
-    // AVFilterGraph* m_filterGraph = nullptr;
-    // AVFilterContext* m_buffersinkCtx = nullptr;
-    // AVFilterContext* m_buffersrcCtx = nullptr;
-    // AVFilterContext* m_colorspaceCtx = nullptr;
-    // AVBufferRef* m_frameBuffer = nullptr;
 
     SL_AV_PTR(AVCodecContext)
     m_videoCodecCtx = {nullptr,
@@ -201,9 +178,7 @@ class Renderer {
     SL_AV_PTR(AVCodecContext)
     m_audioCodecCtx = {nullptr,
                        SL_AV_DELETER(AVCodecContext, ff->avcodec_free_context)};
-    // SL_AV_PTR(AVFormatContext) m_formatCtx = {nullptr,
-    // SL_AV_DELETER2(AVFormatContext, avformat_free_context)};
-    AVFormatContext* m_formatCtx = nullptr;  // managed by avformat_free_context
+    AVFormatContext* m_formatCtx = nullptr;
 
     AVStream* m_videoStream = nullptr;
     AVStream* m_audioStream = nullptr;
@@ -240,11 +215,9 @@ class Renderer {
     int m_channels;
     int m_sampleRate;
 
-    // std::vector<uint8_t> m_buffer;
     uint8_t* m_buffer = nullptr;
     size_t m_bufferSize = 0;
 
-    // updateindex cant be reliable pts no more cuz pts is slightly late
     int64_t m_bufferPts = 0;
     std::deque<int64_t> m_ptsQueue;
 

@@ -9,9 +9,6 @@
 #include "settings/settings.hpp"
 #include "trajectory/trajectory.hpp"
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 #define CC_COLOR(color_type)                \
     *reinterpret_cast<cocos2d::ccColor4F*>( \
@@ -37,20 +34,14 @@ static cocos2d::CCRect usingWidth(const cocos2d::CCRect& old,
     return r;
 }
 
-// Clamp circle segment count to keep GPU load reasonable.
 static inline int circleSegments(float radius) noexcept {
-    // Minimum 8, maximum 48 — more than enough for any on-screen circle.
     return static_cast<int>(std::clamp(radius * 1.5f, 8.0f, 48.0f));
 }
 
-// Cheaper variant for trail circles — half the segments is plenty.
 static inline int trailCircleSegments(float radius) noexcept {
     return static_cast<int>(std::clamp(radius * 0.75f, 6.0f, 20.0f));
 }
 
-// ---------------------------------------------------------------------------
-// Resolved category helpers
-// ---------------------------------------------------------------------------
 
 struct ResolvedHBCategory {
     bool               enabled;
@@ -79,9 +70,6 @@ static ResolvedHBCategory resolveHB(SLSettings::HitboxSettings& s,
     };
 }
 
-// ---------------------------------------------------------------------------
-// Player hitbox
-// ---------------------------------------------------------------------------
 
 static void drawPlayerHitbox(cocos2d::CCDrawNode*       node,
                              GJBaseGameLayer*            pl,
@@ -120,9 +108,6 @@ static void drawPlayerHitbox(cocos2d::CCDrawNode*       node,
                        CC_COLOR(Type::PlayerInner));
 }
 
-// ---------------------------------------------------------------------------
-// Object hitbox
-// ---------------------------------------------------------------------------
 
 const std::array ALWAYS_ALLOWED_MODIFIERS = {200, 201, 202, 203,
                                              1334, 1816, 3643};
@@ -162,7 +147,6 @@ static void drawObjectHitbox(cocos2d::CCDrawNode*    node,
 
             if (!hb.interactable.enabled) break;
 
-            // Preserve dirty flags to avoid side effects
             bool rectDirty      = object->m_isObjectRectDirty;
             bool offsetCalced   = object->m_boxOffsetCalculated;
 
@@ -249,9 +233,6 @@ static void drawObjectHitbox(cocos2d::CCDrawNode*    node,
     }
 }
 
-// ---------------------------------------------------------------------------
-// Section iteration
-// ---------------------------------------------------------------------------
 
 static void iterateObjects(GJBaseGameLayer*                  pl,
                            std::function<void(GameObject*)>  callback) {
@@ -275,9 +256,6 @@ static void iterateObjects(GJBaseGameLayer*                  pl,
     }
 }
 
-// ---------------------------------------------------------------------------
-// Hitboxes::init
-// ---------------------------------------------------------------------------
 
 void Hitboxes::safeRelease(HitboxesDrawNode*& node) {
     if (node) {
@@ -305,8 +283,6 @@ void Hitboxes::init(GJBaseGameLayer* pl) {
     m_drawNode      = makeNode(base + 10000, "hitbox-node"_spr);
     m_trailDrawNode = makeNode(base + 9998,  "hitbox-trail-node"_spr);
 
-    // A new layer has a new draw node even when the trail data was preserved.
-    // Force the complete trail to be rebuilt on that node immediately.
     m_trailDirty = true;
     m_initialized = true;
 }
@@ -318,7 +294,6 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
 
     if (!m_trailEnabled->inner()) {
         m_trailDrawNode->clear();
-        // Keep it dirty so re-enabling the option redraws preserved data.
         m_trailDirty = true;
     } else if (m_trailDirty) {
         m_trailDrawNode->clear();
@@ -346,7 +321,8 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
             const auto rCirc = resolve(Type::PlayerCircle);
             const auto rInner= resolve(Type::PlayerInner);
 
-            auto drawTrail = [&](std::deque<HitboxTrailUnit>& trail) {
+            auto drawTrail = [&](std::deque<HitboxTrailUnit>& trail,
+                                 bool drawInner) {
                 bool hasLast = false;
                 int  lastPx  = 0, lastPy = 0;
 
@@ -375,22 +351,23 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
                             hold[3] * cat.fill.a};
                     };
 
-                    if (eSolid) {
+                    if (!drawInner && eSolid) {
                         auto r = usingWidth(unit.m_rect, width);
                         m_trailDrawNode->drawRect(
                             r, fillFor(rSol), width, lineFor(rSol));
                     }
-                    if (eRotated && unit.m_rotated[0] != unit.m_rotated[2]) {
+                    if (!drawInner && eRotated &&
+                        unit.m_rotated[0] != unit.m_rotated[2]) {
                         m_trailDrawNode->drawPolygon(
                             const_cast<cocos2d::CCPoint*>(unit.m_rotated.data()),
                             4, fillFor(rRot), width, lineFor(rRot));
                     }
-                    if (eInner) {
+                    if (drawInner && eInner) {
                         auto r = usingWidth(unit.m_scaled, width);
                         m_trailDrawNode->drawRect(
-                            r, fillFor(rInner), width, lineFor(rInner));
+                            r, rInner.fill, width, rInner.line);
                     }
-                    if (eCircle) {
+                    if (!drawInner && eCircle) {
                         float radius = usingWidth(unit.m_rect, width).size.width * 0.5f;
                         if (radius > 0.0f) {
                             cocos2d::CCPoint center{unit.m_rect.getMidX(),
@@ -404,12 +381,13 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
                 }
             };
 
-            drawTrail(m_trailP1);
-            drawTrail(m_trailP2);
+            drawTrail(m_trailP1, false);
+            drawTrail(m_trailP2, false);
+            drawTrail(m_trailP1, true);
+            drawTrail(m_trailP2, true);
         }
     }
 
-    // Hitbox trail is independent from current/object hitboxes.
     if (!m_enabled->inner()) return;
 
     {
@@ -448,9 +426,6 @@ static void appendTrailUnit(std::deque<HitboxTrailUnit>& trail,
                      player->m_holdingButtons[1],
     };
 
-    // LevelEditorLayer can pass through both update and updateEditor for the
-    // same physics state. Do not let duplicate samples consume the configured
-    // trail length and make the visible trail appear randomly cut short.
     if (!trail.empty()) {
         const auto& last = trail.back();
         if (last.m_rect.origin.x == unit.m_rect.origin.x &&
@@ -498,8 +473,6 @@ void Hitboxes::destroy() {
     safeRelease(m_drawNode);
     safeRelease(m_trailDrawNode);
 
-    // Keep trail data when moving from a play layer into the editor. init()
-    // attaches fresh draw nodes to the new layer and redraws the same trail.
     m_trailDirty = true;
     m_initialized = false;
 }

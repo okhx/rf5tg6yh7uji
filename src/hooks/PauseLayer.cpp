@@ -56,8 +56,6 @@ struct SLPauseLayer : Modify<SLPauseLayer, PauseLayer> {
 #ifdef GEODE_IS_MOBILE
         MobileMenu::open();
 #else
-        // This pause-menu action opens the UI; it should not accidentally
-        // close it if the saved visibility setting was already enabled.
         Bot::get()->ui().m_state.m_visible->inner() = true;
 #endif
     }
@@ -71,12 +69,10 @@ static void releaseButtonsMidhook(SafetyHookContext& ctx) {
 }
 
 $execute {
-    // In PlayLayer::pauseGame
     util::midhook(geode::base::get() + 0x3BA239, "pauseReleaseButtons",
                   releaseButtonsMidhook);
     util::midhook(geode::base::get() + 0x3BA27C, "pauseReleaseButtons",
                   releaseButtonsMidhook);
-    // In PlayLayer::resume
     util::midhook(geode::base::get() + 0x3BA879, "resumeReleaseButtons",
                   releaseButtonsMidhook);
 }

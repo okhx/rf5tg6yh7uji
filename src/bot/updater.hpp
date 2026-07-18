@@ -92,8 +92,6 @@ class BotUpdater {
     int estimatedStepCount = 1;
     float currentDelta = 0.0;
 
-    // Whether the player can die in the macro or not, adds a "Death" or
-    // "Restart" input
     SLValuePtr<bool> m_canDie =
         SLValue<bool>::create("updater.intentional_death", &_intentionalDeath);
     SLValuePtr<bool> m_ssbFix = SLValue<bool>::create(
@@ -114,7 +112,6 @@ class BotUpdater {
     float m_currentPlayerX;
     float m_currentPlayerRot;
 
-    // Whether the current input is Death
     bool m_expectsDeath = false;
     uint64_t m_frameOnLastAttempt = 0;
     uint32_t m_editorStartProgress = 0;
@@ -164,15 +161,8 @@ class BotUpdater {
     void setTps(double tps) {
         if (tps <= 0.0) return;
 
-        // double tpsSteps = std::max(tps / 60.0, 4.0);
 
-        // uintptr_t addr = geode::base::get() + TPS_STEPS_OFFSET;
-        // DWORD oldProtect;
 
-        // VirtualProtect((void*)addr, sizeof(double), PAGE_EXECUTE_READWRITE,
-        // &oldProtect);
-        // *(double*)addr = tpsSteps;
-        // VirtualProtect((void*)addr, sizeof(double), oldProtect, &oldProtect);
 
         m_tps->inner() = tps;
     }
@@ -213,4 +203,4 @@ class BotUpdater {
     void portableFrameUpdate(PlayLayer* playLayer, float visualDt);
 };
 
-#endif  // UPDATER_HPP
+#endif

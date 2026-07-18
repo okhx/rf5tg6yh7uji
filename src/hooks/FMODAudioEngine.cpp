@@ -65,15 +65,11 @@ void FMOD_System_update(FMOD::System* self) {
         processedSamples += bufferLength;
     }
 
-    const auto frameSize = 1024;  // just assume 1024 for now
+    const auto frameSize = 1024;
     const auto totalFrameSize = frameSize * audio->m_channels;
 
-    // this only takes audio from two channels of the possible more,
-    // but will delete the rest correctly
     while (audio->m_buffer.size() >= (size_t)totalFrameSize) {
 #ifdef GEODE_IS_MOBILE
-        // Renderer::updateMobile consumes this buffer and muxes it through
-        // the native writer. The desktop FFmpeg contexts do not exist here.
         break;
 #else
         auto renderer = Renderer::get();
@@ -86,7 +82,6 @@ void FMOD_System_update(FMOD::System* self) {
             return;
         }
 
-        // and then just clip the buffer of the first frame size
         audio->m_buffer.erase(audio->m_buffer.begin(),
                               audio->m_buffer.begin() + totalFrameSize);
 

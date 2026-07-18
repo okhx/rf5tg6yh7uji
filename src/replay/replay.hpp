@@ -67,4 +67,4 @@ struct Replay {
     inline void addInput(const Input&& input) { m_inputs.emplace_back(input); }
 };
 
-#endif  // REPLAY_REPLAY_HPP
+#endif

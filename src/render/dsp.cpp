@@ -23,7 +23,6 @@ FMOD_RESULT F_CALLBACK AudioRecorder::writeCallback(FMOD_DSP_STATE*,
         return FMOD_OK;
     }
 
-    // std::memset(outBuffer, 0, length * inChannels * sizeof(float));
     SL_LOG_DEV("length: {}, inChannels: {}, outChannels: {}", length,
                inChannels, *outChannels);
 
@@ -58,7 +57,6 @@ FMOD_RESULT F_CALLBACK AudioRecorder::monitorReadCallback(
 }
 
 void AudioRecorder::haltWithData(float* data, unsigned int length) {
-    // std::lock_guard lock(m_lock);
 
     SL_LOG_DEV("Collected data, unpausing... {}", collected++);
 
@@ -70,8 +68,6 @@ void AudioRecorder::haltWithData(float* data, unsigned int length) {
 
     SL_LOG_DEV("Setting collected data to true");
     m_collectedData = true;
-    // m_master->setPaused(true);
-    // m_cv.notify_one();
 }
 
 void AudioRecorder::init() {
@@ -89,7 +85,6 @@ void AudioRecorder::init() {
     system->createDSP(&desc, &m_dsp);
     system->setDSPBufferSize(1024, 2);
 
-    // m_master->setPaused(true);
 
     m_time = 0.0;
     m_lastPulse = 0.0;
@@ -128,7 +123,7 @@ void AudioRecorder::attach(double musicVolume, double sfxVolume) {
 }
 
 void AudioRecorder::startMonitor() {
-    if (m_monSystem) return;  // already running
+    if (m_monSystem) return;
 
     if (FMOD::System_Create(&m_monSystem) != FMOD_OK || !m_monSystem) {
         m_monSystem = nullptr;

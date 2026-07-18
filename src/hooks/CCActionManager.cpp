@@ -23,7 +23,6 @@ void CCActionManager_update(cocos2d::CCActionManager* mgr, float dt) {
         CCActionManager_update_orig(mgr, dt);
         return;
     }
-    // Don't trigger CCActionManager::update if running frozen updates
     if (Bot::get()->updater().m_onlyRefresh) {
         return;
     }

@@ -48,7 +48,7 @@ void RenderPass::initialize() {
                            m_tex, 0);
 
     if (m_vertexShader == 0 || m_fragmentShader == 0) {
-        return;  // don't initialize if no shaders provided
+        return;
     }
 
     GLuint vs = compileShader(GL_VERTEX_SHADER, m_vertexShader);
@@ -62,7 +62,6 @@ void RenderPass::initialize() {
     glDeleteShader(vs);
     glDeleteShader(fs);
 
-    // cache uniforms
     m_uTextureLoc = glGetUniformLocation(m_program, "u_texture");
     m_uTexelSizeLoc = glGetUniformLocation(m_program, "u_texelSize");
 

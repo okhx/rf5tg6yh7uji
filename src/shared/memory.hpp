@@ -10,4 +10,4 @@ void writeMemoryForeign(void* address, const T& value) {
     *reinterpret_cast<T*>(address) = value;
     VirtualProtect(address, sizeof(T), oldProtect, nullptr);
 }
-}  // namespace util
+}

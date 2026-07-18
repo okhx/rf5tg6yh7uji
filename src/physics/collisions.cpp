@@ -10,7 +10,6 @@
 
 namespace phys {
 int checkPlayerCollisions(GJBaseGameLayer* gameLayer, PlayerObject* player) {
-    // bool wasJustTeleported = player->m_wasTeleported;
     player->m_wasTeleported = false;
     player->m_ringJumpRelated = false;
     player->m_collidedTopMinY = 0.0;
@@ -58,8 +57,6 @@ int checkPlayerCollisions(GJBaseGameLayer* gameLayer, PlayerObject* player) {
     float unkAngleHalved = unkAngle * 0.5;
     float angleTransformed = (unkAngleHalved + 90.0) - someValue;
 
-    // The iOS bindings omit this unknown-layout field, so use normal level
-    // bounds for trajectory prediction instead of reading unavailable memory.
     bool cameraFreeMode = false;
 #ifndef GEODE_IS_IOS
     cameraFreeMode = gameLayer->m_gameState.m_unkBool8;
@@ -70,7 +67,6 @@ int checkPlayerCollisions(GJBaseGameLayer* gameLayer, PlayerObject* player) {
          player->m_isSwing || player->m_isBall || player->m_isSpider ||
          gameLayer->m_gameState.m_isDualMode);
 
-    // bool isOutOfBounds = player->m_isOutOfBounds;
     player->m_isOutOfBounds = false;
 
     [[maybe_unused]] bool exceededBounds = false;
@@ -106,14 +102,11 @@ int checkPlayerCollisions(GJBaseGameLayer* gameLayer, PlayerObject* player) {
         }
         exceededBounds = true;
     } else if (!player->m_maybeIsBoosted) {
-        // i don't know
     }
 
     if (!groundExists || player->m_wasTeleported) {
-        // some goto
     }
 
-    // TODO
     return 0;
 }
 
@@ -129,14 +122,12 @@ int collidedWithObjectInternal(PlayerObject* player, float, GameObject* object,
 
     GameObject* someObj = nullptr;
     cocos2d::CCRect playerRect;
-    // cocos2d::CCRect objectRect =
-    //     object ? object->getObjectRect() : cocos2d::CCRect{0, 0, 0, 0};
     if (p4->equals(cocos2d::CCRect{0.0, 0.0, 0.0, 0.0})) {
         someObj = object;
         playerRect = player->getObjectRect();
         if (object) {
             *p4 = object->getObjectRect();
-            playerRect = object->getObjectRect();  // yea idk either
+            playerRect = object->getObjectRect();
         }
     } else {
         someObj = nullptr;
@@ -160,9 +151,7 @@ int collidedWithObjectInternal(PlayerObject* player, float, GameObject* object,
         unk2 = unk2 + (player->m_isUpsideDown ? -1.0 : 1.0) * player->unk_584;
     }
 
-    // bool idk = false;
     if (someObj) {
-        // idk = someObj->m
     }
 
     return 0;
@@ -250,7 +239,6 @@ void activateForTrajectory(EffectGameObject* obj, PlayerObject* player) {
 void bumpPlayerFromGJBGL(GJBaseGameLayer* pl, PlayerObject* player,
                          EffectGameObject* object) {
     if (pl->canBeActivatedByPlayer(player, object)) {
-        // cocos2d::CCPoint p = cocos2d::CCPoint{0, -10};
         cocos2d::CCPoint objPos = object->getPosition();
 
         player->m_lastPortalPos = objPos;
@@ -292,40 +280,9 @@ void bumpPlayerFromGJBGL(GJBaseGameLayer* pl, PlayerObject* player,
     }
 }
 
-// int handleRotatedCollisionInternal(
-//     PlayerObject* player,
-//     float dt,
-//     GameObject* object,
-//     cocos2d::CCRect* rect,
-//     bool p3,
-//     bool p4,
-//     bool isSlope
-// ) {
-//     cocos2d::CCPoint p1 = player->getPosition();
-//     player->rotateGameplayObject(object);
-//     for (auto& obj : player->m_maybeRotatedObjectsMap) {
-//         player->rotateGameplayObject(obj.second);
-//     }
 
-//     int ret = 0;
-//     if (isSlope) {
-//         player->collidedWithSlopeInternal(dt, object, p4);
-//     } else {
-//         ret = player->collidedWithObjectInternal(dt, object, *rect, p3);
-//     }
 
-//     cocos2d::CCPoint newPos = {
-//         player->getPosition().y - p1.y + p1.x,
-//         p1.y - player->getPosition().x + p1.x,
-//     };
-//     player->setPosition(newPos);
-//     player->unrotateGameplayObject(object);
-//     for (auto& obj : player->m_maybeRotatedObjectsMap) {
-//         player->unrotateGameplayObject(obj.second);
-//     }
 
-//     return ret;
-// }
 
 static void* g_PlayerObject_getOrientedBox = nullptr;
 static void* g_PlayerObject_updateOrientedBox = nullptr;
@@ -587,10 +544,6 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
                         player->m_jumpPadRelated.insert({forceID, true});
                     }
 
-                    // void* fnPtr = reinterpret_cast<void*>(geode::base::get()
-                    // + 0x4a9370); CCPoint force =
-                    // (reinterpret_cast<CCPoint(*)(ForceBlockGameObject*,
-                    // CCPoint)>(fnPtr))(forceBlock, player->getPosition());
                     CCPoint force = forceBlock->calculateForceToTarget(player);
                     player->m_stateForceVector += force;
                 }
@@ -610,10 +563,7 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
                 obj->activatedByPlayer(player);
 
                 if (obj->m_isTouchTriggered) {
-                    // Bot::get()->trajectory().scheduleAction(
-                    //     [player, pl, obj]() {
                     phys::triggerObject(obj, pl, player);
-                    // }, 1);
                 }
                 break;
             default:
@@ -670,11 +620,6 @@ void triggerObject(EffectGameObject* object, GJBaseGameLayer* pl,
             phys::teleportPlayer(pl, (TeleportPortalObject*)object, player);
             break;
         }
-        // case 901: {
-        //     // geode::log::info("Triggering move command for object ID 901");
-        //     pl->triggerMoveCommand(object);
-        //     break;
-        // }
         default: {
             break;
         }
@@ -734,4 +679,4 @@ void checkSpawnObjects(GJBaseGameLayer* pl, PlayerObject* player) {
         }
     }
 }
-}  // namespace phys
+}

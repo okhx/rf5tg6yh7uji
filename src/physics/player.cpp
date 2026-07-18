@@ -16,8 +16,6 @@ void startDashing(PlayerObject* player, DashRingObject* ring) {
     player->m_isBallRotating = false;
     player->m_rotationSpeed = 0.;
 
-    // stop platformer jump animation here; no need since we dont have any
-    // animations anyway :emoji9: ditto for wave trail
 
     player->m_dashRing = ring;
     player->m_dashStartTime = player->m_totalTime;
@@ -92,7 +90,6 @@ void startDashing(PlayerObject* player, DashRingObject* ring) {
             if (dashAngle > 180.0) {
                 dashAngle -= 360.0;
                 sidewaysAngle = 1.0;
-                // goto
             }
             if (dashAngle < -180.0) {
                 dashAngle += 360.0;
@@ -107,7 +104,7 @@ void startDashing(PlayerObject* player, DashRingObject* ring) {
     cocos2d::CCPoint p = CCPoint{
         (float)std::cos(((float)dashAngle * 0.01745329)),
         (float)std::sin(((float)dashAngle * 0.01745329)),
-    };  // ccpForAngle isn't defined on macOS fsr
+    };
 #endif
     cocos2d::CCPoint mult = p * sidewaysAngle;
 
@@ -208,9 +205,7 @@ void ringJump(PlayerObject* player, RingObject* ring) {
     if (player->m_isDashing) return;
     if (!player->m_stateJumpBuffered) return;
 
-    // ((EffectGameObject*)ring)->activatedByPlayer(player);
 
-    // thanks rob
     if ((player->m_touchedRing || isCustomOrTeleportRing) &&
         (player->m_touchedCustomRing ||
          ring->m_objectType != GameObjectType::CustomRing)) {
@@ -226,7 +221,6 @@ void ringJump(PlayerObject* player, RingObject* ring) {
 
     player->m_ringRelatedSet.insert(ring->m_uniqueID);
 
-    // omitting event triggering; we don't want that to happen here methinks
 
     if (ring->m_objectType == GameObjectType::CustomRing) {
         player->m_touchedCustomRing = true;
@@ -242,19 +236,15 @@ void ringJump(PlayerObject* player, RingObject* ring) {
     }
 
     if (ring->m_objectType == GameObjectType::CustomRing) {
-        // TODO: handle custom rings (not needed for trajectory so omitted ATM)
 
-        return;  // initially this jumps to an effect playing label, but we
-                 // don't want that
+        return;
     }
 
     if (ring->m_objectType == GameObjectType::TeleportOrb) {
-        // TODO: RE teleportPlayer (we don't want effects)
         teleportPlayer(player->m_gameLayer, (TeleportPortalObject*)ring,
                        player);
 
-        return;  // initially this jumps to an effect playing label, but we
-                 // don't want that
+        return;
     }
 
     if (ring->m_objectType == GameObjectType::SpiderOrb) {
@@ -299,7 +289,6 @@ void ringJump(PlayerObject* player, RingObject* ring) {
             gravityMultiplied *= 1.1;
         }
 
-        // second param is literally unused What
         player->setYVelocity(gravityMultiplied, 1);
 
         if (!player->m_isBall && !player->m_isLocked && !player->m_isDashing) {
@@ -407,7 +396,6 @@ void ringJump(PlayerObject* player, RingObject* ring) {
     } else if (player->m_isBall || player->m_isSpider) {
         player->m_yVelocity *= 0.7;
     }
-    // player->m_jumpBuffered = false;
 
     if (ring->m_objectType == GameObjectType::GravityRing) {
         flipGravity(player, !player->m_isUpsideDown);
@@ -495,7 +483,7 @@ void updateJump(PlayerObject* player, float dt) {
 
     if (player->m_isBall || player->m_isShip || player->m_isBird ||
         player->m_isDart || player->m_isSwing || player->m_isSpider) {
-        gravity = 0.958199;  // thank you robtop
+        gravity = 0.958199;
     }
 
     float origGravity = gravity;
@@ -751,12 +739,11 @@ void playerUpdate(PlayerObject* player, float /* dt */) {
         player->m_platformerXVelocity =
             clamp(player->m_platformerXVelocity, -1000.0, 1000.0);
     }
-    if (player->m_isDead) return;  // :3
+    if (player->m_isDead) return;
 
     player->m_lastPosition = player->getPosition();
     player->m_yVelocityRelated3 = 0.0;
 
-    // TODO!!!!
 }
 
 void togglePlayerScale(PlayerObject* player, bool smallSize) {
@@ -797,4 +784,4 @@ void toggleFlyMode(PlayerObject* player, bool isFly) {
     player->m_shouldTryPlacingCheckpoint = false;
 }
 
-}  // namespace phys
+}

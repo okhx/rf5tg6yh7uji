@@ -46,7 +46,6 @@ class NV12Colorspace : public Colorspace {
 
                     float y = dot(rgb, coeffY);
 
-                    // convert range to bt709
                     y = y * 219.0 / 255.0 + 16.0 / 255.0;
 
                     gl_FragData[0] = vec4(y, 0.0, 0.0, 1.0);
@@ -78,7 +77,6 @@ class NV12Colorspace : public Colorspace {
                 float u = dot(rgb, coeffU) + 0.5;
                 float v = dot(rgb, coeffV) + 0.5;
 
-                // convert range to bt709
                 u = u * 224.0 / 255.0 + 16.0 / 255.0;
                 v = v * 224.0 / 255.0 + 16.0 / 255.0;
 

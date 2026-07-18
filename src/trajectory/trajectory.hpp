@@ -84,7 +84,6 @@ class Trajectory {
 
     struct Signature {
         uint32_t frame = 0;
-        // x, y, rotation, yVelocity, platformerXVelocity, gravityMod, size
         float p1[7] = {};
         uint64_t p1flags = 0;
         float p2[7] = {};
@@ -187,7 +186,6 @@ class Trajectory {
         PlayerObject* player = PlayerObject::create(1, 1, pl, pl, true);
         player->retain();
         player->setPosition({0, 105});
-        // player->setVisible(false);
         player->setID(id);
         pl->m_objectLayer->addChild(player);
 
@@ -209,14 +207,7 @@ class Trajectory {
         pl->m_debugDrawNode->getParent()->addChild(
             t->m_node, pl->m_uiLayer->getZOrder() + 10000);
 
-        // auto visibleSize = cocos2d::CCDirector::get()->getVisibleSize();
 
-        // t->m_renderTex = cocos2d::CCRenderTexture::create(visibleSize.width,
-        // visibleSize.height); t->m_renderTex->setPosition(visibleSize / 2);
-        // t->m_renderTex->setAnchorPoint(cocos2d::CCPoint(0.5, 0.5));
-        // t->m_renderTex->setVisible(true);
-        // pl->m_debugDrawNode->getParent()->addChild(t->m_renderTex,
-        // pl->m_debugDrawNode->getZOrder());
 
         return t;
     }

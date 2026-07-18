@@ -4,10 +4,7 @@
 #include <Geode/binding/PlayLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 
-// #include "colorspace/nv12.hpp"
 #include "colorspace/yuv420p.hpp"
-// #include "colorspace/rgb0.hpp"
-// #include "colorspace/rgb24.hpp"
 
 #ifdef SILICATE_PROTECT
 #include "VMProtect/VMProtectSDK.h"
@@ -58,11 +55,10 @@ void RenderTexture::init(std::unique_ptr<Colorspace> colorspace) {
     m_inflightSlot = -1;
 
     float vertices[] = {
-        // Pos      // UVs
-        -1.0f, -1.0f, 0.0f, 0.0f,  // Bottom-left
-        1.0f,  -1.0f, 1.0f, 0.0f,  // Bottom-right
-        1.0f,  1.0f,  1.0f, 1.0f,  // Top-right
-        -1.0f, 1.0f,  0.0f, 1.0f   // Top-left
+        -1.0f, -1.0f, 0.0f, 0.0f,
+        1.0f,  -1.0f, 1.0f, 0.0f,
+        1.0f,  1.0f,  1.0f, 1.0f,
+        -1.0f, 1.0f,  0.0f, 1.0f
     };
 
     glGenVertexArrays(1, &m_quadVAO);
@@ -105,7 +101,6 @@ bool RenderTexture::capture(uint8_t** data) {
     glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo[w]);
 
     if (m_slotMapped[w]) {
-        // dont let the cia take over
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         m_slotMapped[w] = false;
     }
@@ -118,7 +113,6 @@ bool RenderTexture::capture(uint8_t** data) {
         if (i == 0) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            // actually render the scene
             silentChangeSize(cocos2d::CCSize(pass.m_width, pass.m_height),
                              m_widthOffset, m_heightOffset);
 

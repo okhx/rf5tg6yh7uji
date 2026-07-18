@@ -7,7 +7,6 @@
 #include "settings/settings.hpp"
 #include "shared/value/value.hpp"
 
-// #define SL_DEV_MODE
 
 #ifdef SL_DEV_MODE
 #define SL_LOG_DEV(...)                \
@@ -81,4 +80,4 @@ class Bot {
     std::unique_ptr<Impl> m_impl;
 };
 
-#endif  // BOT_HPP
+#endif

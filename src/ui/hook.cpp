@@ -19,8 +19,6 @@
 using namespace geode::prelude;
 
 #ifdef GEODE_IS_WINDOWS
-// Dear ImGui intentionally leaves this declaration out of its Win32 backend
-// header so consumers do not inherit a Windows SDK dependency from it.
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
     HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif
@@ -203,7 +201,6 @@ vec4 sampleReflection(vec2 texCoord, float displacement) {
     vec2 reflectPos = texCoord + (normal * displacement);
 
     vec2 sunDirection = normalize(vec2(0.4, -1.0));
-    //float specular = dot(normal, sunDirection) * 3.0;
     float specular = 0.0;
 
     vec4 reflected = texture2D(u_texture, reflectPos);
@@ -248,9 +245,6 @@ void main() {
 
 void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
 #ifdef GEODE_IS_MOBILE
-    // Mobile intentionally has no ImGui context or raw OpenGL renderer. Keep
-    // this guard here as well as in swapBuffers so future callers cannot
-    // accidentally re-enable the crashing path.
     (void)view;
     return;
 #endif
@@ -491,10 +485,6 @@ void ImGuiHookCtx::draw() {
     init(CCEGLView::get());
 
 #ifndef GEODE_IS_WINDOWS
-    // The Win32 backend normally supplies these values before ImGui::NewFrame.
-    // iOS has no corresponding platform backend in this mod, so without doing
-    // it here ImGui retains its default invalid display size and produces no
-    // visible draw data even when the pause-menu button has opened the UI.
     auto& io = ImGui::GetIO();
     const auto frameSize = CCEGLView::get()->getFrameSize();
     io.DisplaySize = ImVec2(frameSize.width, frameSize.height);
@@ -515,10 +505,6 @@ void ImGuiHookCtx::draw() {
 struct SLEGLView : Modify<SLEGLView, CCEGLView> {
     void swapBuffers() {
 #ifdef GEODE_IS_MOBILE
-        // Geometry Dash uses its own OpenGL ES state on mobile. Running Dear
-        // ImGui's desktop-style raw GL backend here corrupts that state on
-        // iOS and is not a supported input/render path on Android. Both use
-        // the native Cocos popup instead.
         CCEGLView::swapBuffers();
 #else
         ImGuiHookCtx::get().draw();

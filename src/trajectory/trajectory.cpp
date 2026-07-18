@@ -82,9 +82,6 @@ static double trajectoryPredictionTps(double actualTps,
     }
     if (!std::isfinite(actualTps) || actualTps <= 0.0) actualTps = 240.0;
 
-    // More than 480 visual prediction samples per second adds substantial
-    // CPU cost but no useful screen detail. Macro inputs are mapped from their
-    // original TPS below, so this does not change replay timing.
     return std::clamp(actualTps, 240.0, 480.0);
 }
 
@@ -194,9 +191,6 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
         std::erase_if(m_actions, [](const auto& a) { return a.m_executed; });
     }
 
-    // Always predict with a stable substep rate. Previously prediction length
-    // was clamped to at least 240 steps/second while each step still used a
-    // 60-TPS delta, producing a path up to four times too long at low FPS/TPS.
     const float delta = physicsDt * 60.0f;
 
     player->m_playEffects = false;
@@ -242,9 +236,6 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
     std::array<PlayerObject*, 2> activePlayers = {player, other};
     const int activeCount = dualBoth ? 2 : 1;
 
-    // Apply each requested alternative in every bot mode. Previously these
-    // branches were only applied while recording, so normal gameplay mostly
-    // predicted the player's already-current movement.
     {
         for (int i = 0; i < activeCount; ++i) {
             PlayerObject* plr = activePlayers[i];

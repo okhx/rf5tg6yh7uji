@@ -291,8 +291,6 @@ geode::Result<> Renderer::startMobile() {
     if (auto* base = GJBaseGameLayer::get();
         base && base->m_shaderLayer && base->m_shaderLayer->m_renderTexture) {
         silentChangeSize(renderSize);
-        // Use the output aspect itself. Using the phone display aspect here
-        // expands the shader texture and shifts/crops the encoded frame.
         resizeShaderLayer(renderSize, renderSize);
         silentChangeSize(m_mobileOriginalFrameSize);
         m_mobileShaderResized = true;
@@ -379,9 +377,6 @@ void Renderer::updateMobile(PlayLayer* pl) {
     if (!m_mobileCaptureStarted) {
         if (pl->m_isPaused || !pl->m_started) return;
 
-        // Starting from an existing attempt arms the fully initialized
-        // encoder until Restart creates a fresh frame clock. This prevents
-        // encoder setup time and pause/menu frames from cutting the beginning.
         if (m_mobileArmFrame > 2 && currentFrame >= m_mobileArmFrame) return;
 
         m_mobileCaptureStarted = true;
@@ -407,10 +402,6 @@ void Renderer::updateMobile(PlayLayer* pl) {
     glGetIntegerv(GL_VIEWPORT, viewport);
     glGetIntegerv(GL_SCISSOR_BOX, scissorBox);
 
-    // CCDirector has already completed its onscreen draw by the time this
-    // runs. Restore a projection for the offscreen target before visiting the
-    // scene; otherwise iOS can render an all-black frame after the director
-    // has popped its normal matrix state.
     auto* director = CCDirector::get();
     auto* view = CCEGLView::sharedOpenGLView();
     const CCSize originalSize = view->getFrameSize();
@@ -419,10 +410,6 @@ void Renderer::updateMobile(PlayLayer* pl) {
     const CCSize renderSize{static_cast<float>(m_settings.m_width),
                             static_cast<float>(m_settings.m_height)};
     view->CCEGLViewProtocol::setFrameSize(renderSize.width, renderSize.height);
-    // Preserve every part of the phone's logical game view. Reusing its
-    // no-border/fixed-height policy for a 16:9 output crops one horizontal
-    // edge; exact-fit scales the complete native view into the requested
-    // resolution instead.
     director->updateScreenScale(renderSize);
     view->setDesignResolutionSize(originalDesign.width, originalDesign.height,
                                   kResolutionExactFit);
@@ -431,27 +418,19 @@ void Renderer::updateMobile(PlayLayer* pl) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_mobileFbo);
     glViewport(0, 0, m_settings.m_width, m_settings.m_height);
-    // Cocos may leave a scissor rectangle sized for the physical phone
-    // framebuffer. Applying it to a larger render target clips the right edge.
     glDisable(GL_SCISSOR_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // Capture the same scene Cocos has just drawn. Visiting the running scene
-    // avoids re-entering PlayLayer while its update/draw lifecycle is active.
     if (!m_settings.m_renderOnlyLevel) {
         auto* scene = CCDirector::get()->m_pRunningScene;
         if (scene) scene->visit();
         else pl->visit();
     } else {
-        // Exclude pause layers, Grape menus, and other scene overlays.
         pl->visit();
     }
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(0, 0, m_settings.m_width, m_settings.m_height,
                  GL_RGBA, GL_UNSIGNED_BYTE, m_mobileRGBAFrame.data());
 
-    // RGB render targets are not reliably color-renderable on iOS OpenGL ES.
-    // Pass RGBA directly to the native writer so 4K capture does not perform
-    // an RGBA -> RGB conversion here followed by RGB -> BGRA in AVFoundation.
 #ifndef GEODE_IS_IOS
     const size_t pixels = static_cast<size_t>(m_settings.m_width) *
                           m_settings.m_height;
@@ -489,9 +468,6 @@ void Renderer::updateMobile(PlayLayer* pl) {
 
         ++writtenFrames;
         m_mobileNextFrameTime += frameDuration;
-        // AVFoundation backpressure is temporary. Advancing exactly one video
-        // timestamp avoids freezing gameplay and avoids the old 32-copy
-        // catch-up burst that alternated recorded and missing one-second spans.
         if (!result.unwrap()) break;
     }
 #else
@@ -507,7 +483,6 @@ void Renderer::updateMobile(PlayLayer* pl) {
         ++writtenFrames;
         m_mobileNextFrameTime += frameDuration;
     }
-    // Avoid an unbounded catch-up loop after a long app suspension.
     if (writtenFrames == 32 && m_mobileNextFrameTime <= gameTime)
         m_mobileNextFrameTime = gameTime + frameDuration;
 #endif
@@ -553,7 +528,7 @@ void Renderer::loadSettings(fs::path& path) {
     }
 
     Bot::get()->ui().m_state.m_bitrate =
-        settings.m_bitrate / 1000000.0;  // convert to Mbps
+        settings.m_bitrate / 1000000.0;
     SLSettings::get()->lastLoadedPreset = path.stem().string();
 }
 
@@ -619,9 +594,6 @@ geode::Result<> Renderer::start() {
     return startMobile();
 #endif
 
-    // Never enter the capture/encoding path without an encoder backend. On
-    // mobile FFmpeg is not bundled yet; continuing here would dereference an
-    // empty function table and turn a failed export into a game crash.
     if (!m_ffmpegLoaded || !ff) {
         return geode::Err(
             "Video export needs a mobile encoder backend (FFmpeg/AVFoundation)"
@@ -642,7 +614,7 @@ geode::Result<> Renderer::start() {
     if (m_autoVideoName->inner()) {
         auto pl = PlayLayer::get();
 
-        std::string formatted(m_videoNameTemplate->inner());  // copy
+        std::string formatted(m_videoNameTemplate->inner());
 
         int randomNumber = geode::utils::random::generate(0, 999'999'999);
 
@@ -665,8 +637,6 @@ geode::Result<> Renderer::start() {
         silicate::paths::directory("videos") /
         std::filesystem::path(fileName));
 
-    // free a stale context left over from a previous start() that failed
-    // before reaching stop()
     if (m_formatCtx) {
         ff->avformat_free_context(m_formatCtx);
         m_formatCtx = nullptr;
@@ -758,7 +728,7 @@ geode::Result<> Renderer::start() {
     m_videoCodecCtx->bit_rate = m_settings.m_bitrate;
     m_videoCodecCtx->time_base = {1, m_settings.m_fps};
     m_videoCodecCtx->framerate = {m_settings.m_fps, 1};
-    m_videoCodecCtx->max_b_frames = 0;  // youtube doesn't like bframes at all
+    m_videoCodecCtx->max_b_frames = 0;
 
     m_videoCodecCtx->color_primaries = AVCOL_PRI_BT709;
     m_videoCodecCtx->colorspace = AVCOL_SPC_BT709;
@@ -896,12 +866,6 @@ geode::Result<> Renderer::start() {
     m_texture.m_width = m_settings.m_width;
     m_texture.m_height = m_settings.m_height;
 
-    // int linesizes[AV_NUM_DATA_POINTERS] = {ALIGNMENT, ALIGNMENT};
-    // m_alignedWidth = m_settings.m_width;
-    // m_alignedHeight = m_settings.m_height;
-    // avcodec_align_dimensions2(
-    //     m_videoCodecCtx.get(), reinterpret_cast<int*>(&m_alignedWidth),
-    //     reinterpret_cast<int*>(&m_alignedHeight), linesizes);
 
     m_alignedWidth = (m_settings.m_width + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
     m_alignedHeight = (m_settings.m_height + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
@@ -965,14 +929,10 @@ geode::Result<> Renderer::encode(uint8_t* data, size_t size) {
         return result;
     }
 
-    // m_frame->buf[0] = m_hwBuffer;
-    // pts of the delivered frame, set by capture() when it dequeued the buffer
-    // (the readback pipeline runs one frame behind m_updateIndex).
     m_frame->pts = m_bufferPts;
 
     ret = ff->avcodec_send_frame(m_videoCodecCtx.get(), m_frame.get());
     if (ret < 0) {
-        // format error
         if (ret == AVERROR(EAGAIN)) {
             return geode::Err("Codec requires more input data");
         } else if (ret == AVERROR_EOF) {
@@ -1007,7 +967,6 @@ geode::Result<> Renderer::write() {
         ff->av_packet_unref(m_pkt.get());
     }
 
-    // av_buffer_unref(&m_hwBuffer);
 
     return geode::Ok();
 }
@@ -1049,8 +1008,6 @@ geode::Result<> Renderer::writeAudio(std::vector<float>& data, uint64_t pts) {
         return geode::Err("Failed to send frame {}", ret);
     }
 
-    // audioPkt is used here because it's encoding both audio and video
-    // at the same time
     while (ret >= 0) {
         ret =
             ff->avcodec_receive_packet(m_audioCodecCtx.get(), m_audioPkt.get());
@@ -1135,7 +1092,6 @@ geode::Result<> Renderer::stop() {
     ff->avio_close(m_formatCtx->pb);
     ff->swr_free(&m_swrCtx);
 
-    // streams are owned by the format context, so this frees them too
     ff->avformat_free_context(m_formatCtx);
     m_formatCtx = nullptr;
     m_videoStream = nullptr;
@@ -1186,14 +1142,12 @@ void Renderer::recordLoop() {
 }
 
 void Renderer::capture() {
-    // record the pts for the read
     m_ptsQueue.push_back(m_updateIndex - 1);
 
     bool delivered = m_texture.capture(&m_buffer);
     if (delivered) {
         m_bufferPts = m_ptsQueue.front();
         m_ptsQueue.pop_front();
-        // don't publish half updated shit
         {
             std::lock_guard<std::mutex> lock(m_recordMutex);
             m_collected = true;
@@ -1215,7 +1169,7 @@ void Renderer::update(PlayLayer* pl) {
 
     bool started =
         pl->m_started || (m_settings.m_firstAttemptPause && m_seenFrames >= 2);
-    m_seenFrames++;  // GD adds two "fade" frames
+    m_seenFrames++;
     if (pl->m_isPaused || !started) return;
     if (m_halting || m_collected) return;
     m_halting = true;

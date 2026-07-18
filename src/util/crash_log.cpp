@@ -10,7 +10,6 @@
 
 #ifdef GEODE_IS_WINDOWS
 
-// Must come before DbgHelp so NOMINMAX / WIN32_LEAN_AND_MEAN are already set
 #include <Windows.h>
 #include <DbgHelp.h>
 
@@ -23,8 +22,6 @@
 #include <iomanip>
 #include <string>
 
-// DbgHelp functions are loaded at runtime to avoid a hard-link dependency.
-// They are available on every modern Windows installation.
 using SymInitialize_t           = BOOL  (WINAPI*)(HANDLE, PCSTR, BOOL);
 using SymCleanup_t              = BOOL  (WINAPI*)(HANDLE);
 using SymSetOptions_t           = DWORD (WINAPI*)(DWORD);
@@ -69,7 +66,6 @@ void initDbgHelp() {
 std::filesystem::path makeLogPath() {
     auto dir = silicate::paths::directory("logs");
     
-    // Build filename: crash_YYYYMMDD_HHMMSS.log
     std::time_t t  = std::time(nullptr);
     std::tm     tm = {};
     localtime_s(&tm, &t);
@@ -80,7 +76,6 @@ std::filesystem::path makeLogPath() {
     return dir / buf;
 }
 
-// Exception code → human-readable string
 static const char* exceptionName(DWORD code) {
     switch (code) {
 #define CASE(x) case x: return #x
@@ -109,7 +104,6 @@ static const char* exceptionName(DWORD code) {
     }
 }
 
-// Write the full stack trace to the output stream using DbgHelp
 void writeStackTrace(std::ofstream& out, CONTEXT* ctx) {
     HMODULE hDbgHelp = LoadLibraryA("DbgHelp.dll");
     if (!hDbgHelp) {
@@ -159,7 +153,6 @@ void writeStackTrace(std::ofstream& out, CONTEXT* ctx) {
     frame.AddrStack.Offset = ctx->Esp;
 #endif
 
-    // Symbol buffer
     constexpr ULONG kSymBufSize = sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR);
     char symBuf[kSymBufSize]    = {};
     auto* sym                   = reinterpret_cast<SYMBOL_INFO*>(symBuf);
@@ -177,13 +170,11 @@ void writeStackTrace(std::ofstream& out, CONTEXT* ctx) {
         out << "  #" << frameIndex++ << "  0x"
             << std::hex << frame.AddrPC.Offset << std::dec << "  ";
 
-        // Module name
         MEMORY_BASIC_INFORMATION mbi = {};
         char modName[MAX_PATH]       = "<unknown module>";
         if (VirtualQuery(reinterpret_cast<LPCVOID>(frame.AddrPC.Offset), &mbi, sizeof(mbi))) {
             GetModuleFileNameA(static_cast<HMODULE>(mbi.AllocationBase), modName, MAX_PATH);
         }
-        // Strip to basename
         const char* base = std::strrchr(modName, '\\');
         out << (base ? base + 1 : modName) << "!";
 
@@ -235,9 +226,6 @@ void writeRegisters(std::ofstream& out, CONTEXT* ctx) {
 #endif
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Core log writer
-// ──────────────────────────────────────────────────────────────────────────────
 
 void writeCrashLog(EXCEPTION_POINTERS* ep, const char* reason = nullptr) {
     try {
@@ -245,7 +233,6 @@ void writeCrashLog(EXCEPTION_POINTERS* ep, const char* reason = nullptr) {
         std::ofstream out(path, std::ios::out | std::ios::trunc);
         if (!out) return;
 
-        // Timestamp
         std::time_t t  = std::time(nullptr);
         std::tm     tm = {};
         localtime_s(&tm, &t);
@@ -284,7 +271,6 @@ void writeCrashLog(EXCEPTION_POINTERS* ep, const char* reason = nullptr) {
         } else {
             out << "Stack Trace: (no context available)\n";
 
-            // Capture current context as best effort
             CONTEXT ctx = {};
             ctx.ContextFlags = CONTEXT_FULL;
             RtlCaptureContext(&ctx);
@@ -296,18 +282,13 @@ void writeCrashLog(EXCEPTION_POINTERS* ep, const char* reason = nullptr) {
             << "========================================\n";
         out.flush();
 
-        // Also show a message box so the user knows where the log is
         auto msg = "Grape has crashed!\n\nLog saved to:\n" + path.string();
         MessageBoxA(nullptr, msg.c_str(), "Grape Crash", MB_OK | MB_ICONERROR);
 
     } catch (...) {
-        // If logging itself crashes, there's nothing we can do
     }
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Handlers
-// ──────────────────────────────────────────────────────────────────────────────
 
 LONG WINAPI unhandledExceptionFilter(EXCEPTION_POINTERS* ep) {
     writeCrashLog(ep, "Unhandled SEH exception");
@@ -316,22 +297,16 @@ LONG WINAPI unhandledExceptionFilter(EXCEPTION_POINTERS* ep) {
 
 void terminateHandler() {
     writeCrashLog(nullptr, "std::terminate() called");
-    // Call the old terminate handler if one was set, otherwise abort
     std::abort();
 }
 
-} // anonymous namespace
+}
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Public API
-// ──────────────────────────────────────────────────────────────────────────────
 
 void crash_log::install() {
     SetUnhandledExceptionFilter(unhandledExceptionFilter);
     std::set_terminate(terminateHandler);
 
-    // Ensure logs directory exists right away (not lazily) so the path
-    // is visible to the user before any crash occurs.
     silicate::paths::directory("logs");
 }
 
@@ -420,7 +395,7 @@ void mobileTerminateHandler() {
     }
     std::abort();
 }
-}  // namespace
+}
 
 void crash_log::install() {
     auto path = silicate::paths::directory("logs") / "mobile-last-crash.log";
@@ -428,8 +403,6 @@ void crash_log::install() {
     std::strncpy(g_mobileCrashPath, pathString.c_str(),
                  sizeof(g_mobileCrashPath) - 1);
 
-    // Create the file during normal startup so it exists even if a later
-    // signal happens before the handler can allocate or resolve anything.
     std::ofstream session(path, std::ios::out | std::ios::app);
     session << "\nGrape mobile session started\n";
     session.flush();

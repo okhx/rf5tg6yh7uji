@@ -26,4 +26,4 @@ std::expected<void, FileError> file_read_arr(std::istream& s, T* out,
     return {};
 }
 
-#endif  // UTIL_FILE_HPP
+#endif

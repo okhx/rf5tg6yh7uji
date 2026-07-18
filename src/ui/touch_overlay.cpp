@@ -45,17 +45,12 @@ bool TouchOverlay::init() {
     m_menu->addChild(m_leftBtn);
     m_menu->addChild(m_rightBtn);
     
-    // Position arrows on edges
     m_leftBtn->setPosition(ccp(-winSize.width / 2.f + 40.f, 0.f));
     m_rightBtn->setPosition(ccp(winSize.width / 2.f - 40.f, 0.f));
 
     m_menu->setPosition(winSize / 2.f);
     this->addChild(m_menu);
 
-    // Do not register this full-screen layer as a targeted touch delegate.
-    // A swallowing delegate intercepts the game's pause button and PauseLayer
-    // controls even while this overlay is hidden. The CCMenu registers its
-    // own hit-tested touch handler for the two visible arrows.
 
     this->setVisible(false);
     return true;
