@@ -2,6 +2,7 @@
 
 #include "bot/bot.hpp"
 #include "bot/updater.hpp"
+#include "render/renderer.hpp"
 #include "ui/touch_overlay.hpp"
 
 using namespace geode::prelude;
@@ -15,6 +16,12 @@ struct SLCCScheduler : Modify<SLCCScheduler, CCScheduler> {
         // continue producing steps while the level itself stays paused.
 #ifdef GEODE_IS_MOBILE
         TouchOverlay::get()->update(dt);
+        // High-resolution readback and encoding can make the wall-clock delta
+        // spike. Clamp gameplay itself to one output-frame step so a slow iOS
+        // encode cannot jump the macro forward and create catch-up bursts.
+        if (auto* renderer = Renderer::get(); renderer->isRecording()) {
+            dt = renderer->getDt();
+        }
 #endif
         const auto bot = Bot::get();
         if (bot->updater().m_onlyRefresh || !bot->isEnabled()) {

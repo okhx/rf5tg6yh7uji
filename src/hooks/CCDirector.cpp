@@ -10,19 +10,6 @@ using namespace geode::prelude;
 #include <Geode/modify/CCDirector.hpp>
 
 struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
-    void calculateDeltaTime() {
-        CCDirector::calculateDeltaTime();
-#ifdef GEODE_IS_MOBILE
-        // Capturing and encoding a high-resolution frame can take much longer
-        // than one display tick. Never feed that wall-clock stall back into
-        // gameplay: it makes the macro jump forward and asks the writer for a
-        // burst of duplicate catch-up frames. Advance exactly one output frame.
-        if (auto* renderer = Renderer::get(); renderer->isRecording()) {
-            this->setDeltaTime(renderer->getDt());
-        }
-#endif
-    }
-
     void drawScene() {
         if (!Bot::get()->isEnabled()) {
             return CCDirector::drawScene();
