@@ -57,15 +57,10 @@ int checkPlayerCollisions(GJBaseGameLayer* gameLayer, PlayerObject* player) {
     float unkAngleHalved = unkAngle * 0.5;
     float angleTransformed = (unkAngleHalved + 90.0) - someValue;
 
-    bool cameraFreeMode = false;
-#ifndef GEODE_IS_IOS
-    cameraFreeMode = gameLayer->m_gameState.m_unkBool8;
-#endif
     bool groundExists =
-        !cameraFreeMode &&
-        (player->m_isShip || player->m_isBird || player->m_isDart ||
-         player->m_isSwing || player->m_isBall || player->m_isSpider ||
-         gameLayer->m_gameState.m_isDualMode);
+        player->m_isShip || player->m_isBird || player->m_isDart ||
+        player->m_isSwing || player->m_isBall || player->m_isSpider ||
+        gameLayer->m_gameState.m_isDualMode;
 
     player->m_isOutOfBounds = false;
 
