@@ -75,7 +75,10 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->input = [AVAssetWriterInput
             assetWriterInputWithMediaType:AVMediaTypeVideo
                             outputSettings:settings];
-        m_impl->input.expectsMediaDataInRealTime = NO;
+        // This renderer feeds frames continuously from the game loop. Real-time
+        // mode avoids the large burst/drain buffering cycle seen with offline
+        // mode on iOS hardware encoders.
+        m_impl->input.expectsMediaDataInRealTime = YES;
 
         NSDictionary* attributes = @{
             (__bridge NSString*)kCVPixelBufferPixelFormatTypeKey :
@@ -101,7 +104,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
             m_impl->audioInput = [AVAssetWriterInput
                 assetWriterInputWithMediaType:AVMediaTypeAudio
                                 outputSettings:audioSettings];
-            m_impl->audioInput.expectsMediaDataInRealTime = NO;
+            m_impl->audioInput.expectsMediaDataInRealTime = YES;
             if (![m_impl->writer canAddInput:m_impl->audioInput])
                 return geode::Err("iOS encoder rejected the audio settings");
             [m_impl->writer addInput:m_impl->audioInput];
@@ -198,13 +201,13 @@ geode::Result<bool> IOSVideoWriter::appendAudio(
     return geode::Ok(true);
 }
 
-geode::Result<bool> IOSVideoWriter::appendRGB(
-    const std::vector<uint8_t>& rgb) {
+geode::Result<bool> IOSVideoWriter::appendRGBA(
+    const std::vector<uint8_t>& rgba) {
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
     const size_t expected = static_cast<size_t>(m_impl->width) *
-                            static_cast<size_t>(m_impl->height) * 3;
-    if (rgb.size() != expected)
+                            static_cast<size_t>(m_impl->height) * 4;
+    if (rgba.size() != expected)
         return geode::Err("Captured frame has an invalid size");
 
     if (m_impl->writer.status == AVAssetWriterStatusFailed)
@@ -233,13 +236,13 @@ geode::Result<bool> IOSVideoWriter::appendRGB(
     }
     const size_t stride = CVPixelBufferGetBytesPerRow(pixel);
     for (int y = 0; y < m_impl->height; ++y) {
-        const uint8_t* source = rgb.data() +
-            static_cast<size_t>(m_impl->height - 1 - y) * m_impl->width * 3;
+        const uint8_t* source = rgba.data() +
+            static_cast<size_t>(m_impl->height - 1 - y) * m_impl->width * 4;
         uint8_t* row = destination + static_cast<size_t>(y) * stride;
         for (int x = 0; x < m_impl->width; ++x) {
-            row[x * 4 + 0] = source[x * 3 + 2];
-            row[x * 4 + 1] = source[x * 3 + 1];
-            row[x * 4 + 2] = source[x * 3 + 0];
+            row[x * 4 + 0] = source[x * 4 + 2];
+            row[x * 4 + 1] = source[x * 4 + 1];
+            row[x * 4 + 2] = source[x * 4 + 0];
             row[x * 4 + 3] = 255;
         }
     }

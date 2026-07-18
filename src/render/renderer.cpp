@@ -275,8 +275,12 @@ geode::Result<> Renderer::startMobile() {
         return geode::Err("Mobile render framebuffer is incomplete");
     }
 
+#ifndef GEODE_IS_IOS
     m_mobileFrame.resize(
         static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 3);
+#else
+    m_mobileFrame.clear();
+#endif
     m_mobileRGBAFrame.resize(
         static_cast<size_t>(m_settings.m_width) * m_settings.m_height * 4);
 
@@ -445,9 +449,10 @@ void Renderer::updateMobile(PlayLayer* pl) {
     glReadPixels(0, 0, m_settings.m_width, m_settings.m_height,
                  GL_RGBA, GL_UNSIGNED_BYTE, m_mobileRGBAFrame.data());
 
-    // RGB render targets are not reliably color-renderable on iOS OpenGL ES
-    // and can read back as zeroes. Capture RGBA8, then pack it for the video
-    // writers, both of which accept RGB24.
+    // RGB render targets are not reliably color-renderable on iOS OpenGL ES.
+    // Pass RGBA directly to the native writer so 4K capture does not perform
+    // an RGBA -> RGB conversion here followed by RGB -> BGRA in AVFoundation.
+#ifndef GEODE_IS_IOS
     const size_t pixels = static_cast<size_t>(m_settings.m_width) *
                           m_settings.m_height;
     for (size_t i = 0; i < pixels; ++i) {
@@ -455,6 +460,7 @@ void Renderer::updateMobile(PlayLayer* pl) {
         m_mobileFrame[i * 3 + 1] = m_mobileRGBAFrame[i * 4 + 1];
         m_mobileFrame[i * 3 + 2] = m_mobileRGBAFrame[i * 4 + 2];
     }
+#endif
     glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);
     view->CCEGLViewProtocol::setFrameSize(originalSize.width,
                                            originalSize.height);
@@ -473,7 +479,7 @@ void Renderer::updateMobile(PlayLayer* pl) {
 #ifdef GEODE_IS_IOS
     while (m_mobileNextFrameTime <= gameTime + 1e-9 &&
            writtenFrames < 32) {
-        auto result = m_iosWriter->appendRGB(m_mobileFrame);
+        auto result = m_iosWriter->appendRGBA(m_mobileRGBAFrame);
         if (result.isErr()) {
             geode::log::error("Mobile render frame failed: {}",
                               result.unwrapErr());
