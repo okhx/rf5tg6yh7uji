@@ -34,6 +34,7 @@ struct IOSVideoWriter::Impl {
     int64_t audioFrame = 0;
     std::vector<float> pendingAudio;
     dispatch_queue_t queue = nullptr;
+    dispatch_semaphore_t frameSlots = nullptr;
     std::atomic_bool failed = false;
     std::string asyncError;
     bool finished = false;
@@ -201,6 +202,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->queue = dispatch_queue_create(
             "dev.silicate.grape.ios-video-writer",
             DISPATCH_QUEUE_SERIAL);
+        m_impl->frameSlots = dispatch_semaphore_create(2);
         m_impl->failed.store(false, std::memory_order_release);
         m_impl->asyncError.clear();
         m_impl->finished = false;
@@ -214,7 +216,9 @@ geode::Result<bool> IOSVideoWriter::appendAudio(
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
     if (m_impl->failed.load(std::memory_order_acquire))
-        return geode::Err("iOS audio encoder failed asynchronously");
+        return geode::Err(m_impl->asyncError.empty()
+                              ? "iOS audio encoder failed asynchronously"
+                              : m_impl->asyncError);
     m_impl->pendingAudio.insert(m_impl->pendingAudio.end(), pcm.begin(),
                                 pcm.end());
     return geode::Ok(true);
@@ -225,11 +229,30 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
     if (m_impl->failed.load(std::memory_order_acquire))
-        return geode::Err("iOS video encoder failed asynchronously");
+        return geode::Err(m_impl->asyncError.empty()
+                              ? "iOS video encoder failed asynchronously"
+                              : m_impl->asyncError);
     const size_t expected = static_cast<size_t>(m_impl->width) *
                             static_cast<size_t>(m_impl->height) * 4;
     if (rgba.size() != expected)
         return geode::Err("Captured frame has an invalid size");
+
+    while (dispatch_semaphore_wait(
+               m_impl->frameSlots,
+               dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC)) != 0) {
+        if (m_impl->failed.load(std::memory_order_acquire)) {
+            return geode::Err(m_impl->asyncError.empty()
+                                  ? "iOS video encoder failed asynchronously"
+                                  : m_impl->asyncError);
+        }
+        const auto status = m_impl->writer.status;
+        if (status == AVAssetWriterStatusFailed ||
+            status == AVAssetWriterStatusCancelled) {
+            return geode::Err(errorText(
+                m_impl->writer.error,
+                "iOS video encoder stopped unexpectedly"));
+        }
+    }
 
     const int64_t nextVideoAudioFrame =
         (m_impl->frame + 1) * m_impl->sampleRate / m_impl->fps;
@@ -254,14 +277,17 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
     CVPixelBufferRef pixel = nullptr;
     const CVReturn created = CVPixelBufferPoolCreatePixelBuffer(
         kCFAllocatorDefault, m_impl->adaptor.pixelBufferPool, &pixel);
-    if (created != kCVReturnSuccess || !pixel)
+    if (created != kCVReturnSuccess || !pixel) {
+        dispatch_semaphore_signal(m_impl->frameSlots);
         return geode::Err("Unable to allocate an iOS video frame");
+    }
 
     CVPixelBufferLockBaseAddress(pixel, 0);
     auto* destination = static_cast<uint8_t*>(CVPixelBufferGetBaseAddress(pixel));
     if (!destination) {
         CVPixelBufferUnlockBaseAddress(pixel, 0);
         CVPixelBufferRelease(pixel);
+        dispatch_semaphore_signal(m_impl->frameSlots);
         return geode::Err("Unable to access the iOS video frame");
     }
     const size_t stride = CVPixelBufferGetBytesPerRow(pixel);
@@ -280,10 +306,12 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
 
     const CMTime time = CMTimeMake(m_impl->frame++, m_impl->fps);
     auto* impl = m_impl.get();
+    auto frameSlots = impl->frameSlots;
     dispatch_async(impl->queue, ^{
         @autoreleasepool {
             if (impl->failed.load(std::memory_order_acquire)) {
                 CVPixelBufferRelease(pixel);
+                dispatch_semaphore_signal(frameSlots);
                 return;
             }
 
@@ -338,6 +366,7 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
                 }
             }
             CVPixelBufferRelease(pixel);
+            dispatch_semaphore_signal(frameSlots);
         }
     });
     return geode::Ok(true);
