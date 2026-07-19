@@ -1221,53 +1221,6 @@ void MobileMenu::buildRenderPage() {
     };
 
     leftLabel("Resolution", 18.f, rowY(0));
-#ifdef GEODE_IS_IOS
-    m_renderResolutionIndex = mobileRenderResolutionIndex(
-        settings.m_width, settings.m_height);
-    const auto applyResolution = [&settings, this] {
-        const auto& resolution =
-            MOBILE_RENDER_RESOLUTIONS[m_renderResolutionIndex];
-        settings.m_width = resolution.m_width;
-        settings.m_height = resolution.m_height;
-    };
-    applyResolution();
-    const auto resolutionText = [this] {
-        const auto& resolution =
-            MOBILE_RENDER_RESOLUTIONS[m_renderResolutionIndex];
-        return fmt::format("{}  {}x{}", resolution.m_name,
-                           resolution.m_width, resolution.m_height);
-    };
-    auto* resolutionLabel = CCLabelBMFont::create(
-        resolutionText().c_str(), "bigFont.fnt");
-    resolutionLabel->setAnchorPoint({0.f, .5f});
-    resolutionLabel->setScale(.31f);
-    resolutionLabel->setPosition({247.f, rowY(0)});
-    resolutionLabel->limitLabelWidth(145.f, .31f, .14f);
-    m_pageNode->addChild(resolutionLabel);
-    addButton("<", 225.f, rowY(0),
-              [this, renderer, resolutionLabel, resolutionText] {
-                  m_renderResolutionIndex =
-                      (m_renderResolutionIndex +
-                       MOBILE_RENDER_RESOLUTIONS.size() - 1) %
-                      MOBILE_RENDER_RESOLUTIONS.size();
-                  const auto& resolution =
-                      MOBILE_RENDER_RESOLUTIONS[m_renderResolutionIndex];
-                  renderer->m_settings.m_width = resolution.m_width;
-                  renderer->m_settings.m_height = resolution.m_height;
-                  resolutionLabel->setString(resolutionText().c_str());
-              }, 24.f);
-    addButton(">", 405.f, rowY(0),
-              [this, renderer, resolutionLabel, resolutionText] {
-                  m_renderResolutionIndex =
-                      (m_renderResolutionIndex + 1) %
-                      MOBILE_RENDER_RESOLUTIONS.size();
-                  const auto& resolution =
-                      MOBILE_RENDER_RESOLUTIONS[m_renderResolutionIndex];
-                  renderer->m_settings.m_width = resolution.m_width;
-                  renderer->m_settings.m_height = resolution.m_height;
-                  resolutionLabel->setString(resolutionText().c_str());
-              }, 24.f);
-#else
     auto makeNumber = [this](float x, float y, int value,
                              std::function<void(int)> setter) {
         auto* input = TextInput::create(72.f, "Value");
@@ -1290,7 +1243,6 @@ void MobileMenu::buildRenderPage() {
                [&settings](int value) {
                    settings.m_height = std::clamp(value, 64, 2160);
                });
-#endif
 
     auto makeValue = [this, &leftLabel](std::string const& title, int row,
                                         float labelX, float inputX,
@@ -1309,15 +1261,10 @@ void MobileMenu::buildRenderPage() {
         input->setPosition({inputX, rowY(row)});
         m_pageNode->addChild(input, 3);
     };
-#ifdef GEODE_IS_IOS
-    settings.m_fps = 240;
-    leftLabel("FPS: 240 (locked)", 18.f, rowY(1), 180.f);
-#else
     makeValue("FPS", 1, 18.f, 145.f, settings.m_fps,
               [&settings](double value) {
                   settings.m_fps = std::clamp(static_cast<int>(value), 1, 240);
               });
-#endif
     makeValue("Bitrate Mbps", 1, 225.f, 365.f,
               settings.m_bitrate / 1'000'000.0,
               [&settings](double value) {

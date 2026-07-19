@@ -12,7 +12,6 @@
 #endif
 
 #include <atomic>
-#include <array>
 #include <condition_variable>
 #include <cstdint>
 #include <deque>
@@ -24,59 +23,14 @@
 
 #include "dsp.hpp"
 
-#ifdef GEODE_IS_IOS
-struct MobileRenderResolution {
-    const char* m_name;
-    int m_width;
-    int m_height;
-};
-
-inline constexpr std::array<MobileRenderResolution, 4>
-    MOBILE_RENDER_RESOLUTIONS{{
-        {"720p", 1480, 720},
-        {"1080p", 2320, 1080},
-        {"1440p", 3060, 1440},
-        {"2160p", 3840, 1760},
-    }};
-
-inline size_t mobileRenderResolutionIndex(int width, int height) {
-    size_t best = 0;
-    long long bestDistance = -1;
-    for (size_t index = 0; index < MOBILE_RENDER_RESOLUTIONS.size(); ++index) {
-        const auto& resolution = MOBILE_RENDER_RESOLUTIONS[index];
-        const long long widthDifference = width >= resolution.m_width
-            ? width - resolution.m_width
-            : resolution.m_width - width;
-        const long long heightDifference = height >= resolution.m_height
-            ? height - resolution.m_height
-            : resolution.m_height - height;
-        const long long distance = widthDifference + heightDifference;
-        if (bestDistance < 0 || distance < bestDistance) {
-            best = index;
-            bestDistance = distance;
-        }
-    }
-    return best;
-}
-#endif
-
 struct RendererSettings {
-#ifdef GEODE_IS_IOS
-    int m_width = 2320;
-    int m_height = 1080;
-#else
     int m_width = 3840;
     int m_height = 2160;
-#endif
     uint32_t m_bitrate = 68'000'000;
     std::string m_codec = "";
     AVPixelFormat m_pixFmt = AV_PIX_FMT_NV12;
 
-#ifdef GEODE_IS_IOS
-    int m_fps = 240;
-#else
     int m_fps = 60;
-#endif
 
     float m_afterEndTime = 5.0f;
     bool m_colorFix = true;
