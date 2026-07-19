@@ -7,6 +7,7 @@
 #import <dispatch/dispatch.h>
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cstring>
 #include <thread>
@@ -32,22 +33,19 @@ struct IOSVideoWriter::Impl {
     int64_t frame = 0;
     int64_t audioFrame = 0;
     std::vector<float> pendingAudio;
+    dispatch_queue_t queue = nullptr;
+    std::atomic_bool failed = false;
+    std::string asyncError;
     bool finished = false;
 
-    geode::Result<bool> flushAudio(int64_t limit);
+    geode::Result<> writeAudio(const std::vector<float>& pcm, int64_t pts);
 };
 
-geode::Result<bool> IOSVideoWriter::Impl::flushAudio(int64_t limit) {
-    if (!audioInput || pendingAudio.empty()) return geode::Ok(true);
-    if (!audioInput.readyForMoreMediaData) return geode::Ok(false);
-
-    const int64_t allowed = limit - audioFrame;
-    if (allowed <= 0) return geode::Ok(true);
-    const size_t available =
-        pendingAudio.size() / static_cast<size_t>(channels);
-    const size_t frames = std::min(
-        available, static_cast<size_t>(allowed));
-    if (frames == 0) return geode::Ok(true);
+geode::Result<> IOSVideoWriter::Impl::writeAudio(
+    const std::vector<float>& pcm, int64_t pts) {
+    if (!audioInput || pcm.empty()) return geode::Ok();
+    const size_t frames = pcm.size() / static_cast<size_t>(channels);
+    if (frames == 0) return geode::Ok();
     const size_t sampleCount = frames * static_cast<size_t>(channels);
     const size_t bytes = sampleCount * sizeof(float);
 
@@ -75,7 +73,7 @@ geode::Result<bool> IOSVideoWriter::Impl::flushAudio(int64_t limit) {
         0, bytes, 0, &block);
     if (status == kCMBlockBufferNoErr) {
         status = CMBlockBufferReplaceDataBytes(
-            pendingAudio.data(), block, 0, bytes);
+            pcm.data(), block, 0, bytes);
     }
     if (status != kCMBlockBufferNoErr) {
         if (block) CFRelease(block);
@@ -85,7 +83,7 @@ geode::Result<bool> IOSVideoWriter::Impl::flushAudio(int64_t limit) {
 
     CMSampleTimingInfo timing{
         .duration = CMTimeMake(1, sampleRate),
-        .presentationTimeStamp = CMTimeMake(audioFrame, sampleRate),
+        .presentationTimeStamp = CMTimeMake(pts, sampleRate),
         .decodeTimeStamp = kCMTimeInvalid,
     };
     CMSampleBufferRef sample = nullptr;
@@ -103,16 +101,15 @@ geode::Result<bool> IOSVideoWriter::Impl::flushAudio(int64_t limit) {
     if (!appended)
         return geode::Err(errorText(writer.error,
                                     "Unable to append iOS audio"));
-    audioFrame += static_cast<int64_t>(frames);
-    pendingAudio.erase(pendingAudio.begin(),
-                       pendingAudio.begin() + sampleCount);
-    return geode::Ok(true);
+    return geode::Ok();
 }
 
 IOSVideoWriter::IOSVideoWriter() : m_impl(std::make_unique<Impl>()) {}
 
 IOSVideoWriter::~IOSVideoWriter() {
     if (m_impl && m_impl->writer && !m_impl->finished) {
+        if (m_impl->queue)
+            dispatch_sync(m_impl->queue, ^{});
         [m_impl->input markAsFinished];
         if (m_impl->audioInput) [m_impl->audioInput markAsFinished];
         [m_impl->writer cancelWriting];
@@ -201,6 +198,11 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->frame = 0;
         m_impl->audioFrame = 0;
         m_impl->pendingAudio.clear();
+        m_impl->queue = dispatch_queue_create(
+            "dev.silicate.grape.ios-video-writer",
+            DISPATCH_QUEUE_SERIAL);
+        m_impl->failed.store(false, std::memory_order_release);
+        m_impl->asyncError.clear();
         m_impl->finished = false;
     }
     return geode::Ok();
@@ -211,12 +213,10 @@ geode::Result<bool> IOSVideoWriter::appendAudio(
     if (!m_impl->audioInput || pcm.empty()) return geode::Ok(true);
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
+    if (m_impl->failed.load(std::memory_order_acquire))
+        return geode::Err("iOS audio encoder failed asynchronously");
     m_impl->pendingAudio.insert(m_impl->pendingAudio.end(), pcm.begin(),
                                 pcm.end());
-    const int64_t videoAudioFrame =
-        m_impl->frame * m_impl->sampleRate / m_impl->fps;
-    auto result = m_impl->flushAudio(videoAudioFrame);
-    if (result.isErr()) return result;
     return geode::Ok(true);
 }
 
@@ -224,30 +224,32 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
     const std::vector<uint8_t>& rgba) {
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
+    if (m_impl->failed.load(std::memory_order_acquire))
+        return geode::Err("iOS video encoder failed asynchronously");
     const size_t expected = static_cast<size_t>(m_impl->width) *
                             static_cast<size_t>(m_impl->height) * 4;
     if (rgba.size() != expected)
         return geode::Err("Captured frame has an invalid size");
 
-    while (!m_impl->input.readyForMoreMediaData) {
-        const auto status = m_impl->writer.status;
-        if (status == AVAssetWriterStatusFailed)
-            return geode::Err(errorText(m_impl->writer.error,
-                                        "iOS video encoder failed"));
-        if (status == AVAssetWriterStatusCancelled ||
-            status == AVAssetWriterStatusCompleted)
-            return geode::Err("iOS video encoder stopped unexpectedly");
-        const int64_t nextVideoAudioFrame =
-            (m_impl->frame + 1) * m_impl->sampleRate / m_impl->fps;
-        auto audioResult = m_impl->flushAudio(nextVideoAudioFrame);
-        if (audioResult.isErr()) return geode::Err(audioResult.unwrapErr());
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-
     const int64_t nextVideoAudioFrame =
         (m_impl->frame + 1) * m_impl->sampleRate / m_impl->fps;
-    auto audioResult = m_impl->flushAudio(nextVideoAudioFrame);
-    if (audioResult.isErr()) return geode::Err(audioResult.unwrapErr());
+    const int64_t allowedAudioFrames =
+        std::max<int64_t>(0, nextVideoAudioFrame - m_impl->audioFrame);
+    const size_t availableAudioFrames =
+        m_impl->pendingAudio.size() /
+        static_cast<size_t>(m_impl->channels);
+    const size_t audioFrames = std::min(
+        availableAudioFrames, static_cast<size_t>(allowedAudioFrames));
+    const size_t audioSamples =
+        audioFrames * static_cast<size_t>(m_impl->channels);
+    std::vector<float> audio(
+        m_impl->pendingAudio.begin(),
+        m_impl->pendingAudio.begin() + audioSamples);
+    m_impl->pendingAudio.erase(
+        m_impl->pendingAudio.begin(),
+        m_impl->pendingAudio.begin() + audioSamples);
+    const int64_t audioPts = m_impl->audioFrame;
+    m_impl->audioFrame += static_cast<int64_t>(audioFrames);
 
     CVPixelBufferRef pixel = nullptr;
     const CVReturn created = CVPixelBufferPoolCreatePixelBuffer(
@@ -277,12 +279,67 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
     CVPixelBufferUnlockBaseAddress(pixel, 0);
 
     const CMTime time = CMTimeMake(m_impl->frame++, m_impl->fps);
-    const BOOL appended = [m_impl->adaptor appendPixelBuffer:pixel
-                                        withPresentationTime:time];
-    CVPixelBufferRelease(pixel);
-    if (!appended)
-        return geode::Err(errorText(m_impl->writer.error,
-                                    "Unable to append iOS video frame"));
+    auto* impl = m_impl.get();
+    dispatch_async(impl->queue, ^{
+        @autoreleasepool {
+            if (impl->failed.load(std::memory_order_acquire)) {
+                CVPixelBufferRelease(pixel);
+                return;
+            }
+
+            bool audioDone = audio.empty();
+            bool videoDone = false;
+            const auto deadline = std::chrono::steady_clock::now() +
+                                  std::chrono::seconds(10);
+            while (!audioDone || !videoDone) {
+                bool progressed = false;
+                if (!audioDone && impl->audioInput.readyForMoreMediaData) {
+                    auto result = impl->writeAudio(audio, audioPts);
+                    if (result.isErr()) {
+                        impl->asyncError = result.unwrapErr();
+                        impl->failed.store(true, std::memory_order_release);
+                        break;
+                    }
+                    audioDone = true;
+                    progressed = true;
+                }
+                if (!videoDone && impl->input.readyForMoreMediaData) {
+                    const BOOL appended = [impl->adaptor
+                        appendPixelBuffer:pixel
+                        withPresentationTime:time];
+                    if (!appended) {
+                        impl->asyncError = errorText(
+                            impl->writer.error,
+                            "Unable to append iOS video frame");
+                        impl->failed.store(true, std::memory_order_release);
+                        break;
+                    }
+                    videoDone = true;
+                    progressed = true;
+                }
+                const auto status = impl->writer.status;
+                if (status == AVAssetWriterStatusFailed ||
+                    status == AVAssetWriterStatusCancelled) {
+                    impl->asyncError = errorText(
+                        impl->writer.error,
+                        "iOS video encoder stopped unexpectedly");
+                    impl->failed.store(true, std::memory_order_release);
+                    break;
+                }
+                if (!progressed) {
+                    if (std::chrono::steady_clock::now() >= deadline) {
+                        impl->asyncError =
+                            "Timed out waiting for the iOS video encoder";
+                        impl->failed.store(true, std::memory_order_release);
+                        break;
+                    }
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(1));
+                }
+            }
+            CVPixelBufferRelease(pixel);
+        }
+    });
     return geode::Ok(true);
 }
 
@@ -290,20 +347,60 @@ geode::Result<> IOSVideoWriter::finish() {
     if (!m_impl->writer || m_impl->finished) return geode::Ok();
     const int64_t videoAudioFrames =
         m_impl->frame * m_impl->sampleRate / m_impl->fps;
-    while (m_impl->pendingAudio.size() >=
-               static_cast<size_t>(m_impl->channels) &&
-           m_impl->audioFrame < videoAudioFrames) {
-        const auto status = m_impl->writer.status;
-        if (status == AVAssetWriterStatusFailed)
-            return geode::Err(errorText(m_impl->writer.error,
-                                        "iOS audio encoder failed"));
-        auto audioResult = m_impl->flushAudio(videoAudioFrames);
-        if (audioResult.isErr())
-            return geode::Err(audioResult.unwrapErr());
-        if (!audioResult.unwrap())
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    const int64_t allowedAudioFrames =
+        std::max<int64_t>(0, videoAudioFrames - m_impl->audioFrame);
+    const size_t availableAudioFrames =
+        m_impl->pendingAudio.size() /
+        static_cast<size_t>(m_impl->channels);
+    const size_t audioFrames = std::min(
+        availableAudioFrames, static_cast<size_t>(allowedAudioFrames));
+    const size_t audioSamples =
+        audioFrames * static_cast<size_t>(m_impl->channels);
+    std::vector<float> finalAudio(
+        m_impl->pendingAudio.begin(),
+        m_impl->pendingAudio.begin() + audioSamples);
+    const int64_t finalAudioPts = m_impl->audioFrame;
+    m_impl->audioFrame += static_cast<int64_t>(audioFrames);
+    auto* impl = m_impl.get();
+    if (!finalAudio.empty() &&
+        !impl->failed.load(std::memory_order_acquire)) {
+        dispatch_async(impl->queue, ^{
+            @autoreleasepool {
+                const auto deadline = std::chrono::steady_clock::now() +
+                                      std::chrono::seconds(10);
+                while (!impl->audioInput.readyForMoreMediaData) {
+                    if (impl->writer.status == AVAssetWriterStatusFailed ||
+                        std::chrono::steady_clock::now() >= deadline) {
+                        impl->asyncError = errorText(
+                            impl->writer.error,
+                            "Timed out writing final iOS audio");
+                        impl->failed.store(true, std::memory_order_release);
+                        return;
+                    }
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(1));
+                }
+                auto result = impl->writeAudio(finalAudio, finalAudioPts);
+                if (result.isErr()) {
+                    impl->asyncError = result.unwrapErr();
+                    impl->failed.store(true, std::memory_order_release);
+                }
+            }
+        });
     }
+    dispatch_sync(impl->queue, ^{});
     m_impl->pendingAudio.clear();
+
+    if (m_impl->failed.load(std::memory_order_acquire)) {
+        m_impl->finished = true;
+        [m_impl->input markAsFinished];
+        if (m_impl->audioInput) [m_impl->audioInput markAsFinished];
+        [m_impl->writer cancelWriting];
+        return geode::Err(m_impl->asyncError.empty()
+                              ? "iOS video encoder failed"
+                              : m_impl->asyncError);
+    }
+
     m_impl->finished = true;
     CMTime endTime = CMTimeMake(m_impl->frame, m_impl->fps);
     if (m_impl->audioFrame > 0) {
