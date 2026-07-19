@@ -152,6 +152,9 @@ static std::string getDefaultCodec() {
 #endif
 
 void Renderer::initializeDefaults() {
+#ifdef GEODE_IS_MOBILE
+    m_settings.m_fps = 240;
+#endif
 #ifdef GEODE_IS_IOS
     m_settings.m_codec = "h264";
     m_settings.m_extension = "mp4";
@@ -177,11 +180,12 @@ geode::Result<> Renderer::startMobile() {
 #endif
     if (m_mobileRecording) return geode::Err("A render is already running");
 
-    m_settings.m_width = std::clamp(m_settings.m_width, 64, 3840);
-    m_settings.m_height = std::clamp(m_settings.m_height, 64, 2160);
-    m_settings.m_width += m_settings.m_width & 1;
-    m_settings.m_height += m_settings.m_height & 1;
-    m_settings.m_fps = std::clamp(m_settings.m_fps, 1, 240);
+    const auto resolutionIndex = mobileRenderResolutionIndex(
+        m_settings.m_width, m_settings.m_height);
+    const auto& resolution = MOBILE_RENDER_RESOLUTIONS[resolutionIndex];
+    m_settings.m_width = resolution.m_width;
+    m_settings.m_height = resolution.m_height;
+    m_settings.m_fps = 240;
     m_settings.m_bitrate = std::clamp<uint32_t>(
         m_settings.m_bitrate, 1'000'000, 200'000'000);
     m_collectAudio = m_settings.m_renderAudio;

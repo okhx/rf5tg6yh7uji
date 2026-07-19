@@ -160,13 +160,15 @@ target_compile_options(GeodeBindings PRIVATE -Wno-overloaded-virtual -Wno-unused
 setup_geode_mod(${PROJECT_NAME})
 
 # Geode enables -Wpedantic and -Werror as part of setup_geode_mod. Its
-# lifecycle helpers intentionally use '$' in their macro names, which Apple
-# Clang diagnoses as an extension when compiling iOS targets.
-if (APPLE)
+# lifecycle helpers intentionally use '$' in their macro names, which Clang
+# diagnoses as an extension on Apple and Android targets.
+if (APPLE OR ANDROID)
     target_compile_options(${PROJECT_NAME} PRIVATE
         -Wno-error=dollar-in-identifier-extension
     )
+endif()
 
+if (APPLE)
     # Dear ImGui is vendored source. Apple Clang diagnoses a few declarations
     # that are conditionally unused in its upstream implementation; do not
     # let Geode's global -Werror reject those third-party translation units.

@@ -17,6 +17,9 @@
 #include "trajectory/trajectory.hpp"
 #include "ui/manager.hpp"
 #include "updater.hpp"
+#ifdef GEODE_IS_MOBILE
+#include "ui/touch_overlay.hpp"
+#endif
 
 #ifdef SILICATE_PROTECT
 #include "VMProtect/VMProtectSDK.h"
@@ -135,6 +138,55 @@ void Bot::initialize() {
     }
 
     m_enabled->handle([&](bool& enabled) {
+#ifdef GEODE_IS_MOBILE
+        auto& updater = this->updater();
+        auto* playLayer = PlayLayer::get();
+
+        if (!enabled) {
+            this->m_mode = Stopped;
+            if (Renderer::get()->isRecording()) {
+                Renderer::get()->signalStop();
+            }
+
+            updater.setPaused(false);
+            updater.m_stepOnce->inner() = false;
+            updater.m_stepBackwards->inner() = false;
+            updater.m_tpsOverflow = 0.0;
+            updater.m_tps->inner() = 240.0;
+            updater.m_tps->notifyChange();
+            updater.m_speedhack->inner() = 1.0;
+            updater.m_speedhack->notifyChange();
+
+            this->autoclicker().reset();
+            this->labels().update(true);
+            if (playLayer) {
+                if (auto* overlay = TouchOverlay::get()) {
+                    overlay->hide();
+                }
+            }
+
+            if (this->trajectory().exists()) {
+                this->trajectory().uninit();
+            }
+            this->hitboxes().clearTrail();
+            this->hitboxes().destroy();
+        } else if (playLayer) {
+            if (!this->trajectory().exists()) {
+                this->trajectory().init();
+            }
+            if (!this->hitboxes().m_initialized) {
+                this->hitboxes().init(playLayer);
+            }
+            this->labels().m_requiresRefresh = true;
+        }
+
+        if (enabled) {
+            geode::log::info("Successfully enabled Grape.");
+        } else {
+            geode::log::info("Successfully disabled Grape.");
+        }
+        return;
+#else
         if (PlayLayer::get()) {
             enabled = true;
             return;
@@ -174,6 +226,7 @@ void Bot::initialize() {
         } else {
             geode::log::info("Successfully disabled Grape.");
         }
+#endif
     });
 
     this->replaySystem().m_autosaveInterval->notifyChange();

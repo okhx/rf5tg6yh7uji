@@ -1221,28 +1221,51 @@ void MobileMenu::buildRenderPage() {
     };
 
     leftLabel("Resolution", 18.f, rowY(0));
-    auto makeNumber = [this](float x, float y, int value,
-                             std::function<void(int)> setter) {
-        auto* input = TextInput::create(72.f, "Value");
-        input->setScaleY(.84f);
-        input->setCommonFilter(CommonFilter::Int);
-        input->setString(std::to_string(value));
-        input->setCallback([setter = std::move(setter)](std::string const& s) {
-            double value = 0.0;
-            if (parseNumber(s, value)) setter(static_cast<int>(value));
-        });
-        input->setPosition({x, y});
-        m_pageNode->addChild(input, 3);
+    m_renderResolutionIndex = mobileRenderResolutionIndex(
+        settings.m_width, settings.m_height);
+    const auto applyResolution = [&settings, this] {
+        const auto& resolution =
+            MOBILE_RENDER_RESOLUTIONS[m_renderResolutionIndex];
+        settings.m_width = resolution.m_width;
+        settings.m_height = resolution.m_height;
     };
-    makeNumber(145.f, rowY(0), settings.m_width,
-               [&settings](int value) {
-                   settings.m_width = std::clamp(value, 64, 3840);
-               });
-    leftLabel("x", 188.f, rowY(0), 20.f);
-    makeNumber(245.f, rowY(0), settings.m_height,
-               [&settings](int value) {
-                   settings.m_height = std::clamp(value, 64, 2160);
-               });
+    applyResolution();
+    const auto resolutionText = [this] {
+        const auto& resolution =
+            MOBILE_RENDER_RESOLUTIONS[m_renderResolutionIndex];
+        return fmt::format("{}  {}x{}", resolution.m_name,
+                           resolution.m_width, resolution.m_height);
+    };
+    auto* resolutionLabel = CCLabelBMFont::create(
+        resolutionText().c_str(), "bigFont.fnt");
+    resolutionLabel->setAnchorPoint({0.f, .5f});
+    resolutionLabel->setScale(.31f);
+    resolutionLabel->setPosition({247.f, rowY(0)});
+    resolutionLabel->limitLabelWidth(145.f, .31f, .14f);
+    m_pageNode->addChild(resolutionLabel);
+    addButton("<", 225.f, rowY(0),
+              [this, renderer, resolutionLabel, resolutionText] {
+                  m_renderResolutionIndex =
+                      (m_renderResolutionIndex +
+                       MOBILE_RENDER_RESOLUTIONS.size() - 1) %
+                      MOBILE_RENDER_RESOLUTIONS.size();
+                  const auto& resolution =
+                      MOBILE_RENDER_RESOLUTIONS[m_renderResolutionIndex];
+                  renderer->m_settings.m_width = resolution.m_width;
+                  renderer->m_settings.m_height = resolution.m_height;
+                  resolutionLabel->setString(resolutionText().c_str());
+              }, 24.f);
+    addButton(">", 405.f, rowY(0),
+              [this, renderer, resolutionLabel, resolutionText] {
+                  m_renderResolutionIndex =
+                      (m_renderResolutionIndex + 1) %
+                      MOBILE_RENDER_RESOLUTIONS.size();
+                  const auto& resolution =
+                      MOBILE_RENDER_RESOLUTIONS[m_renderResolutionIndex];
+                  renderer->m_settings.m_width = resolution.m_width;
+                  renderer->m_settings.m_height = resolution.m_height;
+                  resolutionLabel->setString(resolutionText().c_str());
+              }, 24.f);
 
     auto makeValue = [this, &leftLabel](std::string const& title, int row,
                                         float labelX, float inputX,
@@ -1261,10 +1284,8 @@ void MobileMenu::buildRenderPage() {
         input->setPosition({inputX, rowY(row)});
         m_pageNode->addChild(input, 3);
     };
-    makeValue("FPS", 1, 18.f, 145.f, settings.m_fps,
-              [&settings](double value) {
-                  settings.m_fps = std::clamp(static_cast<int>(value), 1, 240);
-              });
+    settings.m_fps = 240;
+    leftLabel("FPS: 240 (locked)", 18.f, rowY(1), 180.f);
     makeValue("Bitrate Mbps", 1, 225.f, 365.f,
               settings.m_bitrate / 1'000'000.0,
               [&settings](double value) {
