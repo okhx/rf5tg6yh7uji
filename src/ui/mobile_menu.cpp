@@ -1308,6 +1308,10 @@ void MobileMenu::buildRenderPage() {
                   settings.m_afterEndTime = static_cast<float>(
                       std::clamp(value, 0.0, 30.0));
               }, 1);
+    addToggle("Level complete", 3, 1, settings.m_showLevelComplete,
+              [&settings](bool value) {
+                  settings.m_showLevelComplete = value;
+              });
 
     addToggle("Level only", 4, 0, settings.m_renderOnlyLevel,
               [&settings](bool value) {

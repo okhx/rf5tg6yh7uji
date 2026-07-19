@@ -46,6 +46,7 @@ struct RendererSettings {
 
     bool m_firstAttemptPause = false;
     bool m_renderOnlyLevel = true;
+    bool m_showLevelComplete = true;
     bool m_renderAudio = true;
 };
 
@@ -62,6 +63,7 @@ struct glz::meta<RendererSettings> {
         "music_volume", &T::m_musicVolume, "sfx_volume", &T::m_sfxVolume,
         "record_paused", &T::m_firstAttemptPause,
         "render_only_level", &T::m_renderOnlyLevel,
+        "show_level_complete", &T::m_showLevelComplete,
         "render_audio", &T::m_renderAudio);
 };
 

@@ -1075,6 +1075,9 @@ void UIManager::draw() {
         ImGui::BeginChild("Content", ImVec2(0.0f, 0.0f), false,
                           ImGuiWindowFlags_AlwaysVerticalScrollbar);
         {
+            if (m_state.m_currentTab != UIState::UITab::Edit)
+                m_state.m_editSelectionInitialized = false;
+
             if (!Bot::get()->isEnabled()) {
                 slui::text("The bot is currently disabled.");
                 if (GJBaseGameLayer::get()) {
@@ -1587,12 +1590,14 @@ void UIManager::draw() {
                 if (inputs.empty()) {
                     slui::text("No replay loaded.");
                     m_state.m_editIndex = 0;
+                    m_state.m_editSelectionInitialized = false;
                 } else {
                     m_state.m_editIndex = std::clamp(
                         m_state.m_editIndex, 0, static_cast<int>(inputs.size()) - 1);
-                    if (Bot::get()->isRecording() || Bot::get()->isPlaying()) {
+                    if (!m_state.m_editSelectionInitialized) {
                         m_state.m_editIndex = std::clamp(
                             inputIndex, 0, static_cast<int>(inputs.size()) - 1);
+                        m_state.m_editSelectionInitialized = true;
                     }
                 }
 

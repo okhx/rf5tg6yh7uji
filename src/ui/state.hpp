@@ -55,6 +55,7 @@ struct UIState {
     double m_bitrate = 30.0;
 
     int m_editIndex = 0;
+    bool m_editSelectionInitialized = false;
 
     std::string m_replayName = "";
     std::string m_lastReplayName = "";

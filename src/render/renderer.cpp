@@ -420,7 +420,9 @@ void Renderer::updateMobile(PlayLayer* pl) {
     glViewport(0, 0, m_settings.m_width, m_settings.m_height);
     glDisable(GL_SCISSOR_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    if (!m_settings.m_renderOnlyLevel) {
+    const bool showCompleteScene =
+        m_settings.m_showLevelComplete && pl->m_hasCompletedLevel;
+    if (!m_settings.m_renderOnlyLevel || showCompleteScene) {
         auto* scene = CCDirector::get()->m_pRunningScene;
         if (scene) scene->visit();
         else pl->visit();

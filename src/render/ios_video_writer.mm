@@ -6,6 +6,7 @@
 #import <CoreVideo/CoreVideo.h>
 #import <dispatch/dispatch.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <thread>
@@ -33,15 +34,19 @@ struct IOSVideoWriter::Impl {
     std::vector<float> pendingAudio;
     bool finished = false;
 
-    geode::Result<bool> flushAudio();
+    geode::Result<bool> flushAudio(int64_t limit);
 };
 
-geode::Result<bool> IOSVideoWriter::Impl::flushAudio() {
+geode::Result<bool> IOSVideoWriter::Impl::flushAudio(int64_t limit) {
     if (!audioInput || pendingAudio.empty()) return geode::Ok(true);
     if (!audioInput.readyForMoreMediaData) return geode::Ok(false);
 
-    const size_t frames =
+    const int64_t allowed = limit - audioFrame;
+    if (allowed <= 0) return geode::Ok(true);
+    const size_t available =
         pendingAudio.size() / static_cast<size_t>(channels);
+    const size_t frames = std::min(
+        available, static_cast<size_t>(allowed));
     if (frames == 0) return geode::Ok(true);
     const size_t sampleCount = frames * static_cast<size_t>(channels);
     const size_t bytes = sampleCount * sizeof(float);
@@ -137,7 +142,9 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         NSDictionary* compression = @{
             AVVideoAverageBitRateKey : @(bitrate),
             AVVideoExpectedSourceFrameRateKey : @(fps),
-            AVVideoMaxKeyFrameIntervalKey : @(fps * 2)
+            AVVideoMaxKeyFrameIntervalKey : @(fps),
+            AVVideoMaxKeyFrameIntervalDurationKey : @1.0,
+            AVVideoAllowFrameReorderingKey : @NO
         };
         NSDictionary* settings = @{
             AVVideoCodecKey : AVVideoCodecTypeH264,
@@ -206,7 +213,9 @@ geode::Result<bool> IOSVideoWriter::appendAudio(
         return geode::Err("iOS video writer is not active");
     m_impl->pendingAudio.insert(m_impl->pendingAudio.end(), pcm.begin(),
                                 pcm.end());
-    auto result = m_impl->flushAudio();
+    const int64_t videoAudioFrame =
+        m_impl->frame * m_impl->sampleRate / m_impl->fps;
+    auto result = m_impl->flushAudio(videoAudioFrame);
     if (result.isErr()) return result;
     return geode::Ok(true);
 }
@@ -228,12 +237,16 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
         if (status == AVAssetWriterStatusCancelled ||
             status == AVAssetWriterStatusCompleted)
             return geode::Err("iOS video encoder stopped unexpectedly");
-        auto audioResult = m_impl->flushAudio();
+        const int64_t nextVideoAudioFrame =
+            (m_impl->frame + 1) * m_impl->sampleRate / m_impl->fps;
+        auto audioResult = m_impl->flushAudio(nextVideoAudioFrame);
         if (audioResult.isErr()) return geode::Err(audioResult.unwrapErr());
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    auto audioResult = m_impl->flushAudio();
+    const int64_t nextVideoAudioFrame =
+        (m_impl->frame + 1) * m_impl->sampleRate / m_impl->fps;
+    auto audioResult = m_impl->flushAudio(nextVideoAudioFrame);
     if (audioResult.isErr()) return geode::Err(audioResult.unwrapErr());
 
     CVPixelBufferRef pixel = nullptr;
@@ -275,17 +288,22 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
 
 geode::Result<> IOSVideoWriter::finish() {
     if (!m_impl->writer || m_impl->finished) return geode::Ok();
-    while (!m_impl->pendingAudio.empty()) {
+    const int64_t videoAudioFrames =
+        m_impl->frame * m_impl->sampleRate / m_impl->fps;
+    while (m_impl->pendingAudio.size() >=
+               static_cast<size_t>(m_impl->channels) &&
+           m_impl->audioFrame < videoAudioFrames) {
         const auto status = m_impl->writer.status;
         if (status == AVAssetWriterStatusFailed)
             return geode::Err(errorText(m_impl->writer.error,
                                         "iOS audio encoder failed"));
-        auto audioResult = m_impl->flushAudio();
+        auto audioResult = m_impl->flushAudio(videoAudioFrames);
         if (audioResult.isErr())
             return geode::Err(audioResult.unwrapErr());
         if (!audioResult.unwrap())
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+    m_impl->pendingAudio.clear();
     m_impl->finished = true;
     CMTime endTime = CMTimeMake(m_impl->frame, m_impl->fps);
     if (m_impl->audioFrame > 0) {
