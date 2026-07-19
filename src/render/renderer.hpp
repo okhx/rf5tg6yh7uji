@@ -24,6 +24,7 @@
 
 #include "dsp.hpp"
 
+#ifdef GEODE_IS_IOS
 struct MobileRenderResolution {
     const char* m_name;
     int m_width;
@@ -57,9 +58,10 @@ inline size_t mobileRenderResolutionIndex(int width, int height) {
     }
     return best;
 }
+#endif
 
 struct RendererSettings {
-#ifdef GEODE_IS_MOBILE
+#ifdef GEODE_IS_IOS
     int m_width = 2320;
     int m_height = 1080;
 #else
@@ -70,7 +72,7 @@ struct RendererSettings {
     std::string m_codec = "";
     AVPixelFormat m_pixFmt = AV_PIX_FMT_NV12;
 
-#ifdef GEODE_IS_MOBILE
+#ifdef GEODE_IS_IOS
     int m_fps = 240;
 #else
     int m_fps = 60;

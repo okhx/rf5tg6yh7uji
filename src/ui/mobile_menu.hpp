@@ -16,7 +16,9 @@ class MobileMenu final : public geode::Popup {
     ButtonSprite* m_recordSprite = nullptr;
     ButtonSprite* m_playSprite = nullptr;
     ButtonSprite* m_renderSprite = nullptr;
+#ifdef GEODE_IS_IOS
     size_t m_renderResolutionIndex = 1;
+#endif
     std::string m_status;
 
     bool init() override;
