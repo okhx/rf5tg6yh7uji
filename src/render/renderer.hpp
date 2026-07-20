@@ -12,6 +12,7 @@
 #endif
 
 #include <atomic>
+#include <array>
 #include <condition_variable>
 #include <cstdint>
 #include <deque>
@@ -23,14 +24,47 @@
 
 #include "dsp.hpp"
 
+#ifdef GEODE_IS_IOS
+struct IOSRenderResolution {
+    const char* m_name;
+    int m_width;
+    int m_height;
+};
+
+inline constexpr std::array<IOSRenderResolution, 4> IOS_RENDER_RESOLUTIONS{{
+    {"720p", 1480, 720},
+    {"1080p", 2320, 1080},
+    {"1440p", 3060, 1440},
+    {"2160p", 3840, 1760},
+}};
+
+inline size_t iosRenderResolutionIndex(int width, int height) {
+    for (size_t index = 0; index < IOS_RENDER_RESOLUTIONS.size(); ++index) {
+        const auto& resolution = IOS_RENDER_RESOLUTIONS[index];
+        if (width == resolution.m_width && height == resolution.m_height)
+            return index;
+    }
+    return 0;
+}
+#endif
+
 struct RendererSettings {
+#ifdef GEODE_IS_IOS
+    int m_width = 1480;
+    int m_height = 720;
+#else
     int m_width = 3840;
     int m_height = 2160;
+#endif
     uint32_t m_bitrate = 68'000'000;
     std::string m_codec = "";
     AVPixelFormat m_pixFmt = AV_PIX_FMT_NV12;
 
+#ifdef GEODE_IS_IOS
+    int m_fps = 240;
+#else
     int m_fps = 60;
+#endif
 
     float m_afterEndTime = 5.0f;
     bool m_colorFix = true;

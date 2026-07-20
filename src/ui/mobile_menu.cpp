@@ -1221,6 +1221,47 @@ void MobileMenu::buildRenderPage() {
     };
 
     leftLabel("Resolution", 18.f, rowY(0));
+#ifdef GEODE_IS_IOS
+    m_renderResolutionIndex = iosRenderResolutionIndex(
+        settings.m_width, settings.m_height);
+    const auto applyResolution = [this, renderer] {
+        const auto& resolution =
+            IOS_RENDER_RESOLUTIONS[m_renderResolutionIndex];
+        renderer->m_settings.m_width = resolution.m_width;
+        renderer->m_settings.m_height = resolution.m_height;
+    };
+    applyResolution();
+    const auto resolutionText = [this] {
+        const auto& resolution =
+            IOS_RENDER_RESOLUTIONS[m_renderResolutionIndex];
+        return fmt::format("{}  {}x{}", resolution.m_name,
+                           resolution.m_width, resolution.m_height);
+    };
+    auto* resolutionLabel = CCLabelBMFont::create(
+        resolutionText().c_str(), "bigFont.fnt");
+    resolutionLabel->setAnchorPoint({0.f, .5f});
+    resolutionLabel->setScale(.31f);
+    resolutionLabel->setPosition({247.f, rowY(0)});
+    resolutionLabel->limitLabelWidth(145.f, .31f, .14f);
+    m_pageNode->addChild(resolutionLabel);
+    addButton("<", 225.f, rowY(0),
+              [this, applyResolution, resolutionLabel, resolutionText] {
+                  m_renderResolutionIndex =
+                      (m_renderResolutionIndex +
+                       IOS_RENDER_RESOLUTIONS.size() - 1) %
+                      IOS_RENDER_RESOLUTIONS.size();
+                  applyResolution();
+                  resolutionLabel->setString(resolutionText().c_str());
+              }, 24.f);
+    addButton(">", 405.f, rowY(0),
+              [this, applyResolution, resolutionLabel, resolutionText] {
+                  m_renderResolutionIndex =
+                      (m_renderResolutionIndex + 1) %
+                      IOS_RENDER_RESOLUTIONS.size();
+                  applyResolution();
+                  resolutionLabel->setString(resolutionText().c_str());
+              }, 24.f);
+#else
     auto makeNumber = [this](float x, float y, int value,
                              std::function<void(int)> setter) {
         auto* input = TextInput::create(72.f, "Value");
@@ -1243,6 +1284,7 @@ void MobileMenu::buildRenderPage() {
                [&settings](int value) {
                    settings.m_height = std::clamp(value, 64, 2160);
                });
+#endif
 
     auto makeValue = [this, &leftLabel](std::string const& title, int row,
                                         float labelX, float inputX,
@@ -1261,10 +1303,21 @@ void MobileMenu::buildRenderPage() {
         input->setPosition({inputX, rowY(row)});
         m_pageNode->addChild(input, 3);
     };
+#ifdef GEODE_IS_IOS
+    settings.m_fps = 240;
+    leftLabel("FPS", 18.f, rowY(1));
+    auto* fpsInput = TextInput::create(72.f, "Value");
+    fpsInput->setScaleY(.84f);
+    fpsInput->setString("240");
+    fpsInput->setEnabled(false);
+    fpsInput->setPosition({145.f, rowY(1)});
+    m_pageNode->addChild(fpsInput, 3);
+#else
     makeValue("FPS", 1, 18.f, 145.f, settings.m_fps,
               [&settings](double value) {
                   settings.m_fps = std::clamp(static_cast<int>(value), 1, 240);
               });
+#endif
     makeValue("Bitrate Mbps", 1, 225.f, 365.f,
               settings.m_bitrate / 1'000'000.0,
               [&settings](double value) {
