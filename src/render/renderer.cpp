@@ -317,6 +317,7 @@ geode::Result<> Renderer::startMobile() {
     m_mobileArmFrame = Bot::get()->updater().getFrame();
     m_mobileStartFrame = 0;
     m_mobileCaptureStarted = false;
+    m_mobileEncoderBackpressured = false;
     m_endTime = 0.0f;
     m_time = 0.0;
     m_mobileRecording = true;
@@ -374,6 +375,7 @@ void Renderer::stopMobile() {
         m_mobileShaderResized = false;
     }
     m_mobileCaptureStarted = false;
+    m_mobileEncoderBackpressured = false;
     m_mobileRecording = false;
     m_recording = false;
     geode::log::info("Mobile render stopped");
@@ -467,7 +469,8 @@ void Renderer::updateMobile(PlayLayer* pl) {
 
 #ifdef GEODE_IS_IOS
     if (m_collectAudio && AudioRecorder::get()->m_attached) {
-        AudioRecorder::get()->unpause();
+        if (!m_mobileEncoderBackpressured)
+            AudioRecorder::get()->unpause();
         auto& pcm = AudioRecorder::get()->m_buffer;
         if (!pcm.empty()) {
             auto audioResult = m_iosWriter->appendAudio(pcm);
@@ -495,10 +498,13 @@ void Renderer::updateMobile(PlayLayer* pl) {
             stopMobile();
             return;
         }
-
+        if (!result.unwrap()) {
+            m_mobileEncoderBackpressured = true;
+            break;
+        }
+        m_mobileEncoderBackpressured = false;
         ++writtenFrames;
         m_mobileNextFrameTime += frameDuration;
-        if (!result.unwrap()) break;
     }
 #else
     while (m_mobileNextFrameTime <= gameTime + 1e-9 &&
