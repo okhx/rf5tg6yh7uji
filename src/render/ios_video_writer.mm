@@ -10,6 +10,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstring>
+#include <deque>
 #include <memory>
 #include <thread>
 
@@ -22,6 +23,11 @@ std::string errorText(NSError* error, const char* fallback) {
 }
 
 struct IOSVideoWriter::Impl {
+    struct AudioChunk {
+        std::vector<float> pcm;
+        int64_t pts;
+    };
+
     __strong AVAssetWriter* writer = nil;
     __strong AVAssetWriterInput* input = nil;
     __strong AVAssetWriterInput* audioInput = nil;
@@ -34,6 +40,7 @@ struct IOSVideoWriter::Impl {
     int64_t frame = 0;
     int64_t audioFrame = 0;
     std::vector<float> pendingAudio;
+    std::deque<AudioChunk> queuedAudio;
     dispatch_queue_t queue = nullptr;
     std::atomic_int pendingVideoFrames = 0;
     int maxPendingVideoFrames = 3;
@@ -42,6 +49,7 @@ struct IOSVideoWriter::Impl {
     bool finished = false;
 
     geode::Result<> writeAudio(const std::vector<float>& pcm, int64_t pts);
+    geode::Result<> drainReadyAudio();
 };
 
 geode::Result<> IOSVideoWriter::Impl::writeAudio(
@@ -104,6 +112,17 @@ geode::Result<> IOSVideoWriter::Impl::writeAudio(
     if (!appended)
         return geode::Err(errorText(writer.error,
                                     "Unable to append iOS audio"));
+    return geode::Ok();
+}
+
+geode::Result<> IOSVideoWriter::Impl::drainReadyAudio() {
+    while (audioInput && audioInput.readyForMoreMediaData &&
+           !queuedAudio.empty()) {
+        auto& chunk = queuedAudio.front();
+        auto result = writeAudio(chunk.pcm, chunk.pts);
+        if (result.isErr()) return result;
+        queuedAudio.pop_front();
+    }
     return geode::Ok();
 }
 
@@ -201,6 +220,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->frame = 0;
         m_impl->audioFrame = 0;
         m_impl->pendingAudio.clear();
+        m_impl->queuedAudio.clear();
         m_impl->queue = dispatch_queue_create(
             "dev.silicate.grape.ios-video-writer",
             DISPATCH_QUEUE_SERIAL);
@@ -280,6 +300,10 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
                 return;
             }
 
+            if (!audio.empty()) {
+                impl->queuedAudio.push_back({audio, audioPts});
+            }
+
             CVPixelBufferRef pixel = nullptr;
             const CVReturn created = CVPixelBufferPoolCreatePixelBuffer(
                 kCFAllocatorDefault, impl->adaptor.pixelBufferPool, &pixel);
@@ -320,22 +344,11 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
             }
             CVPixelBufferUnlockBaseAddress(pixel, 0);
 
-            bool audioDone = audio.empty();
             bool videoDone = false;
             const auto deadline = std::chrono::steady_clock::now() +
                                   std::chrono::seconds(60);
-            while (!audioDone || !videoDone) {
+            while (!videoDone) {
                 bool progressed = false;
-                if (!audioDone && impl->audioInput.readyForMoreMediaData) {
-                    auto result = impl->writeAudio(audio, audioPts);
-                    if (result.isErr()) {
-                        impl->asyncError = result.unwrapErr();
-                        impl->failed.store(true, std::memory_order_release);
-                        break;
-                    }
-                    audioDone = true;
-                    progressed = true;
-                }
                 if (!videoDone && impl->input.readyForMoreMediaData) {
                     const BOOL appended = [impl->adaptor
                         appendPixelBuffer:pixel
@@ -370,6 +383,13 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
                         std::chrono::milliseconds(1));
                 }
             }
+            if (!impl->failed.load(std::memory_order_acquire)) {
+                auto audioResult = impl->drainReadyAudio();
+                if (audioResult.isErr()) {
+                    impl->asyncError = audioResult.unwrapErr();
+                    impl->failed.store(true, std::memory_order_release);
+                }
+            }
             CVPixelBufferRelease(pixel);
             impl->pendingVideoFrames.fetch_sub(
                 1, std::memory_order_acq_rel);
@@ -397,13 +417,17 @@ geode::Result<> IOSVideoWriter::finish() {
     const int64_t finalAudioPts = m_impl->audioFrame;
     m_impl->audioFrame += static_cast<int64_t>(audioFrames);
     auto* impl = m_impl.get();
-    if (!finalAudio.empty() &&
+    if (impl->audioInput &&
         !impl->failed.load(std::memory_order_acquire)) {
         dispatch_async(impl->queue, ^{
             @autoreleasepool {
+                if (!finalAudio.empty()) {
+                    impl->queuedAudio.push_back(
+                        {finalAudio, finalAudioPts});
+                }
                 const auto deadline = std::chrono::steady_clock::now() +
-                                      std::chrono::seconds(10);
-                while (!impl->audioInput.readyForMoreMediaData) {
+                                      std::chrono::seconds(60);
+                while (!impl->queuedAudio.empty()) {
                     if (impl->writer.status == AVAssetWriterStatusFailed ||
                         std::chrono::steady_clock::now() >= deadline) {
                         impl->asyncError = errorText(
@@ -412,13 +436,15 @@ geode::Result<> IOSVideoWriter::finish() {
                         impl->failed.store(true, std::memory_order_release);
                         return;
                     }
+                    auto result = impl->drainReadyAudio();
+                    if (result.isErr()) {
+                        impl->asyncError = result.unwrapErr();
+                        impl->failed.store(true, std::memory_order_release);
+                        return;
+                    }
+                    if (impl->queuedAudio.empty()) break;
                     std::this_thread::sleep_for(
                         std::chrono::milliseconds(1));
-                }
-                auto result = impl->writeAudio(finalAudio, finalAudioPts);
-                if (result.isErr()) {
-                    impl->asyncError = result.unwrapErr();
-                    impl->failed.store(true, std::memory_order_release);
                 }
             }
         });
