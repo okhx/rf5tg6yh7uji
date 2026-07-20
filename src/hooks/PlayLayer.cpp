@@ -35,9 +35,6 @@ using namespace geode::prelude;
 struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 #ifndef GEODE_IS_WINDOWS
     void postUpdate(float dt) override {
-#ifdef GEODE_IS_IOS
-        if (Renderer::get()->shouldHoldMobileSimulation()) return;
-#endif
         PlayLayer::postUpdate(dt);
         Bot::get()->updater().portableFrameUpdate(this, dt);
     }

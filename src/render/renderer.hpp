@@ -192,9 +192,6 @@ class Renderer {
     geode::Result<> startMobile();
     void stopMobile();
     void updateMobile(PlayLayer* pl);
-    bool shouldHoldMobileSimulation() const {
-        return m_mobileRecording && m_mobileEncoderBackpressured;
-    }
 #endif
 
     std::atomic<bool> m_halting = false;
@@ -287,7 +284,6 @@ class Renderer {
     cocos2d::CCSize m_mobileOriginalFrameSize{};
     bool m_mobileCaptureStarted = false;
     bool m_mobileShaderResized = false;
-    bool m_mobileEncoderBackpressured = false;
     bool m_mobileRecording = false;
 #endif
 };

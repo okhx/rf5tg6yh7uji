@@ -262,13 +262,14 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
                             static_cast<size_t>(m_impl->height) * 4;
     if (rgba.size() != expected)
         return geode::Err("Captured frame has an invalid size");
+    const int64_t frameIndex = m_impl->frame++;
     if (m_impl->pendingVideoFrames.load(std::memory_order_acquire) >=
         m_impl->maxPendingVideoFrames) {
         return geode::Ok(false);
     }
 
     const int64_t nextVideoAudioFrame =
-        (m_impl->frame + 1) * m_impl->sampleRate / m_impl->fps;
+        (frameIndex + 1) * m_impl->sampleRate / m_impl->fps;
     const int64_t allowedAudioFrames =
         std::max<int64_t>(0, nextVideoAudioFrame - m_impl->audioFrame);
     const size_t availableAudioFrames =
@@ -288,7 +289,7 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
     const int64_t audioPts = m_impl->audioFrame;
     m_impl->audioFrame += static_cast<int64_t>(audioFrames);
 
-    const CMTime time = CMTimeMake(m_impl->frame++, m_impl->fps);
+    const CMTime time = CMTimeMake(frameIndex, m_impl->fps);
     auto frameData = std::make_shared<std::vector<uint8_t>>(rgba);
     m_impl->pendingVideoFrames.fetch_add(1, std::memory_order_acq_rel);
     auto* impl = m_impl.get();

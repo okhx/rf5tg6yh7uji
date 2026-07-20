@@ -19,9 +19,6 @@
 #include "physics/collisions.hpp"
 #include "physics/gjbasegamelayer.hpp"
 #include "replay/system.hpp"
-#ifdef GEODE_IS_IOS
-#include "render/renderer.hpp"
-#endif
 #include "trajectory/trajectory.hpp"
 #ifdef GEODE_IS_WINDOWS
 #include "util/midhook.hpp"
@@ -194,9 +191,6 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void update(float dt) override {
-#ifdef GEODE_IS_IOS
-        if (Renderer::get()->shouldHoldMobileSimulation()) return;
-#endif
         auto& updater = Bot::get()->updater();
         if (updater.m_onlyRefresh || !Bot::get()->isEnabled()) {
             GJBaseGameLayer::update(dt);
