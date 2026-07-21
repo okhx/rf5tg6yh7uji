@@ -318,6 +318,7 @@ geode::Result<> Renderer::startMobile() {
     m_mobileArmFrame = Bot::get()->updater().getFrame();
     m_mobileStartFrame = 0;
     m_mobileCaptureStarted = false;
+    m_mobileSaveError.clear();
     m_endTime = 0.0f;
     m_time = 0.0;
     m_mobileRecording = true;
@@ -327,6 +328,7 @@ geode::Result<> Renderer::startMobile() {
 }
 
 void Renderer::stopMobile() {
+    std::string saveError;
 #ifdef GEODE_IS_IOS
     if (AudioRecorder::get()->m_attached) {
         auto& pending = AudioRecorder::get()->m_buffer;
@@ -344,8 +346,8 @@ void Renderer::stopMobile() {
     if (m_iosWriter) {
         auto result = m_iosWriter->finish();
         if (result.isErr()) {
-            geode::log::error("iOS render finalize failed: {}",
-                              result.unwrapErr());
+            saveError = result.unwrapErr();
+            geode::log::error("iOS render finalize failed: {}", saveError);
         } else {
             std::error_code fileError;
             const auto fileSize = std::filesystem::file_size(
@@ -386,6 +388,7 @@ void Renderer::stopMobile() {
     m_mobileRecording = false;
     m_recording = false;
     geode::log::info("Mobile render stopped");
+    m_mobileSaveError = std::move(saveError);
 }
 
 void Renderer::updateMobile(PlayLayer* pl) {

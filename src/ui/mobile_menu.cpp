@@ -1378,7 +1378,9 @@ void MobileMenu::buildRenderPage() {
         center, rowY(5), [this, renderer] {
             if (renderer->isRecording()) {
                 renderer->signalStop();
-                m_status = "Render saved";
+                m_status = renderer->getMobileSaveError().empty()
+                    ? "Render saved to Grape/videos"
+                    : renderer->getMobileSaveError();
                 return;
             }
             auto result = renderer->start();

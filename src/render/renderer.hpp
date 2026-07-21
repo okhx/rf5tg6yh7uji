@@ -168,6 +168,9 @@ class Renderer {
     bool isRecording() const { return m_recording; }
     float getTime() const { return m_time; }
     inline bool isFFmpegLoaded() const { return m_ffmpegLoaded; }
+    const std::string& getMobileSaveError() const {
+        return m_mobileSaveError;
+    }
 
     void loadSettings(std::filesystem::path& path);
     void saveSettings(std::filesystem::path& path) const;
@@ -265,6 +268,7 @@ class Renderer {
     std::vector<float> m_audioBuffer;
 
     std::mutex m_lock;
+    std::string m_mobileSaveError;
 
     friend class AudioRecorder;
 
