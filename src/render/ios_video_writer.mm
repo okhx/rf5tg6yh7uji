@@ -2,6 +2,8 @@
 
 #ifdef GEODE_IS_IOS
 
+#include <Geode/loader/Log.hpp>
+
 #import <AVFoundation/AVFoundation.h>
 #import <CoreVideo/CoreVideo.h>
 #import <dispatch/dispatch.h>
