@@ -572,15 +572,18 @@ void Renderer::updateMobile(PlayLayer* pl) {
 #ifdef GEODE_IS_IOS
     while (m_mobileNextFrameTime <= captureTime + 1e-9 &&
            writtenFrames < 32) {
-        auto result = m_iosWriter->appendRGBA(m_mobileRGBAFrame);
+        ++writtenFrames;
+        m_mobileNextFrameTime += frameDuration;
+    }
+    if (writtenFrames > 0) {
+        auto result = m_iosWriter->appendRGBA(
+            m_mobileRGBAFrame, writtenFrames);
         if (result.isErr()) {
             geode::log::error("Mobile render frame failed: {}",
                               result.unwrapErr());
             stopMobile();
             return;
         }
-        ++writtenFrames;
-        m_mobileNextFrameTime += frameDuration;
     }
 #else
     while (m_mobileNextFrameTime <= gameTime + 1e-9 &&

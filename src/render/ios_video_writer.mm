@@ -206,7 +206,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->input = [AVAssetWriterInput
             assetWriterInputWithMediaType:AVMediaTypeVideo
                             outputSettings:settings];
-        m_impl->input.expectsMediaDataInRealTime = NO;
+        m_impl->input.expectsMediaDataInRealTime = YES;
 
         NSDictionary* attributes = @{
             (__bridge NSString*)kCVPixelBufferPixelFormatTypeKey :
@@ -232,7 +232,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
             m_impl->audioInput = [AVAssetWriterInput
                 assetWriterInputWithMediaType:AVMediaTypeAudio
                                 outputSettings:audioSettings];
-            m_impl->audioInput.expectsMediaDataInRealTime = NO;
+            m_impl->audioInput.expectsMediaDataInRealTime = YES;
             if (![m_impl->writer canAddInput:m_impl->audioInput])
                 return geode::Err("iOS encoder rejected the audio settings");
             [m_impl->writer addInput:m_impl->audioInput];
@@ -288,7 +288,7 @@ geode::Result<bool> IOSVideoWriter::appendAudio(
 }
 
 geode::Result<bool> IOSVideoWriter::appendRGBA(
-    const std::vector<uint8_t>& rgba) {
+    const std::vector<uint8_t>& rgba, int repeat) {
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
     if (m_impl->failed.load(std::memory_order_acquire))
@@ -299,14 +299,16 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
                             static_cast<size_t>(m_impl->height) * 4;
     if (rgba.size() != expected)
         return geode::Err("Captured frame has an invalid size");
-    const int64_t frameIndex = m_impl->frame++;
+    repeat = std::clamp(repeat, 1, 32);
+    const int64_t frameIndex = m_impl->frame;
+    m_impl->frame += repeat;
     if (m_impl->pendingVideoFrames.load(std::memory_order_acquire) >=
         m_impl->maxPendingVideoFrames) {
         return geode::Ok(false);
     }
 
     const int64_t nextVideoAudioFrame =
-        (frameIndex + 1) * m_impl->sampleRate / m_impl->fps;
+        (frameIndex + repeat) * m_impl->sampleRate / m_impl->fps;
     const int64_t allowedAudioFrames =
         std::max<int64_t>(0, nextVideoAudioFrame - m_impl->audioFrame);
     const size_t availableAudioFrames =
@@ -326,7 +328,6 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
     const int64_t audioPts = m_impl->audioFrame;
     m_impl->audioFrame += static_cast<int64_t>(audioFrames);
 
-    const CMTime time = CMTimeMake(frameIndex, m_impl->fps);
     auto frameData = std::make_shared<std::vector<uint8_t>>(rgba);
     m_impl->pendingVideoFrames.fetch_add(1, std::memory_order_acq_rel);
     auto* impl = m_impl.get();
@@ -382,12 +383,14 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
             }
             CVPixelBufferUnlockBaseAddress(pixel, 0);
 
-            bool videoDone = false;
             const auto deadline = std::chrono::steady_clock::now() +
-                                  std::chrono::milliseconds(250);
-            while (!videoDone) {
+                                  std::chrono::milliseconds(20);
+            int appendedFrames = 0;
+            while (appendedFrames < repeat) {
                 bool progressed = false;
-                if (!videoDone && impl->input.readyForMoreMediaData) {
+                if (impl->input.readyForMoreMediaData) {
+                    const CMTime time = CMTimeMake(
+                        frameIndex + appendedFrames, impl->fps);
                     const BOOL appended = [impl->adaptor
                         appendPixelBuffer:pixel
                         withPresentationTime:time];
@@ -398,7 +401,7 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
                         impl->failed.store(true, std::memory_order_release);
                         break;
                     }
-                    videoDone = true;
+                    ++appendedFrames;
                     progressed = true;
                 }
                 const auto status = impl->writer.status;
@@ -412,10 +415,13 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
                 }
                 if (!progressed) {
                     if (std::chrono::steady_clock::now() >= deadline) {
+                        const auto droppedNow = static_cast<uint64_t>(
+                            repeat - appendedFrames);
                         const auto dropped =
                             impl->droppedVideoFrames.fetch_add(
-                                1, std::memory_order_acq_rel) + 1;
-                        if (dropped == 1 || dropped % 240 == 0) {
+                                droppedNow, std::memory_order_acq_rel) +
+                            droppedNow;
+                        if (dropped == droppedNow || dropped % 240 < droppedNow) {
                             NSLog(@"[Grape] iOS encoder overloaded; dropped %llu video frames",
                                   static_cast<unsigned long long>(dropped));
                         }

@@ -23,7 +23,8 @@ class IOSVideoWriter {
     geode::Result<> open(const std::filesystem::path& output, int width,
                          int height, int fps, uint32_t bitrate,
                          int sampleRate, int channels, bool includeAudio);
-    geode::Result<bool> appendRGBA(const std::vector<uint8_t>& rgba);
+    geode::Result<bool> appendRGBA(const std::vector<uint8_t>& rgba,
+                                   int repeat = 1);
     geode::Result<bool> appendAudio(const std::vector<float>& pcm);
     geode::Result<> finish();
 };
