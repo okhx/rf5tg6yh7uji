@@ -1208,6 +1208,10 @@ void MobileMenu::buildSettingsPage() {
 void MobileMenu::buildRenderPage() {
     auto* renderer = Renderer::get();
     auto& settings = renderer->m_settings;
+    if (!renderer->isRecording() &&
+        !renderer->getMobileSaveError().empty()) {
+        m_status = renderer->getMobileSaveError();
+    }
     const float center = m_pageNode->getContentSize().width / 2.f;
 
     const auto leftLabel = [this](std::string const& text, float x, float y,

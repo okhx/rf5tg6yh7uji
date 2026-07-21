@@ -528,7 +528,9 @@ void Renderer::updateMobile(PlayLayer* pl) {
 #endif
     m_time = gameTime;
 
-    if (pl->m_hasCompletedLevel) {
+    const bool endMenuShown =
+        pl->getChildByID("EndLevelLayer") != nullptr;
+    if (pl->m_hasCompletedLevel && endMenuShown) {
         m_endTime += static_cast<float>(writtenFrames * frameDuration);
         if (m_endTime >= m_settings.m_afterEndTime) stopMobile();
     }

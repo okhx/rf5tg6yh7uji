@@ -509,14 +509,14 @@ geode::Result<> IOSVideoWriter::finish() {
     [m_impl->input markAsFinished];
     if (m_impl->audioInput) [m_impl->audioInput markAsFinished];
 
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    [m_impl->writer finishWritingWithCompletionHandler:^{
-        dispatch_semaphore_signal(semaphore);
-    }];
-    const long timedOut = dispatch_semaphore_wait(
-        semaphore, dispatch_time(DISPATCH_TIME_NOW, 180 * NSEC_PER_SEC));
-    if (timedOut != 0)
-        return geode::Err("Timed out finalizing the iOS video");
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    const BOOL completed = [m_impl->writer finishWriting];
+#pragma clang diagnostic pop
+    if (!completed) {
+        return geode::Err(errorText(m_impl->writer.error,
+                                    "Failed to finish the iOS video"));
+    }
     if (m_impl->writer.status != AVAssetWriterStatusCompleted) {
         return geode::Err(errorText(m_impl->writer.error,
                                     "Failed to finalize the iOS video"));
