@@ -177,6 +177,10 @@ geode::Result<> Renderer::startMobile() {
     }
 #endif
     if (m_mobileRecording) return geode::Err("A render is already running");
+#ifdef GEODE_IS_IOS
+    if (m_mobileFinalizing)
+        return geode::Err("Wait for the previous video to finish saving");
+#endif
 
 #ifdef GEODE_IS_IOS
     const auto resolutionIndex = iosRenderResolutionIndex(
@@ -319,6 +323,10 @@ geode::Result<> Renderer::startMobile() {
     m_mobileStartFrame = 0;
     m_mobileCaptureStarted = false;
     m_mobileSaveError.clear();
+#ifdef GEODE_IS_IOS
+    m_mobileCompletionClockStarted = false;
+    m_mobileEndMenuReady = false;
+#endif
     m_endTime = 0.0f;
     m_time = 0.0;
     m_mobileRecording = true;
@@ -344,20 +352,41 @@ void Renderer::stopMobile() {
         AudioRecorder::get()->uninit();
     }
     if (m_iosWriter) {
-        auto result = m_iosWriter->finish();
-        if (result.isErr()) {
-            saveError = result.unwrapErr();
-            geode::log::error("iOS render finalize failed: {}", saveError);
-        } else {
-            std::error_code fileError;
-            const auto fileSize = std::filesystem::file_size(
-                m_mobileOutputPath, fileError);
-            geode::log::info(
-                "iOS render saved to {} ({} bytes)",
-                m_mobileOutputPath,
-                fileError ? 0 : fileSize);
-        }
-        m_iosWriter.reset();
+        auto writer = std::shared_ptr<IOSVideoWriter>(m_iosWriter.release());
+        const auto outputPath = m_mobileOutputPath;
+        m_mobileFinalizing = true;
+        m_mobileSaveError = "Finalizing video...";
+        std::thread([writer = std::move(writer), outputPath] {
+            auto result = writer->finish();
+            std::string status;
+            uintmax_t fileSize = 0;
+            if (result.isErr()) {
+                status = result.unwrapErr();
+            } else {
+                std::error_code fileError;
+                fileSize = std::filesystem::file_size(outputPath, fileError);
+                if (fileError || fileSize == 0) {
+                    status = "The iOS video finished but is missing from Grape/videos";
+                }
+            }
+            geode::queueInMainThread(
+                [status = std::move(status), outputPath, fileSize] {
+                    auto* renderer = Renderer::get();
+                    renderer->m_mobileFinalizing = false;
+                    if (status.empty()) {
+                        renderer->m_mobileSaveError =
+                            fmt::format("Render saved: {}",
+                                        outputPath.filename().string());
+                        geode::log::info(
+                            "iOS render saved to {} ({} bytes)",
+                            outputPath, fileSize);
+                    } else {
+                        renderer->m_mobileSaveError = status;
+                        geode::log::error(
+                            "iOS render finalize failed: {}", status);
+                    }
+                });
+        }).detach();
     }
 #else
     if (m_mobileRecorder) {
@@ -388,8 +417,16 @@ void Renderer::stopMobile() {
     m_mobileRecording = false;
     m_recording = false;
     geode::log::info("Mobile render stopped");
-    m_mobileSaveError = std::move(saveError);
+    if (!saveError.empty()) m_mobileSaveError = std::move(saveError);
 }
+
+#ifdef GEODE_IS_IOS
+void Renderer::notifyEndLevelMenuReady() {
+    if (!m_mobileRecording) return;
+    m_mobileEndMenuReady = true;
+    m_mobileEndMenuReadyAt = std::chrono::steady_clock::now();
+}
+#endif
 
 void Renderer::updateMobile(PlayLayer* pl) {
     if (!m_mobileRecording || !pl) return;
@@ -414,7 +451,24 @@ void Renderer::updateMobile(PlayLayer* pl) {
 
     const double gameTime =
         static_cast<double>(currentFrame - m_mobileStartFrame) / tps;
-    if (gameTime + 1e-9 < m_mobileNextFrameTime) return;
+    double captureTime = gameTime;
+#ifdef GEODE_IS_IOS
+    const auto now = std::chrono::steady_clock::now();
+    if (pl->m_hasCompletedLevel) {
+        if (!m_mobileCompletionClockStarted) {
+            m_mobileCompletionClockStarted = true;
+            m_mobileCompletionStartedAt = now;
+            m_mobileCompletionTimeline =
+                std::max(gameTime, m_mobileNextFrameTime);
+        }
+        const double completionElapsed =
+            std::chrono::duration<double>(
+                now - m_mobileCompletionStartedAt).count();
+        captureTime = std::max(
+            gameTime, m_mobileCompletionTimeline + completionElapsed);
+    }
+#endif
+    if (captureTime + 1e-9 < m_mobileNextFrameTime) return;
 
     GLint previousFbo = 0;
     GLint viewport[4] = {};
@@ -498,7 +552,7 @@ void Renderer::updateMobile(PlayLayer* pl) {
     int writtenFrames = 0;
     const double frameDuration = 1.0 / m_settings.m_fps;
 #ifdef GEODE_IS_IOS
-    while (m_mobileNextFrameTime <= gameTime + 1e-9 &&
+    while (m_mobileNextFrameTime <= captureTime + 1e-9 &&
            writtenFrames < 32) {
         auto result = m_iosWriter->appendRGBA(m_mobileRGBAFrame);
         if (result.isErr()) {
@@ -526,14 +580,22 @@ void Renderer::updateMobile(PlayLayer* pl) {
     if (writtenFrames == 32 && m_mobileNextFrameTime <= gameTime)
         m_mobileNextFrameTime = gameTime + frameDuration;
 #endif
-    m_time = gameTime;
+    m_time = captureTime;
 
-    const bool endMenuShown =
-        pl->getChildByID("EndLevelLayer") != nullptr;
+#ifdef GEODE_IS_IOS
+    if (pl->m_hasCompletedLevel && m_mobileEndMenuReady) {
+        m_endTime = static_cast<float>(
+            std::chrono::duration<double>(
+                now - m_mobileEndMenuReadyAt).count());
+        if (m_endTime >= m_settings.m_afterEndTime) stopMobile();
+    }
+#else
+    const bool endMenuShown = pl->getChildByID("EndLevelLayer") != nullptr;
     if (pl->m_hasCompletedLevel && endMenuShown) {
         m_endTime += static_cast<float>(writtenFrames * frameDuration);
         if (m_endTime >= m_settings.m_afterEndTime) stopMobile();
     }
+#endif
 }
 #endif
 

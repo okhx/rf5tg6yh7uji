@@ -14,6 +14,7 @@
 #include <atomic>
 #include <array>
 #include <condition_variable>
+#include <chrono>
 #include <cstdint>
 #include <deque>
 #include <functional>
@@ -195,6 +196,9 @@ class Renderer {
     geode::Result<> startMobile();
     void stopMobile();
     void updateMobile(PlayLayer* pl);
+#ifdef GEODE_IS_IOS
+    void notifyEndLevelMenuReady();
+#endif
 #endif
 
     std::atomic<bool> m_halting = false;
@@ -283,6 +287,14 @@ class Renderer {
     std::vector<uint8_t> m_mobileFrame;
     std::vector<uint8_t> m_mobileRGBAFrame;
     double m_mobileNextFrameTime = 0.0;
+#ifdef GEODE_IS_IOS
+    std::chrono::steady_clock::time_point m_mobileCompletionStartedAt{};
+    std::chrono::steady_clock::time_point m_mobileEndMenuReadyAt{};
+    double m_mobileCompletionTimeline = 0.0;
+    bool m_mobileCompletionClockStarted = false;
+    bool m_mobileEndMenuReady = false;
+    bool m_mobileFinalizing = false;
+#endif
     uint32_t m_mobileArmFrame = 0;
     uint32_t m_mobileStartFrame = 0;
     cocos2d::CCSize m_mobileOriginalFrameSize{};

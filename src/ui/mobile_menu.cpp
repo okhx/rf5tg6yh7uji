@@ -757,8 +757,16 @@ void MobileMenu::update(float) {
             ? ccColor3B{105, 190, 245} : ccWHITE);
     }
     if (m_renderSprite) {
-        m_renderSprite->setString(Renderer::get()->isRecording()
+        auto* renderer = Renderer::get();
+        m_renderSprite->setString(renderer->isRecording()
                                       ? "Stop render" : "Start render");
+        const auto& saveStatus = renderer->getMobileSaveError();
+        if (!saveStatus.empty() &&
+            (saveStatus == "Finalizing video..." ||
+             saveStatus.starts_with("Render saved:") ||
+             m_status == "Finalizing video...")) {
+            m_status = saveStatus;
+        }
     }
     if (m_frameLabel) {
         m_frameLabel->setString(

@@ -2,12 +2,20 @@
 #include <Geode/modify/EndLevelLayer.hpp>
 
 #include "settings/settings.hpp"
+#include "render/renderer.hpp"
 #include "ui/mobile_menu.hpp"
 
 using namespace geode::prelude;
 
 #ifdef GEODE_IS_MOBILE
 struct SLEndLevelLayer : Modify<SLEndLevelLayer, EndLevelLayer> {
+#ifdef GEODE_IS_IOS
+    void enterAnimFinished() override {
+        EndLevelLayer::enterAnimFinished();
+        Renderer::get()->notifyEndLevelMenuReady();
+    }
+#endif
+
     void customSetup() override {
         EndLevelLayer::customSetup();
         if (!SLSettings::get()->showEndMenuButton) return;
