@@ -282,6 +282,7 @@ class Renderer {
     uint32_t m_mobileArmFrame = 0;
     uint32_t m_mobileStartFrame = 0;
     cocos2d::CCSize m_mobileOriginalFrameSize{};
+    std::filesystem::path m_mobileOutputPath;
     bool m_mobileCaptureStarted = false;
     bool m_mobileShaderResized = false;
     bool m_mobileRecording = false;

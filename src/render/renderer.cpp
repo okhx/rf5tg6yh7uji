@@ -218,6 +218,7 @@ geode::Result<> Renderer::startMobile() {
     if (extension.front() == '.') extension.erase(extension.begin());
     auto output = silicate::paths::directory("videos") /
                   (name + "." + extension);
+    m_mobileOutputPath = output;
 
 #ifdef GEODE_IS_IOS
     m_iosWriter = std::make_unique<IOSVideoWriter>();
@@ -345,6 +346,14 @@ void Renderer::stopMobile() {
         if (result.isErr()) {
             geode::log::error("iOS render finalize failed: {}",
                               result.unwrapErr());
+        } else {
+            std::error_code fileError;
+            const auto fileSize = std::filesystem::file_size(
+                m_mobileOutputPath, fileError);
+            geode::log::info(
+                "iOS render saved to {} ({} bytes)",
+                m_mobileOutputPath,
+                fileError ? 0 : fileSize);
         }
         m_iosWriter.reset();
     }

@@ -44,8 +44,10 @@ struct IOSVideoWriter::Impl {
     dispatch_queue_t queue = nullptr;
     std::atomic_int pendingVideoFrames = 0;
     int maxPendingVideoFrames = 3;
+    std::atomic_bool audioDisabled = false;
     std::atomic_bool failed = false;
     std::string asyncError;
+    std::filesystem::path outputPath;
     bool finished = false;
 
     geode::Result<> writeAudio(const std::vector<float>& pcm, int64_t pts);
@@ -116,6 +118,7 @@ geode::Result<> IOSVideoWriter::Impl::writeAudio(
 }
 
 geode::Result<> IOSVideoWriter::Impl::drainReadyAudio() {
+    if (audioDisabled.load(std::memory_order_acquire)) return geode::Ok();
     while (audioInput && audioInput.readyForMoreMediaData &&
            !queuedAudio.empty()) {
         auto& chunk = queuedAudio.front();
@@ -150,6 +153,14 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
             stringWithUTF8String:output.string().c_str()];
         if (!path) return geode::Err("Invalid iOS render output path");
         NSURL* url = [NSURL fileURLWithPath:path];
+        NSError* directoryError = nil;
+        if (![[NSFileManager defaultManager]
+                createDirectoryAtURL:[url URLByDeletingLastPathComponent]
+          withIntermediateDirectories:YES attributes:nil
+                               error:&directoryError]) {
+            return geode::Err(errorText(
+                directoryError, "Unable to create the iOS videos folder"));
+        }
         [[NSFileManager defaultManager] removeItemAtURL:url error:nullptr];
 
         NSError* error = nil;
@@ -229,8 +240,10 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->maxPendingVideoFrames = static_cast<int>(std::clamp<size_t>(
             targetQueueBytes / frameBytes, 2, 12));
         m_impl->pendingVideoFrames.store(0, std::memory_order_release);
+        m_impl->audioDisabled.store(false, std::memory_order_release);
         m_impl->failed.store(false, std::memory_order_release);
         m_impl->asyncError.clear();
+        m_impl->outputPath = output;
         m_impl->finished = false;
     }
     return geode::Ok();
@@ -239,6 +252,8 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
 geode::Result<bool> IOSVideoWriter::appendAudio(
     const std::vector<float>& pcm) {
     if (!m_impl->audioInput || pcm.empty()) return geode::Ok(true);
+    if (m_impl->audioDisabled.load(std::memory_order_acquire))
+        return geode::Ok(true);
     if (!m_impl->writer || m_impl->finished)
         return geode::Err("iOS video writer is not active");
     if (m_impl->failed.load(std::memory_order_acquire))
@@ -387,8 +402,11 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
             if (!impl->failed.load(std::memory_order_acquire)) {
                 auto audioResult = impl->drainReadyAudio();
                 if (audioResult.isErr()) {
-                    impl->asyncError = audioResult.unwrapErr();
-                    impl->failed.store(true, std::memory_order_release);
+                    geode::log::error("iOS render audio disabled: {}",
+                                      audioResult.unwrapErr());
+                    impl->queuedAudio.clear();
+                    impl->audioDisabled.store(
+                        true, std::memory_order_release);
                 }
             }
             CVPixelBufferRelease(pixel);
@@ -419,6 +437,7 @@ geode::Result<> IOSVideoWriter::finish() {
     m_impl->audioFrame += static_cast<int64_t>(audioFrames);
     auto* impl = m_impl.get();
     if (impl->audioInput &&
+        !impl->audioDisabled.load(std::memory_order_acquire) &&
         !impl->failed.load(std::memory_order_acquire)) {
         dispatch_async(impl->queue, ^{
             @autoreleasepool {
@@ -429,18 +448,28 @@ geode::Result<> IOSVideoWriter::finish() {
                 const auto deadline = std::chrono::steady_clock::now() +
                                       std::chrono::seconds(60);
                 while (!impl->queuedAudio.empty()) {
-                    if (impl->writer.status == AVAssetWriterStatusFailed ||
-                        std::chrono::steady_clock::now() >= deadline) {
+                    if (impl->writer.status == AVAssetWriterStatusFailed) {
                         impl->asyncError = errorText(
                             impl->writer.error,
-                            "Timed out writing final iOS audio");
+                            "iOS writer failed while finalizing audio");
                         impl->failed.store(true, std::memory_order_release);
+                        return;
+                    }
+                    if (std::chrono::steady_clock::now() >= deadline) {
+                        geode::log::warn(
+                            "Dropping delayed iOS render audio to save video");
+                        impl->queuedAudio.clear();
+                        impl->audioDisabled.store(
+                            true, std::memory_order_release);
                         return;
                     }
                     auto result = impl->drainReadyAudio();
                     if (result.isErr()) {
-                        impl->asyncError = result.unwrapErr();
-                        impl->failed.store(true, std::memory_order_release);
+                        geode::log::error("Dropping iOS render audio: {}",
+                                          result.unwrapErr());
+                        impl->queuedAudio.clear();
+                        impl->audioDisabled.store(
+                            true, std::memory_order_release);
                         return;
                     }
                     if (impl->queuedAudio.empty()) break;
@@ -479,12 +508,18 @@ geode::Result<> IOSVideoWriter::finish() {
         dispatch_semaphore_signal(semaphore);
     }];
     const long timedOut = dispatch_semaphore_wait(
-        semaphore, dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC));
+        semaphore, dispatch_time(DISPATCH_TIME_NOW, 180 * NSEC_PER_SEC));
     if (timedOut != 0)
         return geode::Err("Timed out finalizing the iOS video");
     if (m_impl->writer.status != AVAssetWriterStatusCompleted) {
         return geode::Err(errorText(m_impl->writer.error,
                                     "Failed to finalize the iOS video"));
+    }
+    std::error_code fileError;
+    const auto fileSize = std::filesystem::file_size(
+        m_impl->outputPath, fileError);
+    if (fileError || fileSize == 0) {
+        return geode::Err("iOS encoder completed without saving an MP4 file");
     }
     return geode::Ok();
 }
