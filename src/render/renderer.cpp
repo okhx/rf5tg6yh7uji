@@ -220,8 +220,16 @@ geode::Result<> Renderer::startMobile() {
     extension = "mp4";
 #endif
     if (extension.front() == '.') extension.erase(extension.begin());
-    auto output = silicate::paths::directory("videos") /
-                  (name + "." + extension);
+    const auto legacyOutput = silicate::paths::directory("videos") /
+                              (name + "." + extension);
+    auto output = legacyOutput;
+#ifdef GEODE_IS_IOS
+    const auto visibleDirectory = iosVisibleVideosDirectory();
+    if (!visibleDirectory.empty()) {
+        output = visibleDirectory / (name + "." + extension);
+    }
+    m_mobileMirrorOutputPath = legacyOutput;
+#endif
     m_mobileOutputPath = output;
 
 #ifdef GEODE_IS_IOS
@@ -354,9 +362,10 @@ void Renderer::stopMobile() {
     if (m_iosWriter) {
         auto writer = std::shared_ptr<IOSVideoWriter>(m_iosWriter.release());
         const auto outputPath = m_mobileOutputPath;
+        const auto mirrorPath = m_mobileMirrorOutputPath;
         m_mobileFinalizing = true;
         m_mobileSaveError = "Finalizing video...";
-        std::thread([writer = std::move(writer), outputPath] {
+        std::thread([writer = std::move(writer), outputPath, mirrorPath] {
             auto result = writer->finish();
             std::string status;
             uintmax_t fileSize = 0;
@@ -367,6 +376,15 @@ void Renderer::stopMobile() {
                 fileSize = std::filesystem::file_size(outputPath, fileError);
                 if (fileError || fileSize == 0) {
                     status = "The iOS video finished but is missing from Grape/videos";
+                } else if (mirrorPath != outputPath) {
+                    std::error_code directoryError;
+                    std::filesystem::create_directories(
+                        mirrorPath.parent_path(), directoryError);
+                    std::error_code copyError;
+                    std::filesystem::copy_file(
+                        outputPath, mirrorPath,
+                        std::filesystem::copy_options::overwrite_existing,
+                        copyError);
                 }
             }
             geode::queueInMainThread(
@@ -587,7 +605,8 @@ void Renderer::updateMobile(PlayLayer* pl) {
         m_endTime = static_cast<float>(
             std::chrono::duration<double>(
                 now - m_mobileEndMenuReadyAt).count());
-        if (m_endTime >= m_settings.m_afterEndTime) stopMobile();
+        const float menuHold = std::max(m_settings.m_afterEndTime, 2.0f);
+        if (m_endTime >= menuHold) stopMobile();
     }
 #else
     const bool endMenuShown = pl->getChildByID("EndLevelLayer") != nullptr;

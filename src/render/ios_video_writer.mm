@@ -22,6 +22,25 @@ std::string errorText(NSError* error, const char* fallback) {
 }
 }
 
+std::filesystem::path iosVisibleVideosDirectory() {
+    @autoreleasepool {
+        NSArray<NSString*>* directories =
+            NSSearchPathForDirectoriesInDomains(
+                NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString* documents = directories.firstObject;
+        if (!documents) return {};
+        NSString* videos = [[documents stringByAppendingPathComponent:@"Grape"]
+            stringByAppendingPathComponent:@"videos"];
+        NSError* error = nil;
+        if (![[NSFileManager defaultManager]
+                createDirectoryAtPath:videos
+          withIntermediateDirectories:YES attributes:nil error:&error]) {
+            return {};
+        }
+        return std::filesystem::path(videos.UTF8String);
+    }
+}
+
 struct IOSVideoWriter::Impl {
     struct AudioChunk {
         std::vector<float> pcm;
@@ -48,7 +67,6 @@ struct IOSVideoWriter::Impl {
     std::atomic_bool failed = false;
     std::string asyncError;
     std::filesystem::path outputPath;
-    std::filesystem::path stagingPath;
     bool finished = false;
 
     geode::Result<> writeAudio(const std::vector<float>& pcm, int64_t pts);
@@ -153,9 +171,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         NSString* path = [NSString
             stringWithUTF8String:output.string().c_str()];
         if (!path) return geode::Err("Invalid iOS render output path");
-        NSString* stagingPath = [path stringByAppendingString:@".rendering.mp4"];
         NSURL* outputURL = [NSURL fileURLWithPath:path];
-        NSURL* stagingURL = [NSURL fileURLWithPath:stagingPath];
         NSError* directoryError = nil;
         if (![[NSFileManager defaultManager]
                 createDirectoryAtURL:[outputURL URLByDeletingLastPathComponent]
@@ -164,12 +180,12 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
             return geode::Err(errorText(
                 directoryError, "Unable to create the iOS videos folder"));
         }
-        [[NSFileManager defaultManager] removeItemAtURL:stagingURL
+        [[NSFileManager defaultManager] removeItemAtURL:outputURL
                                                   error:nullptr];
 
         NSError* error = nil;
         m_impl->writer = [[AVAssetWriter alloc]
-            initWithURL:stagingURL fileType:AVFileTypeMPEG4 error:&error];
+            initWithURL:outputURL fileType:AVFileTypeMPEG4 error:&error];
         if (!m_impl->writer)
             return geode::Err(errorText(error, "Unable to create MP4 writer"));
 
@@ -248,7 +264,6 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->failed.store(false, std::memory_order_release);
         m_impl->asyncError.clear();
         m_impl->outputPath = output;
-        m_impl->stagingPath = std::filesystem::path(stagingPath.UTF8String);
         m_impl->finished = false;
     }
     return geode::Ok();
@@ -523,30 +538,9 @@ geode::Result<> IOSVideoWriter::finish() {
     }
     std::error_code fileError;
     const auto fileSize = std::filesystem::file_size(
-        m_impl->stagingPath, fileError);
+        m_impl->outputPath, fileError);
     if (fileError || fileSize == 0) {
         return geode::Err("iOS encoder completed without saving an MP4 file");
-    }
-    std::filesystem::rename(
-        m_impl->stagingPath, m_impl->outputPath, fileError);
-    if (fileError) {
-        fileError.clear();
-        std::filesystem::copy_file(
-            m_impl->stagingPath, m_impl->outputPath,
-            std::filesystem::copy_options::overwrite_existing, fileError);
-        if (fileError) {
-            return geode::Err(
-                "The iOS video was encoded but could not be moved into the videos folder");
-        }
-        std::error_code cleanupError;
-        std::filesystem::remove(m_impl->stagingPath, cleanupError);
-    }
-    fileError.clear();
-    const auto publishedSize = std::filesystem::file_size(
-        m_impl->outputPath, fileError);
-    if (fileError || publishedSize != fileSize) {
-        return geode::Err(
-            "The iOS video could not be verified in the videos folder");
     }
     return geode::Ok();
 }

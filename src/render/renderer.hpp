@@ -299,6 +299,9 @@ class Renderer {
     uint32_t m_mobileStartFrame = 0;
     cocos2d::CCSize m_mobileOriginalFrameSize{};
     std::filesystem::path m_mobileOutputPath;
+#ifdef GEODE_IS_IOS
+    std::filesystem::path m_mobileMirrorOutputPath;
+#endif
     bool m_mobileCaptureStarted = false;
     bool m_mobileShaderResized = false;
     bool m_mobileRecording = false;
