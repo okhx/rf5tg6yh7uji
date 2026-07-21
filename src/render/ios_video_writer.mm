@@ -62,6 +62,7 @@ struct IOSVideoWriter::Impl {
     std::deque<AudioChunk> queuedAudio;
     dispatch_queue_t queue = nullptr;
     std::atomic_int pendingVideoFrames = 0;
+    std::atomic_uint64_t droppedVideoFrames = 0;
     int maxPendingVideoFrames = 3;
     std::atomic_bool audioDisabled = false;
     std::atomic_bool failed = false;
@@ -260,6 +261,7 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         m_impl->maxPendingVideoFrames = static_cast<int>(std::clamp<size_t>(
             targetQueueBytes / frameBytes, 2, 12));
         m_impl->pendingVideoFrames.store(0, std::memory_order_release);
+        m_impl->droppedVideoFrames.store(0, std::memory_order_release);
         m_impl->audioDisabled.store(false, std::memory_order_release);
         m_impl->failed.store(false, std::memory_order_release);
         m_impl->asyncError.clear();
@@ -382,7 +384,7 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
 
             bool videoDone = false;
             const auto deadline = std::chrono::steady_clock::now() +
-                                  std::chrono::seconds(60);
+                                  std::chrono::milliseconds(250);
             while (!videoDone) {
                 bool progressed = false;
                 if (!videoDone && impl->input.readyForMoreMediaData) {
@@ -410,9 +412,13 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
                 }
                 if (!progressed) {
                     if (std::chrono::steady_clock::now() >= deadline) {
-                        impl->asyncError =
-                            "Timed out waiting for the iOS video encoder";
-                        impl->failed.store(true, std::memory_order_release);
+                        const auto dropped =
+                            impl->droppedVideoFrames.fetch_add(
+                                1, std::memory_order_acq_rel) + 1;
+                        if (dropped == 1 || dropped % 240 == 0) {
+                            NSLog(@"[Grape] iOS encoder overloaded; dropped %llu video frames",
+                                  static_cast<unsigned long long>(dropped));
+                        }
                         break;
                     }
                     std::this_thread::sleep_for(
