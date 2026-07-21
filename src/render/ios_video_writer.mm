@@ -2,8 +2,6 @@
 
 #ifdef GEODE_IS_IOS
 
-#include <Geode/loader/Log.hpp>
-
 #import <AVFoundation/AVFoundation.h>
 #import <CoreVideo/CoreVideo.h>
 #import <dispatch/dispatch.h>
@@ -404,8 +402,9 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
             if (!impl->failed.load(std::memory_order_acquire)) {
                 auto audioResult = impl->drainReadyAudio();
                 if (audioResult.isErr()) {
-                    geode::log::error("iOS render audio disabled: {}",
-                                      audioResult.unwrapErr());
+                    const auto error = audioResult.unwrapErr();
+                    NSLog(@"[Grape] iOS render audio disabled: %s",
+                          error.c_str());
                     impl->queuedAudio.clear();
                     impl->audioDisabled.store(
                         true, std::memory_order_release);
@@ -458,8 +457,7 @@ geode::Result<> IOSVideoWriter::finish() {
                         return;
                     }
                     if (std::chrono::steady_clock::now() >= deadline) {
-                        geode::log::warn(
-                            "Dropping delayed iOS render audio to save video");
+                        NSLog(@"[Grape] Dropping delayed iOS render audio to save video");
                         impl->queuedAudio.clear();
                         impl->audioDisabled.store(
                             true, std::memory_order_release);
@@ -467,8 +465,9 @@ geode::Result<> IOSVideoWriter::finish() {
                     }
                     auto result = impl->drainReadyAudio();
                     if (result.isErr()) {
-                        geode::log::error("Dropping iOS render audio: {}",
-                                          result.unwrapErr());
+                        const auto error = result.unwrapErr();
+                        NSLog(@"[Grape] Dropping iOS render audio: %s",
+                              error.c_str());
                         impl->queuedAudio.clear();
                         impl->audioDisabled.store(
                             true, std::memory_order_release);

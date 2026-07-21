@@ -2,13 +2,13 @@ Run geode-sdk/build-geode-mod@main
 Run DEFAULT_TARGET=Win64
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run actions/cache@v4
-(node:10077) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:6457) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-(node:10077) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:6457) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 Cache hit for: cpm-ios-v1-e270456e54a72befba8c4e40f993efb8b0bd1f1b4f22254f6a73fbe5cc8e1a0c
-Received 13407152 of 13407152 (100.0%), 16.9 MBs/sec
+Received 13407152 of 13407152 (100.0%), 61.8 MBs/sec
 Cache Size: ~13 MB (13407152 B)
-/opt/homebrew/bin/gtar -xf /Users/runner/work/_temp/26a44e11-dd5f-4823-bcb9-01ba284e80f3/cache.tzst -P -C /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji --delay-directory-restore --use-compress-program unzstd
+/opt/homebrew/bin/gtar -xf /Users/runner/work/_temp/190a719b-b7c1-4871-a243-dd7e9d6694fc/cache.tzst -P -C /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji --delay-directory-restore --use-compress-program unzstd
 Cache restored successfully
 Cache restored from key: cpm-ios-v1-e270456e54a72befba8c4e40f993efb8b0bd1f1b4f22254f6a73fbe5cc8e1a0c
 Run curl -L https://github.com/ninja-build/ninja/releases/latest/download/ninja-mac.zip -o ninja.zip
@@ -20,7 +20,7 @@ Run curl -L https://github.com/ninja-build/ninja/releases/latest/download/ninja-
 
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
 
-100  306k  100  306k    0     0   559k      0 --:--:-- --:--:-- --:--:--  559k
+100  306k  100  306k    0     0   498k      0 --:--:-- --:--:-- --:--:--  498k
 
 7-Zip [64] 17.05 : Copyright (c) 1999-2021 Igor Pavlov : 2017-08-28
 p7zip Version 17.05 (locale=utf8,Utf16=on,HugeFiles=on,64 bits,3 CPUs LE)
@@ -42,8 +42,8 @@ Node 20 is being deprecated. This workflow is running with Node 24 by default. I
 Run actions/checkout@v4
 Syncing repository: geode-sdk/bindings
 Getting Git version info
-Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/55d071fd-0437-45c5-a827-f392235761c1/.gitconfig'
-Temporarily overriding HOME='/Users/runner/work/_temp/55d071fd-0437-45c5-a827-f392235761c1' before making global git config changes
+Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/e6971d62-b95c-48da-93fc-64e73605ca76/.gitconfig'
+Temporarily overriding HOME='/Users/runner/work/_temp/e6971d62-b95c-48da-93fc-64e73605ca76' before making global git config changes
 Adding repository directory to the temporary git global config as a safe directory
 /opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo
 Initializing the repository
@@ -62,7 +62,7 @@ Run if [ "$RUNNER_OS" = "Linux" ]; then
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run robinraju/release-downloader@v1.10
 Fetching latest release for repo geode-sdk/cli
-(node:10258) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:6653) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Found latest release version: v3.8.0
 Downloading file: geode-cli-v3.8.0-mac.zip to: /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/my-epic-geode-cli
@@ -89,211 +89,211 @@ Run export CLI_PROFILE="/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cli-profile
 | Done | A new profile named 'GithubActions' has been created
 | Info | Downloading SDK
 | Info | Enumerating objects: 59242, done.
-| Info | Counting objects:   0% (1/895)
-| Info | Counting objects:   1% (9/895)
-| Info | Counting objects:   2% (18/895)
-| Info | Counting objects:   3% (27/895)
-| Info | Counting objects:   4% (36/895)
-| Info | Counting objects:   5% (45/895)
-| Info | Counting objects:   6% (54/895)
-| Info | Counting objects:   7% (63/895)
-| Info | Counting objects:   8% (72/895)
-| Info | Counting objects:   9% (81/895)
-| Info | Counting objects:  10% (90/895)
-| Info | Counting objects:  11% (99/895)
-| Info | Counting objects:  12% (108/895)
-| Info | Counting objects:  13% (117/895)
-| Info | Counting objects:  14% (126/895)
-| Info | Counting objects:  15% (135/895)
-| Info | Counting objects:  16% (144/895)
-| Info | Counting objects:  17% (153/895)
-| Info | Counting objects:  18% (162/895)
-| Info | Counting objects:  19% (171/895)
-| Info | Counting objects:  20% (179/895)
-| Info | Counting objects:  21% (188/895)
-| Info | Counting objects:  22% (197/895)
-| Info | Counting objects:  23% (206/895)
-Counting objects:  24% (215/895)
-| Info | Counting objects:  25% (224/895)
-| Info | Counting objects:  26% (233/895)
-| Info | Counting objects:  27% (242/895)
-| Info | Counting objects:  28% (251/895)
-| Info | Counting objects:  29% (260/895)
-| Info | Counting objects:  30% (269/895)
-| Info | Counting objects:  31% (278/895)
-| Info | Counting objects:  32% (287/895)
-| Info | Counting objects:  33% (296/895)
-| Info | Counting objects:  34% (305/895)
-| Info | Counting objects:  35% (314/895)
-| Info | Counting objects:  36% (323/895)
-| Info | Counting objects:  37% (332/895)
-| Info | Counting objects:  38% (341/895)
-Counting objects:  39% (350/895)
-| Info | Counting objects:  40% (358/895)
-| Info | Counting objects:  41% (367/895)
-| Info | Counting objects:  42% (376/895)
-| Info | Counting objects:  43% (385/895)
-| Info | Counting objects:  44% (394/895)
-| Info | Counting objects:  45% (403/895)
-| Info | Counting objects:  46% (412/895)
-| Info | Counting objects:  47% (421/895)
-| Info | Counting objects:  48% (430/895)
-| Info | Counting objects:  49% (439/895)
-Counting objects:  50% (448/895)
-| Info | Counting objects:  51% (457/895)
-| Info | Counting objects:  52% (466/895)
-| Info | Counting objects:  53% (475/895)
-Counting objects:  54% (484/895)
-| Info | Counting objects:  55% (493/895)
-| Info | Counting objects:  56% (502/895)
-| Info | Counting objects:  57% (511/895)
-| Info | Counting objects:  58% (520/895)
-| Info | Counting objects:  59% (529/895)
-| Info | Counting objects:  60% (537/895)
-| Info | Counting objects:  61% (546/895)
-| Info | Counting objects:  62% (555/895)
-| Info | Counting objects:  63% (564/895)
-| Info | Counting objects:  64% (573/895)
-| Info | Counting objects:  65% (582/895)
-| Info | Counting objects:  66% (591/895)
-| Info | Counting objects:  67% (600/895)
-| Info | Counting objects:  68% (609/895)
-| Info | Counting objects:  69% (618/895)
-| Info | Counting objects:  70% (627/895)
-Counting objects:  71% (636/895)
-| Info | Counting objects:  72% (645/895)
-| Info | Counting objects:  73% (654/895)
-| Info | Counting objects:  74% (663/895)
-| Info | Counting objects:  75% (672/895)
-| Info | Counting objects:  76% (681/895)
-| Info | Counting objects:  77% (690/895)
-| Info | Counting objects:  78% (699/895)
-| Info | Counting objects:  79% (708/895)
-Counting objects:  80% (716/895)
-| Info | Counting objects:  81% (725/895)
-| Info | Counting objects:  82% (734/895)
-| Info | Counting objects:  83% (743/895)
-| Info | Counting objects:  84% (752/895)
-Counting objects:  85% (761/895)
-| Info | Counting objects:  86% (770/895)
-| Info | Counting objects:  87% (779/895)
-| Info | Counting objects:  88% (788/895)
-| Info | Counting objects:  89% (797/895)
-| Info | Counting objects:  90% (806/895)
-| Info | Counting objects:  91% (815/895)
-| Info | Counting objects:  92% (824/895)
-| Info | Counting objects:  93% (833/895)
-| Info | Counting objects:  94% (842/895)
-Counting objects:  95% (851/895)
-| Info | Counting objects:  96% (860/895)
-| Info | Counting objects:  97% (869/895)
-| Info | Counting objects:  98% (878/895)
-| Info | Counting objects:  99% (887/895)
-| Info | Counting objects: 100% (895/895)
-| Info | Counting objects: 100% (895/895), done.
-| Info | Compressing objects:   0% (1/330)
-| Info | Compressing objects:   1% (4/330)
-| Info | Compressing objects:   2% (7/330)
-| Info | Compressing objects:   3% (10/330)
-| Info | Compressing objects:   4% (14/330)
-| Info | Compressing objects:   5% (17/330)
-| Info | Compressing objects:   6% (20/330)
-| Info | Compressing objects:   7% (24/330)
-| Info | Compressing objects:   8% (27/330)
-| Info | Compressing objects:   9% (30/330)
-| Info | Compressing objects:  10% (33/330)
-| Info | Compressing objects:  11% (37/330)
-| Info | Compressing objects:  12% (40/330)
-| Info | Compressing objects:  13% (43/330)
-| Info | Compressing objects:  14% (47/330)
-| Info | Compressing objects:  15% (50/330)
-| Info | Compressing objects:  16% (53/330)
-| Info | Compressing objects:  17% (57/330)
-| Info | Compressing objects:  18% (60/330)
-| Info | Compressing objects:  19% (63/330)
-| Info | Compressing objects:  20% (66/330)
-| Info | Compressing objects:  21% (70/330)
-| Info | Compressing objects:  22% (73/330)
-| Info | Compressing objects:  23% (76/330)
-| Info | Compressing objects:  24% (80/330)
-| Info | Compressing objects:  25% (83/330)
-| Info | Compressing objects:  26% (86/330)
-| Info | Compressing objects:  27% (90/330)
-| Info | Compressing objects:  28% (93/330)
-| Info | Compressing objects:  29% (96/330)
-| Info | Compressing objects:  30% (99/330)
-| Info | Compressing objects:  31% (103/330)
-| Info | Compressing objects:  32% (106/330)
-| Info | Compressing objects:  33% (109/330)
-| Info | Compressing objects:  34% (113/330)
-| Info | Compressing objects:  35% (116/330)
-| Info | Compressing objects:  36% (119/330)
-| Info | Compressing objects:  37% (123/330)
-| Info | Compressing objects:  38% (126/330)
-| Info | Compressing objects:  39% (129/330)
-| Info | Compressing objects:  40% (132/330)
-| Info | Compressing objects:  41% (136/330)
-| Info | Compressing objects:  42% (139/330)
-| Info | Compressing objects:  43% (142/330)
-| Info | Compressing objects:  44% (146/330)
-| Info | Compressing objects:  45% (149/330)
-| Info | Compressing objects:  46% (152/330)
-| Info | Compressing objects:  47% (156/330)
-| Info | Compressing objects:  48% (159/330)
-| Info | Compressing objects:  49% (162/330)
-| Info | Compressing objects:  50% (165/330)
-| Info | Compressing objects:  51% (169/330)
-| Info | Compressing objects:  52% (172/330)
-| Info | Compressing objects:  53% (175/330)
-| Info | Compressing objects:  54% (179/330)
-| Info | Compressing objects:  55% (182/330)
-| Info | Compressing objects:  56% (185/330)
-| Info | Compressing objects:  57% (189/330)
-| Info | Compressing objects:  58% (192/330)
-| Info | Compressing objects:  59% (195/330)
-| Info | Compressing objects:  60% (198/330)
-| Info | Compressing objects:  61% (202/330)
-| Info | Compressing objects:  62% (205/330)
-| Info | Compressing objects:  63% (208/330)
-| Info | Compressing objects:  64% (212/330)
-| Info | Compressing objects:  65% (215/330)
-| Info | Compressing objects:  66% (218/330)
-| Info | Compressing objects:  67% (222/330)
-| Info | Compressing objects:  68% (225/330)
-| Info | Compressing objects:  69% (228/330)
-| Info | Compressing objects:  70% (231/330)
-| Info | Compressing objects:  71% (235/330)
-| Info | Compressing objects:  72% (238/330)
-| Info | Compressing objects:  73% (241/330)
-| Info | Compressing objects:  74% (245/330)
-| Info | Compressing objects:  75% (248/330)
-| Info | Compressing objects:  76% (251/330)
-| Info | Compressing objects:  77% (255/330)
-| Info | Compressing objects:  78% (258/330)
-| Info | Compressing objects:  79% (261/330)
-| Info | Compressing objects:  80% (264/330)
-| Info | Compressing objects:  81% (268/330)
-| Info | Compressing objects:  82% (271/330)
-| Info | Compressing objects:  83% (274/330)
-| Info | Compressing objects:  84% (278/330)
-| Info | Compressing objects:  85% (281/330)
-| Info | Compressing objects:  86% (284/330)
-| Info | Compressing objects:  87% (288/330)
-| Info | Compressing objects:  88% (291/330)
-| Info | Compressing objects:  89% (294/330)
-| Info | Compressing objects:  90% (297/330)
-| Info | Compressing objects:  91% (301/330)
-| Info | Compressing objects:  92% (304/330)
-| Info | Compressing objects:  93% (307/330)
-| Info | Compressing objects:  94% (311/330)
-| Info | Compressing objects:  95% (314/330)
-| Info | Compressing objects:  96% (317/330)
-| Info | Compressing objects:  97% (321/330)
-| Info | Compressing objects:  98% (324/330)
-| Info | Compressing objects:  99% (327/330)
-| Info | Compressing objects: 100% (330/330)
-| Info | Compressing objects: 100% (330/330), done.
-| Info | Total 59242 (delta 781), reused 569 (delta 565), pack-reused 58347 (from 3)
+| Info | Counting objects:   0% (1/1040)
+| Info | Counting objects:   1% (11/1040)
+| Info | Counting objects:   2% (21/1040)
+| Info | Counting objects:   3% (32/1040)
+| Info | Counting objects:   4% (42/1040)
+| Info | Counting objects:   5% (52/1040)
+| Info | Counting objects:   6% (63/1040)
+| Info | Counting objects:   7% (73/1040)
+| Info | Counting objects:   8% (84/1040)
+| Info | Counting objects:   9% (94/1040)
+Counting objects:  10% (104/1040)
+| Info | Counting objects:  11% (115/1040)
+| Info | Counting objects:  12% (125/1040)
+| Info | Counting objects:  13% (136/1040)
+| Info | Counting objects:  14% (146/1040)
+| Info | Counting objects:  15% (156/1040)
+| Info | Counting objects:  16% (167/1040)
+| Info | Counting objects:  17% (177/1040)
+| Info | Counting objects:  18% (188/1040)
+| Info | Counting objects:  19% (198/1040)
+| Info | Counting objects:  20% (208/1040)
+| Info | Counting objects:  21% (219/1040)
+| Info | Counting objects:  22% (229/1040)
+| Info | Counting objects:  23% (240/1040)
+Counting objects:  24% (250/1040)
+| Info | Counting objects:  25% (260/1040)
+| Info | Counting objects:  26% (271/1040)
+Counting objects:  27% (281/1040)
+| Info | Counting objects:  28% (292/1040)
+| Info | Counting objects:  29% (302/1040)
+| Info | Counting objects:  30% (312/1040)
+| Info | Counting objects:  31% (323/1040)
+| Info | Counting objects:  32% (333/1040)
+| Info | Counting objects:  33% (344/1040)
+| Info | Counting objects:  34% (354/1040)
+Counting objects:  35% (364/1040)
+Counting objects:  36% (375/1040)
+| Info | Counting objects:  37% (385/1040)
+| Info | Counting objects:  38% (396/1040)
+| Info | Counting objects:  39% (406/1040)
+| Info | Counting objects:  40% (416/1040)
+| Info | Counting objects:  41% (427/1040)
+| Info | Counting objects:  42% (437/1040)
+| Info | Counting objects:  43% (448/1040)
+| Info | Counting objects:  44% (458/1040)
+| Info | Counting objects:  45% (468/1040)
+| Info | Counting objects:  46% (479/1040)
+| Info | Counting objects:  47% (489/1040)
+| Info | Counting objects:  48% (500/1040)
+| Info | Counting objects:  49% (510/1040)
+| Info | Counting objects:  50% (520/1040)
+| Info | Counting objects:  51% (531/1040)
+| Info | Counting objects:  52% (541/1040)
+| Info | Counting objects:  53% (552/1040)
+| Info | Counting objects:  54% (562/1040)
+| Info | Counting objects:  55% (572/1040)
+| Info | Counting objects:  56% (583/1040)
+| Info | Counting objects:  57% (593/1040)
+| Info | Counting objects:  58% (604/1040)
+| Info | Counting objects:  59% (614/1040)
+| Info | Counting objects:  60% (624/1040)
+| Info | Counting objects:  61% (635/1040)
+| Info | Counting objects:  62% (645/1040)
+| Info | Counting objects:  63% (656/1040)
+| Info | Counting objects:  64% (666/1040)
+| Info | Counting objects:  65% (676/1040)
+Counting objects:  66% (687/1040)
+| Info | Counting objects:  67% (697/1040)
+| Info | Counting objects:  68% (708/1040)
+Counting objects:  69% (718/1040)
+| Info | Counting objects:  70% (728/1040)
+| Info | Counting objects:  71% (739/1040)
+| Info | Counting objects:  72% (749/1040)
+| Info | Counting objects:  73% (760/1040)
+| Info | Counting objects:  74% (770/1040)
+| Info | Counting objects:  75% (780/1040)
+| Info | Counting objects:  76% (791/1040)
+Counting objects:  77% (801/1040)
+| Info | Counting objects:  78% (812/1040)
+| Info | Counting objects:  79% (822/1040)
+Counting objects:  80% (832/1040)
+| Info | Counting objects:  81% (843/1040)
+| Info | Counting objects:  82% (853/1040)
+| Info | Counting objects:  83% (864/1040)
+| Info | Counting objects:  84% (874/1040)
+| Info | Counting objects:  85% (884/1040)
+| Info | Counting objects:  86% (895/1040)
+| Info | Counting objects:  87% (905/1040)
+| Info | Counting objects:  88% (916/1040)
+| Info | Counting objects:  89% (926/1040)
+| Info | Counting objects:  90% (936/1040)
+| Info | Counting objects:  91% (947/1040)
+| Info | Counting objects:  92% (957/1040)
+| Info | Counting objects:  93% (968/1040)
+| Info | Counting objects:  94% (978/1040)
+| Info | Counting objects:  95% (988/1040)
+| Info | Counting objects:  96% (999/1040)
+| Info | Counting objects:  97% (1009/1040)
+| Info | Counting objects:  98% (1020/1040)
+| Info | Counting objects:  99% (1030/1040)
+| Info | Counting objects: 100% (1040/1040)
+| Info | Counting objects: 100% (1040/1040), done.
+| Info | Compressing objects:   0% (1/341)
+| Info | Compressing objects:   1% (4/341)
+| Info | Compressing objects:   2% (7/341)
+| Info | Compressing objects:   3% (11/341)
+| Info | Compressing objects:   4% (14/341)
+| Info | Compressing objects:   5% (18/341)
+| Info | Compressing objects:   6% (21/341)
+| Info | Compressing objects:   7% (24/341)
+| Info | Compressing objects:   8% (28/341)
+| Info | Compressing objects:   9% (31/341)
+| Info | Compressing objects:  10% (35/341)
+| Info | Compressing objects:  11% (38/341)
+| Info | Compressing objects:  12% (41/341)
+| Info | Compressing objects:  13% (45/341)
+| Info | Compressing objects:  14% (48/341)
+| Info | Compressing objects:  15% (52/341)
+| Info | Compressing objects:  16% (55/341)
+| Info | Compressing objects:  17% (58/341)
+| Info | Compressing objects:  18% (62/341)
+| Info | Compressing objects:  19% (65/341)
+| Info | Compressing objects:  20% (69/341)
+| Info | Compressing objects:  21% (72/341)
+| Info | Compressing objects:  22% (76/341)
+| Info | Compressing objects:  23% (79/341)
+| Info | Compressing objects:  24% (82/341)
+| Info | Compressing objects:  25% (86/341)
+| Info | Compressing objects:  26% (89/341)
+| Info | Compressing objects:  27% (93/341)
+| Info | Compressing objects:  28% (96/341)
+| Info | Compressing objects:  29% (99/341)
+| Info | Compressing objects:  30% (103/341)
+| Info | Compressing objects:  31% (106/341)
+| Info | Compressing objects:  32% (110/341)
+| Info | Compressing objects:  33% (113/341)
+| Info | Compressing objects:  34% (116/341)
+| Info | Compressing objects:  35% (120/341)
+| Info | Compressing objects:  36% (123/341)
+| Info | Compressing objects:  37% (127/341)
+| Info | Compressing objects:  38% (130/341)
+| Info | Compressing objects:  39% (133/341)
+| Info | Compressing objects:  40% (137/341)
+| Info | Compressing objects:  41% (140/341)
+| Info | Compressing objects:  42% (144/341)
+| Info | Compressing objects:  43% (147/341)
+| Info | Compressing objects:  44% (151/341)
+| Info | Compressing objects:  45% (154/341)
+| Info | Compressing objects:  46% (157/341)
+| Info | Compressing objects:  47% (161/341)
+| Info | Compressing objects:  48% (164/341)
+| Info | Compressing objects:  49% (168/341)
+| Info | Compressing objects:  50% (171/341)
+| Info | Compressing objects:  51% (174/341)
+| Info | Compressing objects:  52% (178/341)
+| Info | Compressing objects:  53% (181/341)
+| Info | Compressing objects:  54% (185/341)
+| Info | Compressing objects:  55% (188/341)
+| Info | Compressing objects:  56% (191/341)
+| Info | Compressing objects:  57% (195/341)
+| Info | Compressing objects:  58% (198/341)
+| Info | Compressing objects:  59% (202/341)
+| Info | Compressing objects:  60% (205/341)
+| Info | Compressing objects:  61% (209/341)
+| Info | Compressing objects:  62% (212/341)
+| Info | Compressing objects:  63% (215/341)
+| Info | Compressing objects:  64% (219/341)
+| Info | Compressing objects:  65% (222/341)
+| Info | Compressing objects:  66% (226/341)
+| Info | Compressing objects:  67% (229/341)
+| Info | Compressing objects:  68% (232/341)
+| Info | Compressing objects:  69% (236/341)
+| Info | Compressing objects:  70% (239/341)
+| Info | Compressing objects:  71% (243/341)
+| Info | Compressing objects:  72% (246/341)
+| Info | Compressing objects:  73% (249/341)
+| Info | Compressing objects:  74% (253/341)
+| Info | Compressing objects:  75% (256/341)
+| Info | Compressing objects:  76% (260/341)
+| Info | Compressing objects:  77% (263/341)
+| Info | Compressing objects:  78% (266/341)
+| Info | Compressing objects:  79% (270/341)
+| Info | Compressing objects:  80% (273/341)
+| Info | Compressing objects:  81% (277/341)
+| Info | Compressing objects:  82% (280/341)
+| Info | Compressing objects:  83% (284/341)
+| Info | Compressing objects:  84% (287/341)
+| Info | Compressing objects:  85% (290/341)
+| Info | Compressing objects:  86% (294/341)
+| Info | Compressing objects:  87% (297/341)
+| Info | Compressing objects:  88% (301/341)
+| Info | Compressing objects:  89% (304/341)
+| Info | Compressing objects:  90% (307/341)
+| Info | Compressing objects:  91% (311/341)
+| Info | Compressing objects:  92% (314/341)
+| Info | Compressing objects:  93% (318/341)
+| Info | Compressing objects:  94% (321/341)
+| Info | Compressing objects:  95% (324/341)
+| Info | Compressing objects:  96% (328/341)
+| Info | Compressing objects:  97% (331/341)
+| Info | Compressing objects:  98% (335/341)
+| Info | Compressing objects:  99% (338/341)
+| Info | Compressing objects: 100% (341/341)
+| Info | Compressing objects: 100% (341/341), done.
+| Info | Total 59242 (delta 920), reused 703 (delta 699), pack-reused 58202 (from 3)
 | Warn | You may have to restart your terminal application for the environment variable changes to go into effect
 | Info | Set GEODE_SDK environment variable automatically
 | Info | Updating head
@@ -373,8 +373,8 @@ Set SKIP_BUILDING_CODEGEN to OFF to force codegen to build locally.
 | Info | Dependency 'geode.node-ids' found on the index, installing (version '1.23.3')
 | Done | All dependencies resolved
 -- Skipping installing grape
--- Configuring done (10.3s)
--- Generating done (0.3s)
+-- Configuring done (8.9s)
+-- Generating done (0.2s)
 -- Build files have been written to: /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build
 [0/2] Re-checking globbed directories...
 [1/80] Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.o
@@ -396,11 +396,11 @@ Set SKIP_BUILDING_CODEGEN to OFF to force codegen to build locally.
 [17/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_6_cxx.cxx.o
 [18/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_8_cxx.cxx.o
 [19/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_7_cxx.cxx.o
-[20/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_5_cxx.cxx.o
-[21/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_10_cxx.cxx.o
+[20/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_10_cxx.cxx.o
+[21/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_5_cxx.cxx.o
 [22/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_4_cxx.cxx.o
-[23/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_2_cxx.cxx.o
-[24/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_3_cxx.cxx.o
+[23/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_3_cxx.cxx.o
+[24/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_2_cxx.cxx.o
 [25/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_1_cxx.cxx.o
 [26/80] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_0_cxx.cxx.o
 [27/80] Building CXX object CMakeFiles/grape.dir/src/bot/scheduler.cpp.o
@@ -496,7 +496,14 @@ In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.h
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[40/80] Building CXX object CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o
+[40/80] Building CXX object CMakeFiles/grape.dir/src/hooks/LevelEditorLayer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/LevelEditorLayer.cpp:6:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[41/80] Building CXX object CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:16:
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
 /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
@@ -506,13 +513,6 @@ In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.h
   710 | $execute {
       | ^
 2 warnings generated.
-[41/80] Building CXX object CMakeFiles/grape.dir/src/hooks/LevelEditorLayer.cpp.o
-In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/LevelEditorLayer.cpp:6:
-In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
-/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-1 warning generated.
 [42/80] Building CXX object CMakeFiles/grape.dir/src/hooks/PauseLayer.cpp.o
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PauseLayer.cpp:2:
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.hpp:9:
@@ -538,15 +538,15 @@ In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.h
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[45/80] Building CXX object CMakeFiles/grape.dir/src/hooks/ShaderLayer.cpp.o
-In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/ShaderLayer.cpp:3:
+[45/80] Building CXX object CMakeFiles/grape.dir/src/hooks/VideoOptionsLayer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/VideoOptionsLayer.cpp:5:
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../bot/bot.hpp:7:
 /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[46/80] Building CXX object CMakeFiles/grape.dir/src/hooks/VideoOptionsLayer.cpp.o
-In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/VideoOptionsLayer.cpp:5:
+[46/80] Building CXX object CMakeFiles/grape.dir/src/hooks/ShaderLayer.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/ShaderLayer.cpp:3:
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../bot/bot.hpp:7:
 /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
@@ -578,7 +578,8 @@ In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.h
 1 warning generated.
 [51/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui_tables.cpp.o
 [52/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui_draw.cpp.o
-[53/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui_widgets.cpp.o
+[53/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/misc/cpp/imgui_stdlib.cpp.o
+[54/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui_widgets.cpp.o
 /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/imgui_widgets.cpp:1185:17: warning: unused variable 'border_top' [-Wunused-variable]
  1185 |     const float border_top = (window->Flags & ImGuiWindowFlags_MenuBar)
       |                 ^~~~~~~~~~
@@ -589,17 +590,16 @@ In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.h
  7067 |     const bool hdr = (flags & ImGuiColorEditFlags_HDR) != 0;
       |                ^~~
 3 warnings generated.
-[54/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/misc/cpp/imgui_stdlib.cpp.o
 [55/80] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/backends/imgui_impl_opengl3.cpp.o
 [56/80] Building CXX object CMakeFiles/grape.dir/src/replay/replay.cpp.o
-[57/80] Building CXX object CMakeFiles/grape.dir/src/physics/gjbasegamelayer.cpp.o
-[58/80] Building CXX object CMakeFiles/grape.dir/src/ui/mobile_menu.cpp.o
+[57/80] Building CXX object CMakeFiles/grape.dir/src/ui/mobile_menu.cpp.o
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/mobile_menu.cpp:11:
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
 /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
+[58/80] Building CXX object CMakeFiles/grape.dir/src/physics/gjbasegamelayer.cpp.o
 [59/80] Building CXX object CMakeFiles/grape.dir/src/physics/object.cpp.o
 /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/physics/object.cpp:20:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
    20 | $execute {
@@ -661,17 +661,17 @@ In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoin
 2 warnings generated.
 [68/80] Building CXX object CMakeFiles/grape.dir/src/render/pass.cpp.o
 [69/80] Building CXX object CMakeFiles/grape.dir/src/util/crash_log.cpp.o
-[70/80] Building CXX object CMakeFiles/grape.dir/src/render/dsp.cpp.o
-In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.cpp:1:
-In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.hpp:12:
-/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-1 warning generated.
-[71/80] Building CXX object CMakeFiles/grape.dir/src/trajectory/trajectory.cpp.o
+[70/80] Building CXX object CMakeFiles/grape.dir/src/trajectory/trajectory.cpp.o
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.cpp:1:
 In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.hpp:10:
 /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[71/80] Building CXX object CMakeFiles/grape.dir/src/render/dsp.cpp.o
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.cpp:1:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.hpp:12:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
@@ -701,15 +701,115 @@ In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.h
 [77/80] Building OBJCXX object CMakeFiles/grape.dir/src/render/ios_video_writer.mm.o
 FAILED: [code=1] CMakeFiles/grape.dir/src/render/ios_video_writer.mm.o 
 /usr/bin/clang++ -DARC_FEATURE_NET=1 -DARC_FEATURE_SIGNAL=1 -DARC_FEATURE_TIME=1 -DGEODE_COMP_GD_VERSION=22081 -DGEODE_GD_VERSION=2.2081 -DGEODE_GD_VERSION_STRING=\"2.2081\" -DGEODE_MOD_ID=\"okhx.grape\" -DGLES_SILENCE_DEPRECATION -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM -DMAT_JSON_DYNAMIC=1 -DPROJECT_NAME=grape -Dgrape_EXPORTS -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/include -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/backends -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/geode-deps -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/extensions -I/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/fmod -F/Applications/Xcode_26.5.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk/System/Library/Frameworks -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/glaze/b100/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/slc/26f5/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/bindings/bindings -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo/bindings/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/fmt/6226/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/tuliphook/37c6/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/result/1b9c/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/json/75ca/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/nontype_functional/aaa0/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/asp2/4dd3/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/arc/70cb/include -isystem /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/qsox/a6d2/include -x objective-c++ -O3 -DNDEBUG -std=gnu++23 -arch arm64 -isysroot /Applications/Xcode_26.5.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.5.sdk -miphoneos-version-min=14.0 -fPIC -Wall -Wextra -Wno-dollar-in-identifier-extension -Wno-error=dollar-in-identifier-extension -Wpedantic -Werror -Wno-gnu -ffunction-sections -fdata-sections -fobjc-arc -MD -MT CMakeFiles/grape.dir/src/render/ios_video_writer.mm.o -MF CMakeFiles/grape.dir/src/render/ios_video_writer.mm.o.d -o CMakeFiles/grape.dir/src/render/ios_video_writer.mm.o -c /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm
-/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:405:28: error: 'log' is not a class, namespace, or enumeration
-  405 |                     geode::log::error("iOS render audio disabled: {}",
-      |                            ^
-/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:459:32: error: 'log' is not a class, namespace, or enumeration
-  459 |                         geode::log::warn(
-      |                                ^
-/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:468:32: error: 'log' is not a class, namespace, or enumeration
-  468 |                         geode::log::error("Dropping iOS render audio: {}",
-      |                                ^
-3 errors generated.
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Log.hpp:3:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Types.hpp:3:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../DefaultInclude.hpp:4:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/c++stl/gdstdlib.hpp:3:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/platform/platform.hpp:100:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/platform/ios.hpp:7:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/platform/ItaniumCast.hpp:73:31: error: comparison of integers of different signs: 'int' and 'const uint32_t' (aka 'const unsigned int') [-Werror,-Wsign-compare]
+   73 |             for (int i = 0; i < vmiTypeinfo->m_numBaseClass; ++i) {
+      |                             ~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/platform/ItaniumCast.hpp:145:31: error: comparison of integers of different signs: 'int' and 'const uint32_t' (aka 'const unsigned int') [-Werror,-Wsign-compare]
+  145 |             for (int i = 0; i < vmiTypeinfo->m_numBaseClass; ++i) {
+      |                             ~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Log.hpp:3:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Types.hpp:3:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../DefaultInclude.hpp:167:9: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  167 | #define $execute_base(body1) \
+      |         ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../DefaultInclude.hpp:184:9: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  184 | #define $execute $execute_base({ \
+      |         ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../DefaultInclude.hpp:184:18: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  184 | #define $execute $execute_base({ \
+      |                  ^
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Log.hpp:9:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Event.hpp:816:22: error: unused variable 'newFilter' [-Werror,-Wunused-variable]
+  816 |                 auto newFilter = it->first.get();
+      |                      ^~~~~~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Event.hpp:837:22: error: unused variable 'filter2' [-Werror,-Wunused-variable]
+  837 |                 auto filter2 = clonedFilter.get();
+      |                      ^~~~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Event.hpp:1009:90: error: unused parameter 'fargs' [-Werror,-Wunused-parameter]
+ 1009 |                     return Event2Type().listen([listener = std::move(listener)](FArgs... fargs, PArgs... pargs) {
+      |                                                                                          ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Event.hpp:1014:90: error: unused parameter 'fargs' [-Werror,-Wunused-parameter]
+ 1014 |                     return Event2Type().listen([listener = std::move(listener)](FArgs... fargs, PArgs... pargs) {
+      |                                                                                          ^
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Log.hpp:11:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/ccTypes.h:36:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../cocoa/CCGeometry.h:29:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../cocoa/CCObject.h:72:44: error: unused parameter 'pZone' [-Werror,-Wunused-parameter]
+   72 |     virtual CCObject* copyWithZone(CCZone* pZone)  { return 0; }
+      |                                            ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../cocoa/CCObject.h:75:9: error: unknown pragma ignored [-Werror,-Wunknown-pragmas]
+   75 | #pragma warning(push)
+      |         ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../cocoa/CCObject.h:76:9: error: unknown pragma ignored [-Werror,-Wunknown-pragmas]
+   76 | #pragma warning(disable: 4275)
+      |         ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../cocoa/CCObject.h:149:9: error: unknown pragma ignored [-Werror,-Wunknown-pragmas]
+  149 | #pragma warning(pop)
+      |         ^
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Log.hpp:15:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Formatter.hpp:4:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../utils/cocos.hpp:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../utils/general.hpp:22:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/cocos2d.h:45:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/CCAction.h:111:16: error: 'cocos2d::CCAction::getTag' hides overloaded virtual function [-Werror,-Woverloaded-virtual]
+  111 |     inline int getTag(void) { return m_nTag; }
+      |                ^
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../cocoa/CCObject.h:139:17: note: hidden overloaded virtual function 'cocos2d::CCObject::getTag' declared here: different qualifiers ('const' vs unqualified)
+  139 |     virtual int getTag() const;
+      |                 ^
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Log.hpp:15:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Formatter.hpp:4:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../utils/cocos.hpp:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../utils/general.hpp:22:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/cocos2d.h:46:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/CCActionInterval.h:30:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/CCNode.h:36:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/../shaders/CCGLProgram.h:273:12: error: 'const' type qualifier on return type has no effect [-Werror,-Wignored-qualifiers]
+  273 |     inline const GLuint getProgram() { return m_uProgram; }
+      |            ^~~~~
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/ios_video_writer.mm:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Log.hpp:15:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/Formatter.hpp:4:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../utils/cocos.hpp:5:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/loader/../utils/general.hpp:22:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/cocos2d.h:46:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/CCActionInterval.h:30:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/CCNode.h:37:
+In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/../kazmath/include/kazmath/kazmath.h:31:
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/../kazmath/include/kazmath/mat3.h:44:16: error: 'const' type qualifier on return type has no effect [-Werror,-Wignored-qualifiers]
+   44 | CC_DLL kmMat3* const kmMat3Fill(kmMat3* pOut, const kmScalar* pMat);
+      |                ^~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/../kazmath/include/kazmath/mat3.h:45:16: error: 'const' type qualifier on return type has no effect [-Werror,-Wignored-qualifiers]
+   45 | CC_DLL kmMat3* const kmMat3Adjugate(kmMat3* pOut, const kmMat3* pIn);
+      |                ^~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/../kazmath/include/kazmath/mat3.h:46:16: error: 'const' type qualifier on return type has no effect [-Werror,-Wignored-qualifiers]
+   46 | CC_DLL kmMat3* const kmMat3Identity(kmMat3* pOut);
+      |                ^~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/../kazmath/include/kazmath/mat3.h:47:16: error: 'const' type qualifier on return type has no effect [-Werror,-Wignored-qualifiers]
+   47 | CC_DLL kmMat3* const kmMat3Inverse(kmMat3* pOut, const kmScalar pDeterminate, const kmMat3* pM);
+      |                ^~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/../kazmath/include/kazmath/mat3.h:48:8: error: 'const' type qualifier on return type has no effect [-Werror,-Wignored-qualifiers]
+   48 | CC_DLL const int  kmMat3IsIdentity(const kmMat3* pIn);
+      |        ^~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/../kazmath/include/kazmath/mat3.h:49:16: error: 'const' type qualifier on return type has no effect [-Werror,-Wignored-qualifiers]
+   49 | CC_DLL kmMat3* const kmMat3Transpose(kmMat3* pOut, const kmMat3* pIn);
+      |                ^~~~~
+/Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include/../actions/../base_nodes/../kazmath/include/kazmath/mat3.h:50:8: error: 'const' type qualifier on return type has no effect [-Werror,-Wignored-qualifiers]
+   50 | CC_DLL const kmScalar kmMat3Determinant(const kmMat3* pIn);
+      |        ^~~~~
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+3 warnings and 20 errors generated.
 ninja: build stopped: subcommand failed.
 Error: Process completed with exit code 1.
