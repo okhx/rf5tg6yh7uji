@@ -580,20 +580,20 @@ class MobileMacroEditorPopup final : public geode::Popup {
                                m_selected == currentInput;
         m_inputLabel = label(
             fmt::format("Input {} / {}", m_selected + 1, inputs.size()),
-            24.f, 188.f, .38f,
+            24.f, 223.f, .38f,
             isCurrent ? ccColor3B{255, 125, 125}
                       : ccColor3B{255, 220, 90});
-        button("<", 285.f, 188.f, [this] {
+        button("<", 285.f, 223.f, [this] {
             const int size = static_cast<int>(atom().m_actions.size());
             m_selected = (m_selected + size - 1) % size;
             rebuild();
         }, 34.f);
-        button(">", 335.f, 188.f, [this] {
+        button(">", 335.f, 223.f, [this] {
             m_selected = (m_selected + 1) % atom().m_actions.size();
             rebuild();
         }, 34.f);
 
-        label("Frame", 24.f, 153.f);
+        label("Frame", 24.f, 188.f);
         auto* frame = TextInput::create(105.f, "Frame");
         frame->setScaleY(.84f);
         frame->setCommonFilter(CommonFilter::Int);
@@ -606,25 +606,45 @@ class MobileMacroEditorPopup final : public geode::Popup {
                 static_cast<double>(std::numeric_limits<uint32_t>::max())));
             atom().m_actions[m_selected].m_frame = target;
         });
-        frame->setPosition({190.f, 153.f});
+        frame->setPosition({190.f, 188.f});
         m_content->addChild(frame, 2);
 
-        toggle("Holding / click", 24.f, 118.f, input->m_holding,
+        toggle("Holding / click", 24.f, 153.f, input->m_holding,
                [this](bool value) {
                    if (!atom().m_actions.empty())
                        atom().m_actions[m_selected].m_holding = value;
                });
-        toggle("Player 2", 210.f, 118.f, input->m_player2,
+        toggle("Player 2", 210.f, 153.f, input->m_player2,
                [this](bool value) {
                    if (!atom().m_actions.empty())
                        atom().m_actions[m_selected].m_player2 = value;
                });
 
+        using ActionType = slc::Action::ActionType;
+        toggle("Left", 24.f, 118.f, input->m_type == ActionType::Left,
+               [this](bool value) {
+                   if (atom().m_actions.empty()) return;
+                   auto& selected = atom().m_actions[m_selected];
+                   selected.m_type = value
+                       ? ActionType::Left : ActionType::Jump;
+                   rebuild();
+               });
+        toggle("Right", 210.f, 118.f,
+               input->m_type == ActionType::Right, [this](bool value) {
+                   if (atom().m_actions.empty()) return;
+                   auto& selected = atom().m_actions[m_selected];
+                   selected.m_type = value
+                       ? ActionType::Right : ActionType::Jump;
+                   rebuild();
+               });
+
         button("Add", 105.f, 88.f, [this] {
             auto& inputs = atom().m_actions;
             const auto& selected = inputs[m_selected];
+            const auto type = selected.isPlayer()
+                ? selected.m_type : slc::Action::ActionType::Jump;
             inputs.emplace_back(selected.m_frame + 1, 0,
-                                slc::Action::ActionType::Jump,
+                                type,
                                 !selected.m_holding, selected.m_player2);
             ++m_selected;
             normalize();
@@ -662,7 +682,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
     }
 
     bool init() override {
-        if (!Popup::init(420.f, 270.f, "GJ_square01.png")) return false;
+        if (!Popup::init(420.f, 305.f, "GJ_square01.png")) return false;
         setTitle("Macro Editor", "goldFont.fnt", .72f, 18.f);
         m_content = CCNode::create();
         m_content->setPosition({15.f, 20.f});

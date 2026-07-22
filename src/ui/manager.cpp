@@ -1611,8 +1611,13 @@ void UIManager::draw() {
                 ImGui::BeginChild("InputList", ImVec2(boxWidth, boxHeight), true);
                 for (int i = 0; i < static_cast<int>(inputs.size()); ++i) {
                     const auto& input = inputs[i];
-                    std::string label = fmt::format("{} at {}##Input{}",
-                        input.m_holding ? "Click" : "Release", input.m_frame, i);
+                    using ActionType = slc::v3::Action::ActionType;
+                    const char* action = input.m_type == ActionType::Left
+                        ? "Left" : input.m_type == ActionType::Right
+                        ? "Right" : "Jump";
+                    std::string label = fmt::format("{} {} at {}##Input{}",
+                        action, input.m_holding ? "Click" : "Release",
+                        input.m_frame, i);
                     if (ImGui::Selectable(label.c_str(), m_state.m_editIndex == i))
                         m_state.m_editIndex = i;
                     if (i == inputIndex) ImGui::SetItemDefaultFocus();
@@ -1634,6 +1639,19 @@ void UIManager::draw() {
                         Bot::get()->updater().m_tps->notifyChange();
                     if (slui::checkbox("Player 2", input.m_player2).pressed)
                         Bot::get()->updater().m_tps->notifyChange();
+                    using ActionType = slc::v3::Action::ActionType;
+                    bool left = input.m_type == ActionType::Left;
+                    if (slui::checkbox("Left", left).pressed) {
+                        input.m_type = left
+                            ? ActionType::Left : ActionType::Jump;
+                        Bot::get()->updater().m_tps->notifyChange();
+                    }
+                    bool right = input.m_type == ActionType::Right;
+                    if (slui::checkbox("Right", right).pressed) {
+                        input.m_type = right
+                            ? ActionType::Right : ActionType::Jump;
+                        Bot::get()->updater().m_tps->notifyChange();
+                    }
                 }
                 ImGui::EndChild();
 
@@ -1647,8 +1665,11 @@ void UIManager::draw() {
                             m_state.m_editIndex = 0;
                         } else {
                             int i = m_state.m_editIndex;
+                            const auto type = inputs[i].isPlayer()
+                                ? inputs[i].m_type
+                                : slc::v3::Action::ActionType::Jump;
                             auto next = slc::v3::Action(inputs[i].m_frame, 0,
-                                slc::v3::Action::ActionType::Jump,
+                                type,
                                 !inputs[i].m_holding, inputs[i].m_player2);
                             inputs.insert(inputs.begin() + i + 1, next);
                             m_state.m_editIndex = i + 1;

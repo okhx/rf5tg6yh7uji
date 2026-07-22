@@ -50,7 +50,19 @@ class PracticeFix {
     void removeAll();
     void clearPlatformer(bool assumeLoaded = false);
 
-    void updatePlatformerInputs(std::vector<PlayerButtonCommand>& inputs);
+    template <class Container>
+    void updatePlatformerInputs(const Container& inputs) {
+        for (const auto& input : inputs) {
+            bool& left = input.m_isPlayer2 ? m_p2Left : m_p1Left;
+            bool& right = input.m_isPlayer2 ? m_p2Right : m_p1Right;
+
+            if (input.m_button == PlayerButton::Left) {
+                left = input.m_isPush;
+            } else if (input.m_button == PlayerButton::Right) {
+                right = input.m_isPush;
+            }
+        }
+    }
     void registerBrokenObject(GameObject* obj) {
         m_brokenObjects.push_back(obj);
     }

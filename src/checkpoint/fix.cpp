@@ -191,20 +191,6 @@ void PracticeFix::clearPlatformer(bool assumeLoaded) {
     }
 }
 
-void PracticeFix::updatePlatformerInputs(
-    std::vector<PlayerButtonCommand>& inputs) {
-    for (const auto& input : inputs) {
-        bool& left = input.m_isPlayer2 ? m_p2Left : m_p1Left;
-        bool& right = input.m_isPlayer2 ? m_p2Right : m_p1Right;
-
-        if (input.m_button == PlayerButton::Left) {
-            left = input.m_isPush;
-        } else if (input.m_button == PlayerButton::Right) {
-            right = input.m_isPush;
-        }
-    }
-}
-
 [[maybe_unused]] static std::optional<slc::Action> findLastInputUnused(
     const std::vector<slc::Action>& inputs, uint32_t frame, PlayerButton btn,
     bool p2) {
