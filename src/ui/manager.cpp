@@ -1250,7 +1250,7 @@ void UIManager::draw() {
                     ImGui::TableNextColumn();
                     slui::checkbox("Seed Override", rs.m_overrideSeed);
                     ImGui::TableNextColumn();
-                    slui::drag("Seed", rs.m_overriddenSeed, 0ull,
+                    slui::drag("Seed", rs.m_overriddenSeed, uint64_t{0},
                                std::numeric_limits<uint64_t>::max());
                     ImGui::EndTable();
                 }
@@ -1628,7 +1628,7 @@ void UIManager::draw() {
                 if (!inputs.empty()) {
                     int i = m_state.m_editIndex;
                     auto& input = inputs[i];
-                    if (slui::drag("Frame##SelectedInput", input.m_frame, 0ull,
+                    if (slui::drag("Frame##SelectedInput", input.m_frame, uint64_t{0},
                                    std::numeric_limits<uint64_t>::max()).changed) {
                         input.recalculateDelta(i == 0 ? 0 : inputs[i - 1].m_frame);
                         if (i + 1 < static_cast<int>(inputs.size()))

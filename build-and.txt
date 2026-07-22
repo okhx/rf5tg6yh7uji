@@ -1,16 +1,15 @@
-2m 19s
 Run geode-sdk/build-geode-mod@main
 Run DEFAULT_TARGET=Win64
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run hendrikmuhs/ccache-action@v1
-(node:2267) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:2259) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Install sccache
 Restore cache
 Configure sccache, linux
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run actions/cache@v4
-(node:2344) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:2329) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Cache not found for input keys: cpm-android64-v1-e270456e54a72befba8c4e40f993efb8b0bd1f1b4f22254f6a73fbe5cc8e1a0c, cpm-android64-v1-
 Run curl -L https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip -o ninja.zip
@@ -19,11 +18,10 @@ Run curl -L https://github.com/ninja-build/ninja/releases/latest/download/ninja-
 
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
 
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
 
-100  130k  100  130k    0     0   251k      0 --:--:-- --:--:-- --:--:--  251k
+100  130k  100  130k    0     0   739k      0 --:--:-- --:--:-- --:--:--  739k
 
 7-Zip 23.01 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-06-20
  64-bit locale=C.UTF-8 Threads:4 OPEN_MAX:65536
@@ -45,7 +43,7 @@ Node 20 is being deprecated. This workflow is running with Node 24 by default. I
 Run actions/checkout@v4
 Syncing repository: geode-sdk/bindings
 Getting Git version info
-Temporarily overriding HOME='/home/runner/work/_temp/0070ce20-a689-429b-b426-8ad6fa5782a0' before making global git config changes
+Temporarily overriding HOME='/home/runner/work/_temp/85178b1f-f9e9-4f7b-a0ee-bd7145b0549d' before making global git config changes
 Adding repository directory to the temporary git global config as a safe directory
 [command]/usr/bin/git config --global --add safe.directory /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo
 Initializing the repository
@@ -64,7 +62,7 @@ Run if [ "$RUNNER_OS" = "Linux" ]; then
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run robinraju/release-downloader@v1.10
 Fetching latest release for repo geode-sdk/cli
-(node:2481) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:2467) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Found latest release version: v3.8.0
 Downloading file: geode-cli-v3.8.0-linux.zip to: /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/my-epic-geode-cli
@@ -132,13 +130,13 @@ Run export CLI_PROFILE="/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cli-profile"
 | Info | Counting objects:  38% (419/1101)
 | Info | Counting objects:  39% (430/1101)
 | Info | Counting objects:  40% (441/1101)
-Counting objects:  41% (452/1101)
+| Info | Counting objects:  41% (452/1101)
 | Info | Counting objects:  42% (463/1101)
 | Info | Counting objects:  43% (474/1101)
 | Info | Counting objects:  44% (485/1101)
 | Info | Counting objects:  45% (496/1101)
-Counting objects:  46% (507/1101)
-| Info | Counting objects:  47% (518/1101)
+| Info | Counting objects:  46% (507/1101)
+Counting objects:  47% (518/1101)
 | Info | Counting objects:  48% (529/1101)
 | Info | Counting objects:  49% (540/1101)
 | Info | Counting objects:  50% (551/1101)
@@ -146,27 +144,27 @@ Counting objects:  46% (507/1101)
 | Info | Counting objects:  52% (573/1101)
 | Info | Counting objects:  53% (584/1101)
 | Info | Counting objects:  54% (595/1101)
-Counting objects:  55% (606/1101)
+| Info | Counting objects:  55% (606/1101)
 | Info | Counting objects:  56% (617/1101)
 | Info | Counting objects:  57% (628/1101)
-Counting objects:  58% (639/1101)
+| Info | Counting objects:  58% (639/1101)
 | Info | Counting objects:  59% (650/1101)
 | Info | Counting objects:  60% (661/1101)
-Counting objects:  61% (672/1101)
+| Info | Counting objects:  61% (672/1101)
 | Info | Counting objects:  62% (683/1101)
-Counting objects:  63% (694/1101)
+| Info | Counting objects:  63% (694/1101)
 | Info | Counting objects:  64% (705/1101)
 | Info | Counting objects:  65% (716/1101)
 | Info | Counting objects:  66% (727/1101)
-Counting objects:  67% (738/1101)
+| Info | Counting objects:  67% (738/1101)
 | Info | Counting objects:  68% (749/1101)
 | Info | Counting objects:  69% (760/1101)
 | Info | Counting objects:  70% (771/1101)
 | Info | Counting objects:  71% (782/1101)
-Counting objects:  72% (793/1101)
+| Info | Counting objects:  72% (793/1101)
 | Info | Counting objects:  73% (804/1101)
 | Info | Counting objects:  74% (815/1101)
-| Info | Counting objects:  75% (826/1101)
+Counting objects:  75% (826/1101)
 | Info | Counting objects:  76% (837/1101)
 | Info | Counting objects:  77% (848/1101)
 | Info | Counting objects:  78% (859/1101)
@@ -175,10 +173,10 @@ Counting objects:  72% (793/1101)
 | Info | Counting objects:  81% (892/1101)
 | Info | Counting objects:  82% (903/1101)
 | Info | Counting objects:  83% (914/1101)
-Counting objects:  84% (925/1101)
+| Info | Counting objects:  84% (925/1101)
 | Info | Counting objects:  85% (936/1101)
 | Info | Counting objects:  86% (947/1101)
-Counting objects:  87% (958/1101)
+| Info | Counting objects:  87% (958/1101)
 | Info | Counting objects:  88% (969/1101)
 | Info | Counting objects:  89% (980/1101)
 | Info | Counting objects:  90% (991/1101)
@@ -189,7 +187,7 @@ Counting objects:  87% (958/1101)
 | Info | Counting objects:  95% (1046/1101)
 | Info | Counting objects:  96% (1057/1101)
 | Info | Counting objects:  97% (1068/1101)
-Counting objects:  98% (1079/1101)
+| Info | Counting objects:  98% (1079/1101)
 | Info | Counting objects:  99% (1090/1101)
 | Info | Counting objects: 100% (1101/1101)
 | Info | Counting objects: 100% (1101/1101), done.
@@ -399,15 +397,15 @@ This warning is for project developers.  Use -Wno-dev to suppress it.
 [8/79] Linking CXX static library _deps/qsox-build/libqsox.a
 [9/79] Linking CXX static library _deps/arc-build/libarc.a
 [10/79] Running Codegen
-[11/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_14_cxx.cxx.o
-[12/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_13_cxx.cxx.o
-[13/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_12_cxx.cxx.o
+[11/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_13_cxx.cxx.o
+[12/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_14_cxx.cxx.o
+[13/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_11_cxx.cxx.o
 [14/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_10_cxx.cxx.o
-[15/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_11_cxx.cxx.o
-[16/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_9_cxx.cxx.o
-[17/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_8_cxx.cxx.o
-[18/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_6_cxx.cxx.o
-[19/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_7_cxx.cxx.o
+[15/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_8_cxx.cxx.o
+[16/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_12_cxx.cxx.o
+[17/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_9_cxx.cxx.o
+[18/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_7_cxx.cxx.o
+[19/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_6_cxx.cxx.o
 [20/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_5_cxx.cxx.o
 [21/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_4_cxx.cxx.o
 [22/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_3_cxx.cxx.o
@@ -416,15 +414,14 @@ This warning is for project developers.  Use -Wno-dev to suppress it.
 [25/79] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_0_cxx.cxx.o
 [26/79] Linking CXX static library bindings/libGeodeBindings.a
 [27/79] Building CXX object CMakeFiles/grape.dir/cmake_pch.hxx.pch
-[28/79] Building CXX object CMakeFiles/grape.dir/src/bot/scheduler.cpp.o
-[29/79] Building CXX object CMakeFiles/grape.dir/src/assist/autoclicker.cpp.o
+[28/79] Building CXX object CMakeFiles/grape.dir/src/assist/autoclicker.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.cpp:1:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[30/79] Building CXX object CMakeFiles/grape.dir/src/main.cpp.o
+[29/79] Building CXX object CMakeFiles/grape.dir/src/main.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/main.cpp:6:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
@@ -434,6 +431,7 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hp
     9 | $on_mod(Loaded) {
       | ^
 2 warnings generated.
+[30/79] Building CXX object CMakeFiles/grape.dir/src/bot/scheduler.cpp.o
 [31/79] Building CXX object CMakeFiles/grape.dir/src/assist/hitboxes.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/hitboxes.cpp:1:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/hitboxes.hpp:7:
@@ -441,83 +439,41 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/hit
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[32/79] Building CXX object CMakeFiles/grape.dir/src/bot/updater.cpp.o
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.cpp:1:
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.hpp:12:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.cpp:672:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  672 | $execute {
-      | ^
-2 warnings generated.
-[33/79] Building CXX object CMakeFiles/grape.dir/src/hooks/CCActionManager.cpp.o
+[32/79] Building CXX object CMakeFiles/grape.dir/src/hooks/CCActionManager.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/CCActionManager.cpp:3:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[34/79] Building CXX object CMakeFiles/grape.dir/src/bot/bot.cpp.o
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.cpp:1:
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-1 warning generated.
-[35/79] Building CXX object CMakeFiles/grape.dir/src/hooks/CCDirector.cpp.o
+[33/79] Building CXX object CMakeFiles/grape.dir/src/hooks/CCDirector.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/CCDirector.cpp:3:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[36/79] Building CXX object CMakeFiles/grape.dir/src/hooks/CCScheduler.cpp.o
+[34/79] Building CXX object CMakeFiles/grape.dir/src/hooks/CCScheduler.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/CCScheduler.cpp:3:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[37/79] Building CXX object CMakeFiles/grape.dir/src/hooks/EndLevelLayer.cpp.o
+[35/79] Building CXX object CMakeFiles/grape.dir/src/hooks/EndLevelLayer.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/EndLevelLayer.cpp:4:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[38/79] Building CXX object CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o
-FAILED: [code=1] CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o 
-/usr/local/bin//sccache /usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android23 --sysroot=/usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DARC_FEATURE_NET=1 -DARC_FEATURE_SIGNAL=1 -DARC_FEATURE_TIME=1 -DGEODE_COMP_GD_VERSION=22081 -DGEODE_GD_VERSION=2.2081 -DGEODE_GD_VERSION_STRING=\"2.2081\" -DGEODE_MOD_ID=\"okhx.grape\" -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM -DMAT_JSON_DYNAMIC=1 -DPROJECT_NAME=grape -Dgrape_EXPORTS -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/backends -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/geode-deps -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/extensions -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/fmod -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/glaze/b100/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/slc/26f5/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/bindings/bindings -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo/bindings/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/fmt/6226/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/tuliphook/37c6/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/result/1b9c/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/json/75ca/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/nontype_functional/aaa0/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/asp2/4dd3/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/arc/70cb/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/qsox/a6d2/include -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -O3 -DNDEBUG  -std=gnu++23 -flto=thin -fPIC -fvisibility=hidden -Wall -Wextra -Wno-dollar-in-identifier-extension -Wno-error=dollar-in-identifier-extension -Wno-missing-braces -Wpedantic -Werror -Wno-gnu -Werror=return-type -ffunction-sections -fdata-sections -Winvalid-pch -Xclang -include-pch -Xclang /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/CMakeFiles/grape.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/CMakeFiles/grape.dir/cmake_pch.hxx -MD -MT CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o -MF CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o.d -o CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o -c /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:16:
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:475:51: error: non-const lvalue reference to type 'std::vector<PlayerButtonCommand>' cannot bind to a value of unrelated type 'gd::vector<PlayerButtonCommand>' (aka 'vector<PlayerButtonCommand, allocator<PlayerButtonCommand>>')
-  475 |         bot->practiceFix().updatePlatformerInputs(m_queuedButtons);
-      |                                                   ^~~~~~~~~~~~~~~
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.hpp:53:67: note: passing argument to parameter 'inputs' here
-   53 |     void updatePlatformerInputs(std::vector<PlayerButtonCommand>& inputs);
-      |                                                                   ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:710:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  710 | $execute {
-      | ^
-2 warnings and 1 error generated.
-[39/79] Building CXX object CMakeFiles/grape.dir/src/hooks/EnhancedGameObject.cpp.o
+[36/79] Building CXX object CMakeFiles/grape.dir/src/hooks/EnhancedGameObject.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/EnhancedGameObject.cpp:2:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.hpp:12:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[40/79] Building CXX object CMakeFiles/grape.dir/src/hooks/GameObject.cpp.o
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GameObject.cpp:8:
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-1 warning generated.
-[41/79] Building CXX object CMakeFiles/grape.dir/src/hooks/FMODAudioEngine.cpp.o
+[37/79] Building CXX object CMakeFiles/grape.dir/src/hooks/FMODAudioEngine.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/FMODAudioEngine.cpp:3:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../render/dsp.hpp:12:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
@@ -527,7 +483,48 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../r
    94 | $execute {
       | ^
 2 warnings generated.
-[42/79] Building CXX object CMakeFiles/grape.dir/src/hooks/PauseLayer.cpp.o
+[38/79] Building CXX object CMakeFiles/grape.dir/src/hooks/GameObject.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GameObject.cpp:8:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[39/79] Building CXX object CMakeFiles/grape.dir/src/hooks/LevelEditorLayer.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/LevelEditorLayer.cpp:6:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[40/79] Building CXX object CMakeFiles/grape.dir/src/bot/updater.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.cpp:1:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.hpp:12:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/updater.cpp:672:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  672 | $execute {
+      | ^
+2 warnings generated.
+[41/79] Building CXX object CMakeFiles/grape.dir/src/bot/bot.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.cpp:1:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[42/79] Building CXX object CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:16:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:710:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  710 | $execute {
+      | ^
+2 warnings generated.
+[43/79] Building CXX object CMakeFiles/grape.dir/src/hooks/PauseLayer.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PauseLayer.cpp:2:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.hpp:9:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/state.hpp:8:
@@ -535,8 +532,79 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/state.h
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[43/79] Building CXX object CMakeFiles/grape.dir/src/hooks/LevelEditorLayer.cpp.o
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/LevelEditorLayer.cpp:6:
+[44/79] Building CXX object CMakeFiles/grape.dir/src/hooks/PlayerObject.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PlayerObject.cpp:3:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[45/79] Building CXX object CMakeFiles/grape.dir/src/hooks/ShaderLayer.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/ShaderLayer.cpp:3:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../bot/bot.hpp:7:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[46/79] Building CXX object CMakeFiles/grape.dir/src/hooks/VideoOptionsLayer.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/VideoOptionsLayer.cpp:5:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../bot/bot.hpp:7:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[47/79] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui.cpp.o
+[48/79] Building CXX object CMakeFiles/grape.dir/src/hooks/PlayLayer.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PlayLayer.cpp:4:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PlayLayer.cpp:838:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  838 | $execute {
+      | ^
+2 warnings generated.
+[49/79] Building CXX object CMakeFiles/grape.dir/src/ui/manager.cpp.o
+FAILED: [code=1] CMakeFiles/grape.dir/src/ui/manager.cpp.o 
+/usr/local/bin//sccache /usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android23 --sysroot=/usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DARC_FEATURE_NET=1 -DARC_FEATURE_SIGNAL=1 -DARC_FEATURE_TIME=1 -DGEODE_COMP_GD_VERSION=22081 -DGEODE_GD_VERSION=2.2081 -DGEODE_GD_VERSION_STRING=\"2.2081\" -DGEODE_MOD_ID=\"okhx.grape\" -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM -DMAT_JSON_DYNAMIC=1 -DPROJECT_NAME=grape -Dgrape_EXPORTS -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/backends -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/geode-deps -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/extensions -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/fmod -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/glaze/b100/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/slc/26f5/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/bindings/bindings -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo/bindings/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/fmt/6226/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/tuliphook/37c6/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/result/1b9c/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/json/75ca/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/nontype_functional/aaa0/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/asp2/4dd3/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/arc/70cb/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/qsox/a6d2/include -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -O3 -DNDEBUG  -std=gnu++23 -flto=thin -fPIC -fvisibility=hidden -Wall -Wextra -Wno-dollar-in-identifier-extension -Wno-error=dollar-in-identifier-extension -Wno-missing-braces -Wpedantic -Werror -Wno-gnu -Werror=return-type -ffunction-sections -fdata-sections -Winvalid-pch -Xclang -include-pch -Xclang /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/CMakeFiles/grape.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/CMakeFiles/grape.dir/cmake_pch.hxx -MD -MT CMakeFiles/grape.dir/src/ui/manager.cpp.o -MF CMakeFiles/grape.dir/src/ui/manager.cpp.o.d -o CMakeFiles/grape.dir/src/ui/manager.cpp.o -c /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.cpp
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.cpp:1:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.hpp:9:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/state.hpp:8:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.cpp:1253:21: error: no matching function for call to 'drag'
+ 1253 |                     slui::drag("Seed", rs.m_overriddenSeed, 0ull,
+      |                     ^~~~~~~~~~
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/imgui_helpers.hpp:96:13: note: candidate template ignored: deduced conflicting types for parameter 'T' ('uint64_t' (aka 'unsigned long') vs. 'unsigned long long')
+   96 | WidgetState drag(std::string_view label, T& value, T min = T{}, T max = T{100},
+      |             ^
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.cpp:1631:25: error: no matching function for call to 'drag'
+ 1631 |                     if (slui::drag("Frame##SelectedInput", input.m_frame, 0ull,
+      |                         ^~~~~~~~~~
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/imgui_helpers.hpp:96:13: note: candidate template ignored: deduced conflicting types for parameter 'T' ('uint64_t' (aka 'unsigned long') vs. 'unsigned long long')
+   96 | WidgetState drag(std::string_view label, T& value, T min = T{}, T max = T{100},
+      |             ^
+1 warning and 2 errors generated.
+[50/79] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui_draw.cpp.o
+[51/79] Building CXX object CMakeFiles/grape.dir/lib/tabby/lib/imgui_lib/imgui_tables.cpp.o
+[52/79] Building CXX object CMakeFiles/grape.dir/src/ui/hook.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/hook.cpp:1:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/hook.hpp:20:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[53/79] Building CXX object CMakeFiles/grape.dir/src/ui/theme.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/theme.cpp:5:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[54/79] Building CXX object CMakeFiles/grape.dir/src/ui/mobile_menu.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/mobile_menu.cpp:11:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
