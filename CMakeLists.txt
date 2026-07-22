@@ -78,7 +78,7 @@ add_library(${PROJECT_NAME} SHARED
     src/ui/touch_overlay.cpp
 )
 
-if (NOT (APPLE OR ANDROID))
+if (NOT ANDROID)
     target_sources(${PROJECT_NAME} PRIVATE
         src/hooks/VideoOptionsLayer.cpp
         src/ui/manager.cpp
@@ -128,9 +128,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 # Geode/cocos already provides and initializes GLEW. Prevent Dear ImGui's
 # OpenGL backend from layering its private GL3W loader over the same symbols.
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    IMGUI_IMPL_OPENGL_LOADER_CUSTOM
-)
+if (NOT ANDROID)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        IMGUI_IMPL_OPENGL_LOADER_CUSTOM
+    )
+endif()
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
@@ -168,5 +170,18 @@ setup_geode_mod(${PROJECT_NAME})
 if (APPLE OR ANDROID)
     target_compile_options(${PROJECT_NAME} PRIVATE
         -Wno-error=dollar-in-identifier-extension
+    )
+endif()
+
+if (APPLE)
+    set_source_files_properties(
+        ${IMGUI_VENDOR_DIR}/imgui.cpp
+        ${IMGUI_VENDOR_DIR}/imgui_draw.cpp
+        ${IMGUI_VENDOR_DIR}/imgui_tables.cpp
+        ${IMGUI_VENDOR_DIR}/imgui_widgets.cpp
+        ${IMGUI_VENDOR_DIR}/misc/cpp/imgui_stdlib.cpp
+        ${IMGUI_VENDOR_DIR}/backends/imgui_impl_opengl3.cpp
+        PROPERTIES COMPILE_OPTIONS
+        "-Wno-error=unused-variable;-Wno-error=unused-parameter"
     )
 endif()

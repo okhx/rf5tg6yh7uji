@@ -197,7 +197,7 @@ struct SavedPlayerCheckpoint {
     bool m_swapColors;
     bool m_gamevar0062;
     int m_followRelated;
-    gd::vector<float> m_playerFollowFloats;
+    gd::vector<float> m_playerFollowFloats{};
     float m_unk838;
     int m_stateOnGround;
     unsigned char m_stateUnk;

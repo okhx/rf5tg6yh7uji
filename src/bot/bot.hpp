@@ -21,7 +21,7 @@
 
 class BotUpdater;
 class BotScheduler;
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
 class UIManager;
 #endif
 class ReplaySystem;
@@ -60,7 +60,7 @@ class Bot {
 
     BotUpdater& updater();
     BotScheduler& scheduler();
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
     UIManager& ui();
 #endif
     ReplaySystem& replaySystem();

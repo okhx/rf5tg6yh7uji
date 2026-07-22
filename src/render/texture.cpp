@@ -10,7 +10,7 @@
 
 using namespace cocos2d;
 
-#ifdef GEODE_IS_MOBILE
+#ifdef GEODE_IS_ANDROID
 
 void RenderTexture::init(std::unique_ptr<Colorspace>) {}
 

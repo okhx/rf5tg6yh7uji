@@ -1,6 +1,6 @@
 #include <Geode/Geode.hpp>
 #include <ui/mobile_menu.hpp>
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
 #include <ui/manager.hpp>
 #endif
 

@@ -15,7 +15,7 @@
 #include "scheduler.hpp"
 #include "shared/value/value.hpp"
 #include "trajectory/trajectory.hpp"
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
 #include "ui/manager.hpp"
 #endif
 #include "updater.hpp"
@@ -33,7 +33,7 @@ class Bot::Impl {
     BotUpdater m_updater;
     BotScheduler m_scheduler;
 
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
     UIManager m_ui;
 #endif
 
@@ -55,7 +55,7 @@ class Bot::Impl {
 
 BOT_GETTER(BotScheduler, scheduler)
 BOT_GETTER(BotUpdater, updater)
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
 BOT_GETTER(UIManager, ui)
 #endif
 BOT_GETTER(ReplaySystem, replaySystem)
@@ -134,7 +134,7 @@ void Bot::initialize() {
         if (std::filesystem::exists(presetPath)) {
             geode::log::info("Loading preset {}", settings.lastLoadedPreset);
             Renderer::get()->loadSettings(presetPath);
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
             Bot::get()->ui().m_state.m_presetName = settings.lastLoadedPreset;
 #endif
         } else {

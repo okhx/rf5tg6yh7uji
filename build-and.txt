@@ -1,27 +1,56 @@
+2m 13s
 Run geode-sdk/build-geode-mod@main
 Run DEFAULT_TARGET=Win64
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run hendrikmuhs/ccache-action@v1
-(node:2275) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:2342) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Install sccache
 Restore cache
-  Cache hit for restore-key: sccache-android64-v1-2026-07-22T13:02:06.378Z
-  (node:2275) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
-  Received 268435456 of 2557799655 (10.5%), 248.8 MBs/sec
-  Received 536870912 of 2557799655 (21.0%), 252.2 MBs/sec
-  Received 805306368 of 2557799655 (31.5%), 252.5 MBs/sec
-  Received 1073741824 of 2557799655 (42.0%), 253.4 MBs/sec
-  Received 1342177280 of 2557799655 (52.5%), 253.9 MBs/sec
-  Received 1610612736 of 2557799655 (63.0%), 254.2 MBs/sec
-  Received 1891631104 of 2557799655 (74.0%), 255.9 MBs/sec
-  Received 2202009600 of 2557799655 (86.1%), 260.7 MBs/sec
-  Received 2516582400 of 2557799655 (98.4%), 265.0 MBs/sec
-  Received 2557799655 of 2557799655 (100.0%), 261.9 MBs/sec
-  Cache Size: ~2439 MB (2557799655 B)
-  [command]/usr/bin/tar -xf /home/runner/work/_temp/91175006-b2db-45b4-a1df-2dfeef50b085/cache.tzst -P -C /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji --use-compress-program unzstd
-  From https://github.com/geode-sdk/bindings
-   * [new branch]      main       -> origin/main
+Configure sccache, linux
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Run actions/cache@v4
+(node:2416) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Cache not found for input keys: cpm-android64-v1-56c21f2f0ab0019ba70af7fe3c790bad3b1230eafc5d8679c69534813e62086b, cpm-android64-v1-
+Run curl -L https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip -o ninja.zip
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+
+100  130k  100  130k    0     0   526k      0 --:--:-- --:--:-- --:--:--  526k
+
+7-Zip 23.01 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-06-20
+ 64-bit locale=C.UTF-8 Threads:4 OPEN_MAX:65536
+
+Scanning the drive for archives:
+1 file, 134040 bytes (131 KiB)
+
+Extracting archive: ninja.zip
+--
+Path = ninja.zip
+Type = zip
+Physical Size = 134040
+
+Everything is Ok
+
+Size:       290928
+Compressed: 134040
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Run actions/checkout@v4
+Syncing repository: geode-sdk/bindings
+Getting Git version info
+Temporarily overriding HOME='/home/runner/work/_temp/516d158d-dd12-42fc-b8f7-57e10e5af216' before making global git config changes
+Adding repository directory to the temporary git global config as a safe directory
+[command]/usr/bin/git config --global --add safe.directory /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo
+Initializing the repository
+Disabling automatic garbage collection
+Setting up auth
+Fetching the repository
 Determining the checkout info
 [command]/usr/bin/git sparse-checkout disable
 [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
@@ -33,24 +62,28 @@ Run geode-sdk/cli/.github/actions/setup@main
 Run if [ "$RUNNER_OS" = "Linux" ]; then
 Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 Run robinraju/release-downloader@v1.10
-  
 Fetching latest release for repo geode-sdk/cli
-(node:2485) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:2553) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Found latest release version: v3.8.0
 Downloading file: geode-cli-v3.8.0-linux.zip to: /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/my-epic-geode-cli
 Done: /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/my-epic-geode-cli/geode-cli-v3.8.0-linux.zip
 Run 7z x "my-epic-geode-cli/*-linux.zip" -omy-epic-geode-cli
+
 7-Zip 23.01 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-06-20
  64-bit locale=C.UTF-8 Threads:4 OPEN_MAX:65536
+
 Scanning the drive for archives:
 1 file, 7645344 bytes (7467 KiB)
+
 Extracting archive: my-epic-geode-cli/geode-cli-v3.8.0-linux.zip
 --
 Path = my-epic-geode-cli/geode-cli-v3.8.0-linux.zip
 Type = zip
 Physical Size = 7645344
+
 Everything is Ok
+
 Size:       21642560
 Compressed: 7645344
 Run export CLI_PROFILE="/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cli-profile"
@@ -71,7 +104,7 @@ Run export CLI_PROFILE="/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cli-profile"
 | Info | Counting objects:  11% (99/895)
 | Info | Counting objects:  12% (108/895)
 | Info | Counting objects:  13% (117/895)
-| Info | Counting objects:  14% (126/895)
+Counting objects:  14% (126/895)
 | Info | Counting objects:  15% (135/895)
 | Info | Counting objects:  16% (144/895)
 | Info | Counting objects:  17% (153/895)
@@ -93,65 +126,65 @@ Run export CLI_PROFILE="/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cli-profile"
 | Info | Counting objects:  33% (296/895)
 | Info | Counting objects:  34% (305/895)
 | Info | Counting objects:  35% (314/895)
-Counting objects:  36% (323/895)
+| Info | Counting objects:  36% (323/895)
 | Info | Counting objects:  37% (332/895)
-Counting objects:  38% (341/895)
+| Info | Counting objects:  38% (341/895)
 | Info | Counting objects:  39% (350/895)
-Counting objects:  40% (358/895)
+| Info | Counting objects:  40% (358/895)
 | Info | Counting objects:  41% (367/895)
 | Info | Counting objects:  42% (376/895)
 Counting objects:  43% (385/895)
 | Info | Counting objects:  44% (394/895)
 | Info | Counting objects:  45% (403/895)
-Counting objects:  46% (412/895)
+| Info | Counting objects:  46% (412/895)
 | Info | Counting objects:  47% (421/895)
 Counting objects:  48% (430/895)
-Counting objects:  49% (439/895)
+| Info | Counting objects:  49% (439/895)
 | Info | Counting objects:  50% (448/895)
-Counting objects:  51% (457/895)
-| Info | Counting objects:  52% (466/895)
+| Info | Counting objects:  51% (457/895)
+Counting objects:  52% (466/895)
 | Info | Counting objects:  53% (475/895)
-Counting objects:  54% (484/895)
-Counting objects:  55% (493/895)
+| Info | Counting objects:  54% (484/895)
+| Info | Counting objects:  55% (493/895)
 | Info | Counting objects:  56% (502/895)
-| Info | Counting objects:  57% (511/895)
-Counting objects:  58% (520/895)
+Counting objects:  57% (511/895)
+| Info | Counting objects:  58% (520/895)
 | Info | Counting objects:  59% (529/895)
-Counting objects:  60% (537/895)
+| Info | Counting objects:  60% (537/895)
 | Info | Counting objects:  61% (546/895)
 | Info | Counting objects:  62% (555/895)
 | Info | Counting objects:  63% (564/895)
-Counting objects:  64% (573/895)
-| Info | Counting objects:  65% (582/895)
-Counting objects:  66% (591/895)
+| Info | Counting objects:  64% (573/895)
+Counting objects:  65% (582/895)
+| Info | Counting objects:  66% (591/895)
 | Info | Counting objects:  67% (600/895)
 | Info | Counting objects:  68% (609/895)
-Counting objects:  69% (618/895)
+| Info | Counting objects:  69% (618/895)
 | Info | Counting objects:  70% (627/895)
-Counting objects:  71% (636/895)
+| Info | Counting objects:  71% (636/895)
 | Info | Counting objects:  72% (645/895)
 Counting objects:  73% (654/895)
 | Info | Counting objects:  74% (663/895)
-Counting objects:  75% (672/895)
+| Info | Counting objects:  75% (672/895)
 | Info | Counting objects:  76% (681/895)
 | Info | Counting objects:  77% (690/895)
-Counting objects:  78% (699/895)
+| Info | Counting objects:  78% (699/895)
 | Info | Counting objects:  79% (708/895)
-Counting objects:  80% (716/895)
+| Info | Counting objects:  80% (716/895)
 | Info | Counting objects:  81% (725/895)
 | Info | Counting objects:  82% (734/895)
-Counting objects:  83% (743/895)
+| Info | Counting objects:  83% (743/895)
 | Info | Counting objects:  84% (752/895)
 Counting objects:  85% (761/895)
 | Info | Counting objects:  86% (770/895)
-Counting objects:  87% (779/895)
+| Info | Counting objects:  87% (779/895)
 | Info | Counting objects:  88% (788/895)
 | Info | Counting objects:  89% (797/895)
 | Info | Counting objects:  90% (806/895)
-Counting objects:  91% (815/895)
+| Info | Counting objects:  91% (815/895)
 | Info | Counting objects:  92% (824/895)
 | Info | Counting objects:  93% (833/895)
-Counting objects:  94% (842/895)
+| Info | Counting objects:  94% (842/895)
 | Info | Counting objects:  95% (851/895)
 | Info | Counting objects:  96% (860/895)
 | Info | Counting objects:  97% (869/895)
@@ -279,7 +312,6 @@ Updating to version 5.7.1 from ./mod.json
 | Info | Downloading
 | Done | Binaries installed
 Run mkdir -p $HOME/.cache
-  
 -- The C compiler identification is Clang 21.0.0
 -- The CXX compiler identification is Clang 21.0.0
 -- Detecting C compiler ABI info
@@ -327,52 +359,54 @@ Set SKIP_BUILDING_CODEGEN to OFF to force codegen to build locally.
 CMake Warning (dev) at geode-sdk-clone/cmake/GeodeFile.cmake:57 (add_custom_command):
   The following keywords are not supported when using
   add_custom_command(TARGET): DEPENDS.
+
   Policy CMP0175 is not set: add_custom_command() rejects invalid arguments.
   Run "cmake --help-policy CMP0175" for policy details.  Use the cmake_policy
   command to set the policy and suppress this warning.
 Call Stack (most recent call first):
   CMakeLists.txt:163 (setup_geode_mod)
 This warning is for project developers.  Use -Wno-dev to suppress it.
+
 -- Setting up grape
 -- Mod okhx.grape is compiling for Geode version 5.7.1
 -- Mod okhx.grape is compiling for Geometry Dash version 2.2081
-| Info | Fetching dependency from index
-| Info | Dependency found: geode.node-ids, version 1.23.3
-| Info | Downloading dependency
-| Info | Success
-| Info | Writing dependency to temp file
-| Info | Dependency 'geode.node-ids' found on the index, installing (version '1.23.3')
 | Info | Fetching dependency from index
 | Info | Dependency found: eclipse.ffmpeg-api, version 2.0.0
 | Info | Downloading dependency
 | Info | Success
 | Info | Writing dependency to temp file
 | Info | Dependency 'eclipse.ffmpeg-api' found on the index, installing (version '2.0.0')
+| Info | Fetching dependency from index
+| Info | Dependency found: geode.node-ids, version 1.23.3
+| Info | Downloading dependency
+| Info | Success
+| Info | Writing dependency to temp file
+| Info | Dependency 'geode.node-ids' found on the index, installing (version '1.23.3')
 | Done | All dependencies resolved
 -- Skipping installing grape
--- Configuring done (17.7s)
+-- Configuring done (26.4s)
 -- Generating done (0.2s)
 -- Build files have been written to: /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build
 [0/2] Re-checking globbed directories...
 [1/69] Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.o
 [2/69] Building CXX object _deps/fmt-build/CMakeFiles/fmt.dir/src/format.cc.o
 [3/69] Building CXX object _deps/asp2-build/CMakeFiles/asp.dir/Unity/unity_0_cxx.cxx.o
-[4/69] Building CXX object _deps/qsox-build/CMakeFiles/qsox.dir/Unity/unity_0_cxx.cxx.o
-[5/69] Building CXX object _deps/arc-build/CMakeFiles/arc.dir/Unity/unity_0_cxx.cxx.o
+[4/69] Building CXX object _deps/arc-build/CMakeFiles/arc.dir/Unity/unity_0_cxx.cxx.o
+[5/69] Building CXX object _deps/qsox-build/CMakeFiles/qsox.dir/Unity/unity_0_cxx.cxx.o
 [6/69] Linking CXX static library _deps/fmt-build/libfmt.a
 [7/69] Linking CXX static library _deps/asp2-build/libasp.a
 [8/69] Linking CXX static library _deps/qsox-build/libqsox.a
 [9/69] Linking CXX static library _deps/arc-build/libarc.a
 [10/69] Running Codegen
-[11/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_14_cxx.cxx.o
-[12/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_12_cxx.cxx.o
+[11/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_11_cxx.cxx.o
+[12/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_14_cxx.cxx.o
 [13/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_13_cxx.cxx.o
-[14/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_11_cxx.cxx.o
+[14/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_12_cxx.cxx.o
 [15/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_10_cxx.cxx.o
 [16/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_9_cxx.cxx.o
 [17/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_7_cxx.cxx.o
-[18/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_8_cxx.cxx.o
-[19/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_6_cxx.cxx.o
+[18/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_6_cxx.cxx.o
+[19/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_8_cxx.cxx.o
 [20/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_5_cxx.cxx.o
 [21/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_4_cxx.cxx.o
 [22/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_3_cxx.cxx.o
@@ -381,13 +415,7 @@ This warning is for project developers.  Use -Wno-dev to suppress it.
 [25/69] Building CXX object bindings/CMakeFiles/GeodeBindings.dir/Unity/unity_1_cxx.cxx.o
 [26/69] Linking CXX static library bindings/libGeodeBindings.a
 [27/69] Building CXX object CMakeFiles/grape.dir/cmake_pch.hxx.pch
-[28/69] Building CXX object CMakeFiles/grape.dir/src/assist/autoclicker.cpp.o
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.cpp:1:
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-1 warning generated.
+[28/69] Building CXX object CMakeFiles/grape.dir/src/bot/scheduler.cpp.o
 [29/69] Building CXX object CMakeFiles/grape.dir/src/main.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/main.cpp:6:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
@@ -405,7 +433,13 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/hit
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[31/69] Building CXX object CMakeFiles/grape.dir/src/bot/scheduler.cpp.o
+[31/69] Building CXX object CMakeFiles/grape.dir/src/assist/autoclicker.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.cpp:1:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
 [32/69] Building CXX object CMakeFiles/grape.dir/src/hooks/CCActionManager.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/CCActionManager.cpp:3:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
@@ -481,7 +515,14 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hp
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
-[42/69] Building CXX object CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o
+[42/69] Building CXX object CMakeFiles/grape.dir/src/hooks/ShaderLayer.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/ShaderLayer.cpp:3:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../bot/bot.hpp:7:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[43/69] Building CXX object CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:16:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
@@ -491,16 +532,9 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hp
   710 | $execute {
       | ^
 2 warnings generated.
-[43/69] Building CXX object CMakeFiles/grape.dir/src/hooks/PauseLayer.cpp.o
+[44/69] Building CXX object CMakeFiles/grape.dir/src/hooks/PauseLayer.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PauseLayer.cpp:7:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/hitboxes.hpp:7:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-1 warning generated.
-[44/69] Building CXX object CMakeFiles/grape.dir/src/hooks/ShaderLayer.cpp.o
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/ShaderLayer.cpp:3:
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../bot/bot.hpp:7:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
@@ -540,7 +574,8 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hp
    20 | $execute {
       | ^
 1 warning generated.
-[51/69] Building CXX object CMakeFiles/grape.dir/src/label/label.cpp.o
+[51/69] Building CXX object CMakeFiles/grape.dir/src/physics/player.cpp.o
+[52/69] Building CXX object CMakeFiles/grape.dir/src/label/label.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/label/label.cpp:6:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
@@ -553,7 +588,6 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hp
   330 | $on_mod(DataSaved) { Bot::get()->labels().writeToConfig(); }
       | ^
 3 warnings generated.
-[52/69] Building CXX object CMakeFiles/grape.dir/src/physics/player.cpp.o
 [53/69] Building CXX object CMakeFiles/grape.dir/src/hooks/PlayerObject.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/PlayerObject.cpp:3:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/bot/bot.hpp:7:
@@ -574,7 +608,7 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/aut
 2 warnings generated.
 [56/69] Building CXX object CMakeFiles/grape.dir/src/checkpoint/fix.cpp.o
 FAILED: [code=1] CMakeFiles/grape.dir/src/checkpoint/fix.cpp.o 
-/usr/local/bin//sccache /usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android23 --sysroot=/usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DARC_FEATURE_NET=1 -DARC_FEATURE_SIGNAL=1 -DARC_FEATURE_TIME=1 -DGEODE_COMP_GD_VERSION=22081 -DGEODE_GD_VERSION=2.2081 -DGEODE_GD_VERSION_STRING=\"2.2081\" -DGEODE_MOD_ID=\"okhx.grape\" -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM -DMAT_JSON_DYNAMIC=1 -DPROJECT_NAME=grape -Dgrape_EXPORTS -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/backends -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/geode-deps -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/inclu
+/usr/local/bin//sccache /usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android23 --sysroot=/usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DARC_FEATURE_NET=1 -DARC_FEATURE_SIGNAL=1 -DARC_FEATURE_TIME=1 -DGEODE_COMP_GD_VERSION=22081 -DGEODE_GD_VERSION=2.2081 -DGEODE_GD_VERSION_STRING=\"2.2081\" -DGEODE_MOD_ID=\"okhx.grape\" -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM -DMAT_JSON_DYNAMIC=1 -DPROJECT_NAME=grape -Dgrape_EXPORTS -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/backends -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/geode-deps -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/extensions -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/fmod -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/glaze/b100/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/slc/26f5/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/bindings/bindings -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo/bindings/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/fmt/6226/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/tuliphook/37c6/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/result/1b9c/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/json/75ca/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/nontype_functional/aaa0/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/asp2/4dd3/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/arc/70cb/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/qsox/a6d2/include -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -O3 -DNDEBUG  -std=gnu++23 -flto=thin -fPIC -fvisibility=hidden -Wall -Wextra -Wno-dollar-in-identifier-extension -Wno-error=dollar-in-identifier-extension -Wno-missing-braces -Wpedantic -Werror -Wno-gnu -Werror=return-type -ffunction-sections -fdata-sections -Winvalid-pch -Xclang -include-pch -Xclang /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/CMakeFiles/grape.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/CMakeFiles/grape.dir/cmake_pch.hxx -MD -MT CMakeFiles/grape.dir/src/checkpoint/fix.cpp.o -MF CMakeFiles/grape.dir/src/checkpoint/fix.cpp.o.d -o CMakeFiles/grape.dir/src/checkpoint/fix.cpp.o -c /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.cpp
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.cpp:2:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.hpp:13:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
@@ -586,9 +620,9 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/c++stl/gnustl/stl_vector.h:546:7: note: explicit constructor declared here
   546 |       vector(const allocator_type& __a = allocator_type()) _GLIBCXX_NOEXCEPT
       |       ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/checkpoint.hpp:183:36: note: in implicit initialization of field 'm_touchingRings' with omitted initializer
-  183 |     gd::vector<cocos2d::CCObject*> m_touchingRings;
-      |                                    ^
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/checkpoint.hpp:200:23: note: in implicit initialization of field 'm_playerFollowFloats' with omitted initializer
+  200 |     gd::vector<float> m_playerFollowFloats;
+      |                       ^
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/checkpoint.hpp:263:27: note: in implicit initialization of field 'm_player1' with omitted initializer
   263 |     SavedPlayerCheckpoint m_player1;
       |                           ^
@@ -596,118 +630,42 @@ In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint
   216 | $execute {
       | ^
 2 warnings and 1 error generated.
-[57/69] Building CXX object CMakeFiles/grape.dir/src/render/texture.cpp.o
-FAILED: [code=1] CMakeFiles/grape.dir/src/render/texture.cpp.o 
-/usr/local/bin//sccache /usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android23 --sysroot=/usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DARC_FEATURE_NET=1 -DARC_FEATURE_SIGNAL=1 -DARC_FEATURE_TIME=1 -DGEODE_COMP_GD_VERSION=22081 -DGEODE_GD_VERSION=2.2081 -DGEODE_GD_VERSION_STRING=\"2.2081\" -DGEODE_MOD_ID=\"okhx.grape\" -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM -DMAT_JSON_DYNAMIC=1 -DPROJECT_NAME=grape -Dgrape_EXPORTS -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/backends -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/geode-deps -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/inclu
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:7:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/colorspace/yuv420p.hpp:53:66: error: use of undeclared identifier 'GL_RED'
-   53 |                                                 m_alignedHeight, GL_RED,
-      |                                                                  ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/colorspace/yuv420p.hpp:82:61: error: use of undeclared identifier 'GL_RED'
-   82 |                                        m_alignedHeight / 2, GL_RED,
-      |                                                             ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/colorspace/yuv420p.hpp:113:29: error: use of undeclared identifier 'GL_RED'
-  113 |                             GL_RED, GL_UNSIGNED_BYTE,
-      |                             ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:47:22: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-   47 |         glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo[i]);
-      |                      ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:48:22: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-   48 |         glBufferData(GL_PIXEL_PACK_BUFFER, m_bufferSize, nullptr,
-      |                      ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:49:22: error: use of undeclared identifier 'GL_STREAM_READ'
-   49 |                      GL_STREAM_READ);
-      |                      ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:52:18: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-   52 |     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-      |                  ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:101:18: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-  101 |     glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo[w]);
-      |                  ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:104:23: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-  104 |         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-      |                       ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:151:22: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-  151 |         glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo[p]);
-      |                      ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:158:25: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-  158 |             glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-      |                         ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:158:47: error: use of undeclared identifier 'GL_READ_ONLY'
-  158 |             glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-      |                                               ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:173:18: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-  173 |     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-      |                  ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:194:23: error: use of undeclared identifier 'GL_READ_FRAMEBUFFER'
-  194 |     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_passes[0].m_fbo);
-      |                       ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:195:23: error: use of undeclared identifier 'GL_DRAW_FRAMEBUFFER'
-  195 |     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_old_fbo);
-      |                       ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:197:5: error: use of undeclared identifier 'glBlitFramebuffer'; did you mean 'glBlitFramebufferNV'?
-  197 |     glBlitFramebuffer(m_widthOffset, m_heightOffset, m_alignedWidth,
-      |     ^~~~~~~~~~~~~~~~~
-      |     glBlitFramebufferNV
-/usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/GLES2/gl2ext.h:2727:29: note: 'glBlitFramebufferNV' declared here
- 2727 | GL_APICALL void GL_APIENTRY glBlitFramebufferNV (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
-      |                             ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:213:26: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-  213 |             glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo[i]);
-      |                          ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:214:27: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-  214 |             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-      |                           ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/texture.cpp:218:18: error: use of undeclared identifier 'GL_PIXEL_PACK_BUFFER'
-  218 |     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-      |                  ^
-19 errors generated.
-[58/69] Building CXX object CMakeFiles/grape.dir/src/ui/mobile_menu.cpp.o
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/mobile_menu.cpp:11:
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-1 warning generated.
-[59/69] Building CXX object CMakeFiles/grape.dir/src/trajectory/trajectory.cpp.o
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.cpp:1:
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.hpp:10:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-1 warning generated.
-[60/69] Building CXX object CMakeFiles/grape.dir/src/render/renderer.cpp.o
-FAILED: [code=1] CMakeFiles/grape.dir/src/render/renderer.cpp.o 
-/usr/local/bin//sccache /usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android23 --sysroot=/usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DARC_FEATURE_NET=1 -DARC_FEATURE_SIGNAL=1 -DARC_FEATURE_TIME=1 -DGEODE_COMP_GD_VERSION=22081 -DGEODE_GD_VERSION=2.2081 -DGEODE_GD_VERSION_STRING=\"2.2081\" -DGEODE_MOD_ID=\"okhx.grape\" -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM -DMAT_JSON_DYNAMIC=1 -DPROJECT_NAME=grape -Dgrape_EXPORTS -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/backends -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/geode-deps -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/inclu
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.cpp:1:
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.hpp:4:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
-  255 | $on_mod(DataSaved) {
-      | ^
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.cpp:28:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/colorspace/nv12.hpp:56:38: error: use of undeclared identifier 'GL_RED'
-   56 |                                      GL_RED, GL_UNSIGNED_BYTE, nullptr);
-      |                                      ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/colorspace/nv12.hpp:88:59: error: use of undeclared identifier 'GL_RG'
-   88 |                                      m_alignedHeight / 2, GL_RG,
-      |                                                           ^
-In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.cpp:31:
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/colorspace/yuv420p.hpp:53:66: error: use of undeclared identifier 'GL_RED'
-   53 |                                                 m_alignedHeight, GL_RED,
-      |                                                                  ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/colorspace/yuv420p.hpp:82:61: error: use of undeclared identifier 'GL_RED'
-   82 |                                        m_alignedHeight / 2, GL_RED,
-      |                                                             ^
-/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/colorspace/yuv420p.hpp:113:29: error: use of undeclared identifier 'GL_RED'
-  113 |                             GL_RED, GL_UNSIGNED_BYTE,
-      |                             ^
-1 warning and 5 errors generated.
-[61/69] Building CXX object CMakeFiles/grape.dir/src/render/dsp.cpp.o
+[57/69] Building CXX object CMakeFiles/grape.dir/src/render/dsp.cpp.o
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.cpp:1:
 In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.hpp:12:
 /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
   255 | $on_mod(DataSaved) {
       | ^
 1 warning generated.
+[58/69] Building CXX object CMakeFiles/grape.dir/src/render/texture.cpp.o
+[59/69] Building CXX object CMakeFiles/grape.dir/src/ui/mobile_menu.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/mobile_menu.cpp:11:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:4:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[60/69] Building CXX object CMakeFiles/grape.dir/src/trajectory/trajectory.cpp.o
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.cpp:1:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.hpp:10:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+1 warning generated.
+[61/69] Building CXX object CMakeFiles/grape.dir/src/render/renderer.cpp.o
+FAILED: [code=1] CMakeFiles/grape.dir/src/render/renderer.cpp.o 
+/usr/local/bin//sccache /usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android23 --sysroot=/usr/local/lib/android/sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DARC_FEATURE_NET=1 -DARC_FEATURE_SIGNAL=1 -DARC_FEATURE_TIME=1 -DGEODE_COMP_GD_VERSION=22081 -DGEODE_GD_VERSION=2.2081 -DGEODE_GD_VERSION_STRING=\"2.2081\" -DGEODE_MOD_ID=\"okhx.grape\" -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM -DMAT_JSON_DYNAMIC=1 -DPROJECT_NAME=grape -Dgrape_EXPORTS -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/lib/tabby/lib/imgui_lib/backends -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/geode-deps -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/include -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/cocos/extensions -I/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone/loader/include/Geode/fmod -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/glaze/b100/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/slc/26f5/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/bindings/bindings -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo/bindings/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/fmt/6226/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/tuliphook/37c6/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/result/1b9c/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/json/75ca/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/nontype_functional/aaa0/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/asp2/4dd3/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/arc/70cb/include -isystem /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/cpm-cache/qsox/a6d2/include -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -O3 -DNDEBUG  -std=gnu++23 -flto=thin -fPIC -fvisibility=hidden -Wall -Wextra -Wno-dollar-in-identifier-extension -Wno-error=dollar-in-identifier-extension -Wno-missing-braces -Wpedantic -Werror -Wno-gnu -Werror=return-type -ffunction-sections -fdata-sections -Winvalid-pch -Xclang -include-pch -Xclang /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/CMakeFiles/grape.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build/CMakeFiles/grape.dir/cmake_pch.hxx -MD -MT CMakeFiles/grape.dir/src/render/renderer.cpp.o -MF CMakeFiles/grape.dir/src/render/renderer.cpp.o.d -o CMakeFiles/grape.dir/src/render/renderer.cpp.o -c /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.cpp
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.cpp:1:
+In file included from /home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.hpp:4:
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/../settings/settings.hpp:255:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+  255 | $on_mod(DataSaved) {
+      | ^
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.cpp:42:15: error: unused variable 'ALIGNMENT' [-Werror,-Wunused-const-variable]
+   42 | constexpr int ALIGNMENT = 1;
+      |               ^~~~~~~~~
+/home/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.cpp:51:31: error: unused function 'parseArgs' [-Werror,-Wunused-function]
+   51 | static std::vector<RenderOpt> parseArgs(std::stringstream& in) {
+      |                               ^~~~~~~~~
+1 warning and 2 errors generated.
 ninja: build stopped: subcommand failed.
 Error: Process completed with exit code 1.

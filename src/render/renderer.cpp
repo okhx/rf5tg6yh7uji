@@ -25,7 +25,7 @@
 #include "Geode/utils/string.hpp"
 #include "bot/bot.hpp"
 #include "bot/updater.hpp"
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
 #include "colorspace/nv12.hpp"
 #include "colorspace/rgb0.hpp"
 #include "colorspace/rgb24.hpp"
@@ -33,16 +33,19 @@
 #endif
 #include "dsp.hpp"
 #include "replay/system.hpp"
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
 #include "ui/manager.hpp"
 #endif
 
 using namespace geode::prelude;
 
+#ifndef GEODE_IS_ANDROID
 constexpr int ALIGNMENT = 1;
+#endif
 
 namespace fs = std::filesystem;
 
+#ifndef GEODE_IS_ANDROID
 struct RenderOpt {
     std::string m_name;
     std::string m_value;
@@ -73,6 +76,7 @@ static std::vector<RenderOpt> parseArgs(std::stringstream& in) {
 
     return opts;
 }
+#endif
 
 void Renderer::saveSettings(fs::path& path) const {
     auto& settings = m_settings;
@@ -639,7 +643,7 @@ void Renderer::loadSettings(fs::path& path) {
         return;
     }
 
-#ifndef GEODE_IS_MOBILE
+#ifndef GEODE_IS_ANDROID
     Bot::get()->ui().m_state.m_bitrate = settings.m_bitrate / 1000000.0;
 #endif
     SLSettings::get()->lastLoadedPreset = path.stem().string();
@@ -705,7 +709,8 @@ geode::Result<> Renderer::start() {
 
 #ifdef GEODE_IS_MOBILE
     return startMobile();
-#else
+#endif
+#ifndef GEODE_IS_ANDROID
 
     if (!m_ffmpegLoaded || !ff) {
         return geode::Err(
