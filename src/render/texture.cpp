@@ -4,13 +4,23 @@
 #include <Geode/binding/PlayLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 
-#include "colorspace/yuv420p.hpp"
-
 #ifdef SILICATE_PROTECT
 #include "VMProtect/VMProtectSDK.h"
 #endif
 
 using namespace cocos2d;
+
+#ifdef GEODE_IS_MOBILE
+
+void RenderTexture::init(std::unique_ptr<Colorspace>) {}
+
+bool RenderTexture::capture(uint8_t**) { return false; }
+
+void RenderTexture::displayPreview() {}
+
+void RenderTexture::destroy() {}
+
+#else
 
 static void silentChangeSize(CCSize size, float /* wOffset */,
                              float /* hOffset */) {
@@ -229,3 +239,5 @@ void RenderTexture::destroy() {
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_old_fbo);
 }
+
+#endif

@@ -25,10 +25,12 @@
 #include "Geode/utils/string.hpp"
 #include "bot/bot.hpp"
 #include "bot/updater.hpp"
+#ifndef GEODE_IS_MOBILE
 #include "colorspace/nv12.hpp"
 #include "colorspace/rgb0.hpp"
 #include "colorspace/rgb24.hpp"
 #include "colorspace/yuv420p.hpp"
+#endif
 #include "dsp.hpp"
 #include "replay/system.hpp"
 #ifndef GEODE_IS_MOBILE
@@ -703,7 +705,7 @@ geode::Result<> Renderer::start() {
 
 #ifdef GEODE_IS_MOBILE
     return startMobile();
-#endif
+#else
 
     if (!m_ffmpegLoaded || !ff) {
         return geode::Err(
@@ -1012,6 +1014,7 @@ geode::Result<> Renderer::start() {
     std::thread(&Renderer::recordLoop, this).detach();
 
     return geode::Ok();
+#endif
 }
 
 geode::Result<> Renderer::encode(uint8_t* data, size_t size) {

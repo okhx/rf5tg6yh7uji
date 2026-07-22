@@ -180,7 +180,7 @@ struct SavedPlayerCheckpoint {
     bool m_isLocked;
     bool m_controlsDisabled;
     cocos2d::CCPoint m_lastGroundedPos;
-    gd::vector<cocos2d::CCObject*> m_touchingRings;
+    gd::vector<cocos2d::CCObject*> m_touchingRings{};
     gd::unordered_set<int> m_touchedRings{};
     GameObject* m_lastActivatedPortal;
     bool m_hasEverJumped;
