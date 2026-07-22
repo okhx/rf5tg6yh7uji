@@ -31,7 +31,9 @@
 #include "colorspace/yuv420p.hpp"
 #include "dsp.hpp"
 #include "replay/system.hpp"
+#ifndef GEODE_IS_MOBILE
 #include "ui/manager.hpp"
+#endif
 
 using namespace geode::prelude;
 
@@ -635,8 +637,9 @@ void Renderer::loadSettings(fs::path& path) {
         return;
     }
 
-    Bot::get()->ui().m_state.m_bitrate =
-        settings.m_bitrate / 1000000.0;
+#ifndef GEODE_IS_MOBILE
+    Bot::get()->ui().m_state.m_bitrate = settings.m_bitrate / 1000000.0;
+#endif
     SLSettings::get()->lastLoadedPreset = path.stem().string();
 }
 

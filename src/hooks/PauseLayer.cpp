@@ -1,6 +1,8 @@
 #include <Geode/Geode.hpp>
-#include <ui/manager.hpp>
 #include <ui/mobile_menu.hpp>
+#ifndef GEODE_IS_MOBILE
+#include <ui/manager.hpp>
+#endif
 
 #include "assist/hitboxes.hpp"
 #include "bot/bot.hpp"

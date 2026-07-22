@@ -13,7 +13,6 @@
 #include "Geode/utils/random.hpp"
 #include "Geode/utils/string.hpp"
 #include "trajectory/trajectory.hpp"
-#include "ui/manager.hpp"
 #ifdef GEODE_IS_WINDOWS
 #include "util/midhook.hpp"
 #endif

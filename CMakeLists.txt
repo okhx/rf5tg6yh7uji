@@ -49,19 +49,7 @@ add_library(${PROJECT_NAME} SHARED
     src/hooks/PlayLayer.cpp
     src/hooks/PlayerObject.cpp
     src/hooks/ShaderLayer.cpp
-    src/hooks/VideoOptionsLayer.cpp
-
-    src/ui/manager.cpp
-    src/ui/hook.cpp
-    src/ui/theme.cpp
     src/ui/mobile_menu.cpp
-
-    ${IMGUI_VENDOR_DIR}/imgui.cpp
-    ${IMGUI_VENDOR_DIR}/imgui_draw.cpp
-    ${IMGUI_VENDOR_DIR}/imgui_tables.cpp
-    ${IMGUI_VENDOR_DIR}/imgui_widgets.cpp
-    ${IMGUI_VENDOR_DIR}/misc/cpp/imgui_stdlib.cpp
-    ${IMGUI_VENDOR_DIR}/backends/imgui_impl_opengl3.cpp
 
     src/replay/replay.cpp
     src/replay/system.cpp
@@ -89,6 +77,21 @@ add_library(${PROJECT_NAME} SHARED
     src/hooks/GJEffectManager.cpp
     src/ui/touch_overlay.cpp
 )
+
+if (NOT (APPLE OR ANDROID))
+    target_sources(${PROJECT_NAME} PRIVATE
+        src/hooks/VideoOptionsLayer.cpp
+        src/ui/manager.cpp
+        src/ui/hook.cpp
+        src/ui/theme.cpp
+        ${IMGUI_VENDOR_DIR}/imgui.cpp
+        ${IMGUI_VENDOR_DIR}/imgui_draw.cpp
+        ${IMGUI_VENDOR_DIR}/imgui_tables.cpp
+        ${IMGUI_VENDOR_DIR}/imgui_widgets.cpp
+        ${IMGUI_VENDOR_DIR}/misc/cpp/imgui_stdlib.cpp
+        ${IMGUI_VENDOR_DIR}/backends/imgui_impl_opengl3.cpp
+    )
+endif()
 
 if (GEODE_TARGET_PLATFORM STREQUAL "iOS")
     target_sources(${PROJECT_NAME} PRIVATE src/render/ios_video_writer.mm)
@@ -128,9 +131,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 )
-if (ANDROID)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_IMPL_OPENGL_ES2)
-endif()
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
@@ -168,21 +168,5 @@ setup_geode_mod(${PROJECT_NAME})
 if (APPLE OR ANDROID)
     target_compile_options(${PROJECT_NAME} PRIVATE
         -Wno-error=dollar-in-identifier-extension
-    )
-endif()
-
-if (APPLE OR ANDROID)
-    # Dear ImGui is vendored source. Apple Clang diagnoses a few declarations
-    # that are conditionally unused in its upstream implementation; do not
-    # let Geode's global -Werror reject those third-party translation units.
-    set_source_files_properties(
-        ${IMGUI_VENDOR_DIR}/imgui.cpp
-        ${IMGUI_VENDOR_DIR}/imgui_draw.cpp
-        ${IMGUI_VENDOR_DIR}/imgui_tables.cpp
-        ${IMGUI_VENDOR_DIR}/imgui_widgets.cpp
-        ${IMGUI_VENDOR_DIR}/misc/cpp/imgui_stdlib.cpp
-        ${IMGUI_VENDOR_DIR}/backends/imgui_impl_opengl3.cpp
-        PROPERTIES COMPILE_OPTIONS
-        "-Wno-error=unused-variable;-Wno-error=unused-parameter"
     )
 endif()

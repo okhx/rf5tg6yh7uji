@@ -21,7 +21,9 @@
 
 class BotUpdater;
 class BotScheduler;
+#ifndef GEODE_IS_MOBILE
 class UIManager;
+#endif
 class ReplaySystem;
 class PracticeFix;
 class TrajectoryManager;
@@ -58,7 +60,9 @@ class Bot {
 
     BotUpdater& updater();
     BotScheduler& scheduler();
+#ifndef GEODE_IS_MOBILE
     UIManager& ui();
+#endif
     ReplaySystem& replaySystem();
     PracticeFix& practiceFix();
     TrajectoryManager& trajectory();
