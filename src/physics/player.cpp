@@ -195,7 +195,8 @@ void ringJump(PlayerObject* player, RingObject* ring) {
     if (player->m_isDead) return;
     if (!ring) return;
 
-    if (player->m_ringRelatedSet.contains(ring->m_uniqueID)) return;
+    if (player->m_ringRelatedSet.find(ring->m_uniqueID) !=
+        player->m_ringRelatedSet.end()) return;
 
     bool isCustomOrTeleportRing =
         (ring->m_objectType == GameObjectType::CustomRing) ||

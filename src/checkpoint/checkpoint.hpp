@@ -61,8 +61,8 @@ struct SavedPlayerCheckpoint {
     bool m_slopeFlipGravityRelated;
     cocos2d::CCArray* m_particleSystems;
     float m_slopeAngleRadians;
-    gd::unordered_map<int, GJPointDouble> m_rotateObjectsRelated;
-    gd::unordered_map<int, GameObject*> m_maybeRotatedObjectsMap;
+    gd::unordered_map<int, GJPointDouble> m_rotateObjectsRelated{};
+    gd::unordered_map<int, GameObject*> m_maybeRotatedObjectsMap{};
     float m_rotationSpeed;
     float m_rotateSpeed;
     bool m_isRotating;
@@ -99,7 +99,7 @@ struct SavedPlayerCheckpoint {
     double m_accelerationOrSpeed;
     double m_snapDistance;
     bool m_ringJumpRelated;
-    gd::unordered_set<int> m_ringRelatedSet;
+    gd::unordered_set<int> m_ringRelatedSet{};
     GameObject* m_objectSnappedTo;
     CheckpointObject* m_pendingCheckpoint;
     int m_onFlyCheckpointTries;
@@ -181,7 +181,7 @@ struct SavedPlayerCheckpoint {
     bool m_controlsDisabled;
     cocos2d::CCPoint m_lastGroundedPos;
     gd::vector<cocos2d::CCObject*> m_touchingRings;
-    gd::unordered_set<int> m_touchedRings;
+    gd::unordered_set<int> m_touchedRings{};
     GameObject* m_lastActivatedPortal;
     bool m_hasEverJumped;
     bool m_ringOrStreakRelated;
@@ -274,7 +274,7 @@ struct SavedCheckpoint {
 
     double m_tps;
 
-    std::unordered_map<int, int> m_persistentItemMap;
+    gd::unordered_map<int, int> m_persistentItemMap{};
     std::array<float, 2000> m_varianceValues;
 
     std::vector<GameObject*> m_calcNonEffectObjects;
