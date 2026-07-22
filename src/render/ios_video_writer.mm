@@ -190,10 +190,11 @@ geode::Result<> IOSVideoWriter::open(const std::filesystem::path& output,
         if (!m_impl->writer)
             return geode::Err(errorText(error, "Unable to create MP4 writer"));
 
+        const int encoderFps = width >= 3800 ? std::min(fps, 60) : fps;
         NSDictionary* compression = @{
             AVVideoAverageBitRateKey : @(bitrate),
-            AVVideoExpectedSourceFrameRateKey : @(fps),
-            AVVideoMaxKeyFrameIntervalKey : @(fps),
+            AVVideoExpectedSourceFrameRateKey : @(encoderFps),
+            AVVideoMaxKeyFrameIntervalKey : @(encoderFps),
             AVVideoMaxKeyFrameIntervalDurationKey : @1.0,
             AVVideoAllowFrameReorderingKey : @NO
         };
@@ -302,6 +303,14 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
     repeat = std::clamp(repeat, 1, 32);
     const int64_t frameIndex = m_impl->frame;
     m_impl->frame += repeat;
+    const int sampleStep = m_impl->width >= 3800
+        ? std::max(1, m_impl->fps / 60) : 1;
+    const int64_t firstSampleFrame =
+        (frameIndex + sampleStep - 1) / sampleStep * sampleStep;
+    const int64_t frameEnd = frameIndex + repeat;
+    if (firstSampleFrame >= frameEnd) return geode::Ok(true);
+    const int sampleCount = static_cast<int>(
+        (frameEnd - 1 - firstSampleFrame) / sampleStep + 1);
     if (m_impl->pendingVideoFrames.load(std::memory_order_acquire) >=
         m_impl->maxPendingVideoFrames) {
         return geode::Ok(false);
@@ -384,13 +393,14 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
             CVPixelBufferUnlockBaseAddress(pixel, 0);
 
             const auto deadline = std::chrono::steady_clock::now() +
-                                  std::chrono::milliseconds(20);
+                std::chrono::milliseconds(impl->width >= 3800 ? 50 : 20);
             int appendedFrames = 0;
-            while (appendedFrames < repeat) {
+            while (appendedFrames < sampleCount) {
                 bool progressed = false;
                 if (impl->input.readyForMoreMediaData) {
                     const CMTime time = CMTimeMake(
-                        frameIndex + appendedFrames, impl->fps);
+                        firstSampleFrame + appendedFrames * sampleStep,
+                        impl->fps);
                     const BOOL appended = [impl->adaptor
                         appendPixelBuffer:pixel
                         withPresentationTime:time];
@@ -416,7 +426,7 @@ geode::Result<bool> IOSVideoWriter::appendRGBA(
                 if (!progressed) {
                     if (std::chrono::steady_clock::now() >= deadline) {
                         const auto droppedNow = static_cast<uint64_t>(
-                            repeat - appendedFrames);
+                            sampleCount - appendedFrames);
                         const auto dropped =
                             impl->droppedVideoFrames.fetch_add(
                                 droppedNow, std::memory_order_acq_rel) +
