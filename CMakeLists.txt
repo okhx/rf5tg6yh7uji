@@ -128,6 +128,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 )
+if (ANDROID)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_IMPL_OPENGL_ES2)
+endif()
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
@@ -168,7 +171,7 @@ if (APPLE OR ANDROID)
     )
 endif()
 
-if (APPLE)
+if (APPLE OR ANDROID)
     # Dear ImGui is vendored source. Apple Clang diagnoses a few declarations
     # that are conditionally unused in its upstream implementation; do not
     # let Geode's global -Werror reject those third-party translation units.
