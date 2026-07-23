@@ -1,6 +1,7 @@
 #ifndef REPLAY_SYSTEM_HPP
 #define REPLAY_SYSTEM_HPP
 
+#include <Geode/utils/file.hpp>
 #include <slc/slc.hpp>
 #include <unordered_map>
 
@@ -89,6 +90,8 @@ class ReplaySystem {
 
     void load(std::filesystem::path path);
     void save(std::filesystem::path path, bool noOverwrite = false);
+    geode::Result<size_t> convertAndPlay(std::filesystem::path path);
+    static geode::utils::file::FilePickOptions converterFileOptions();
 
     enum class MergeMode { P1FromOther, P2FromOther, SwapPlayers };
     void merge(std::filesystem::path path, MergeMode mode = MergeMode::P2FromOther);

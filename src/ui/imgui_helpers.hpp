@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <charconv>
 #include <cfloat>
 #include <cstdint>
 #include <cmath>
@@ -154,8 +155,44 @@ inline WidgetState dropdown(std::string_view label, DropdownState& stateData,
 
 inline WidgetState color(std::string_view label, ColorState& value,
                          std::function<void()> = {}) {
-    return state(ImGui::ColorEdit4(std::string(label).c_str(), value.colors.data(),
-                                   ImGuiColorEditFlags_AlphaBar));
+    const std::string id(label);
+    bool changed = ImGui::ColorEdit4(
+        id.c_str(), value.colors.data(),
+        ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_DisplayHex);
+    WidgetState result = state(changed);
+
+    ImGui::SameLine();
+    if (ImGui::SmallButton(("Copy##" + id).c_str())) {
+        char hex[10];
+        std::snprintf(
+            hex, sizeof(hex), "#%02X%02X%02X%02X",
+            static_cast<int>(std::clamp(value.colors[0], 0.f, 1.f) * 255.f),
+            static_cast<int>(std::clamp(value.colors[1], 0.f, 1.f) * 255.f),
+            static_cast<int>(std::clamp(value.colors[2], 0.f, 1.f) * 255.f),
+            static_cast<int>(std::clamp(value.colors[3], 0.f, 1.f) * 255.f));
+        ImGui::SetClipboardText(hex);
+    }
+    ImGui::SameLine();
+    if (ImGui::SmallButton(("Paste##" + id).c_str())) {
+        std::string_view hex =
+            ImGui::GetClipboardText() ? ImGui::GetClipboardText() : "";
+        if (hex.starts_with('#')) hex.remove_prefix(1);
+        uint32_t color = 0;
+        const auto parsed = std::from_chars(
+            hex.data(), hex.data() + hex.size(), color, 16);
+        if ((hex.size() == 6 || hex.size() == 8) &&
+            parsed.ec == std::errc{} && parsed.ptr == hex.data() + hex.size()) {
+            if (hex.size() == 6) color = color << 8 | 0xff;
+            value.colors = {
+                ((color >> 24) & 0xff) / 255.f,
+                ((color >> 16) & 0xff) / 255.f,
+                ((color >> 8) & 0xff) / 255.f,
+                (color & 0xff) / 255.f,
+            };
+            result.changed = result.pressed = true;
+        }
+    }
+    return result;
 }
 
 inline void text(std::string_view value, ImFont* font = nullptr) {

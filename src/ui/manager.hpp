@@ -20,6 +20,8 @@ class UIManager {
     slui::AutocompleteState m_replayAutocomplete;
 
     geode::async::TaskHolder<geode::utils::web::WebResponse> m_webListener;
+    geode::async::TaskHolder<geode::utils::file::PickResult> m_macroPick;
+    std::string m_converterStatus;
     double m_ffmpegDownloadProgress = -1.0;
 
     GLuint m_texture = 0;

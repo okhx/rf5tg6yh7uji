@@ -574,9 +574,10 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         bot->updater().m_stepOnce->inner() = false;
         bot->labels().m_requiresRefresh = true;
 
-        if (bot->isRecording()) {
-            bot->replaySystem().m_replayName = level->m_levelName;
-        }
+        if (SLSettings::get()->autoMacroName)
+            bot->replaySystem().m_replayName = geode::utils::string::replace(
+                SLSettings::get()->macroNameTemplate, "%name%",
+                level->m_levelName);
 
         return true;
     }

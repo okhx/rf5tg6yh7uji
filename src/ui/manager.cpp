@@ -1214,6 +1214,31 @@ void UIManager::draw() {
                     ImGui::EndTable();
                 }
 
+                if (ImGui::Button("Convert & Play")) {
+                    m_macroPick.spawn(
+                        geode::utils::file::pick(
+                            geode::utils::file::PickMode::OpenFile,
+                            ReplaySystem::converterFileOptions()),
+                        [this](geode::utils::file::PickResult result) {
+                            if (result.isErr()) {
+                                m_converterStatus = "File picker failed";
+                                return;
+                            }
+                            auto path = std::move(result).unwrap();
+                            if (!path) return;
+                            auto converted =
+                                Bot::get()->replaySystem().convertAndPlay(*path);
+                            m_converterStatus = converted.isOk()
+                                ? fmt::format("Converted [{} inputs]",
+                                              converted.unwrap())
+                                : converted.unwrapErr();
+                        });
+                }
+                if (!m_converterStatus.empty()) {
+                    ImGui::SameLine();
+                    ImGui::TextUnformatted(m_converterStatus.c_str());
+                }
+
                 if (m_state.m_lastReplayName != rs.m_replayName) {
                     m_state.m_lastReplayName = rs.m_replayName;
                     m_state.m_replayNames.clear();

@@ -50,15 +50,61 @@ ccColor4B toColor(std::array<float, 4> const& value) {
             static_cast<GLubyte>(std::clamp(value[3], 0.f, 1.f) * 255.f)};
 }
 
+class MobileColorPopup final : public geode::ColorPickPopup {
+    bool init(std::array<float, 4>* target) {
+        if (!ColorPickPopup::init(toColor(*target), true)) return false;
+        this->setCallback([target](ccColor4B const& color) {
+            (*target)[0] = color.r / 255.f;
+            (*target)[1] = color.g / 255.f;
+            (*target)[2] = color.b / 255.f;
+            (*target)[3] = color.a / 255.f;
+        });
+
+        const auto addClipboardButton =
+            [this](const char* text, float x, std::function<void()> callback) {
+                auto* sprite = makeButtonSprite(text, 70.f);
+                auto* item = geode::cocos::CCMenuItemExt::createSpriteExtra(
+                    sprite,
+                    [callback = std::move(callback)](CCMenuItemSpriteExtra*) {
+                        callback();
+                    });
+                m_buttonMenu->addChildAtPosition(
+                    item, geode::Anchor::Bottom, {x, 20.f});
+            };
+        addClipboardButton("Copy", -95.f, [this] {
+            auto* input = typeinfo_cast<TextInput*>(
+                this->getChildByIDRecursive("hex-input"));
+            if (input)
+                geode::utils::clipboard::write(
+                    "#" + std::string(input->getString()));
+        });
+        addClipboardButton("Paste", 95.f, [this] {
+            auto* input = typeinfo_cast<TextInput*>(
+                this->getChildByIDRecursive("hex-input"));
+            if (!input) return;
+            std::string hex = geode::utils::clipboard::read();
+            if (hex.starts_with('#')) hex.erase(0, 1);
+            if (hex.size() == 8) hex.resize(6);
+            if (geode::cocos::cc3bFromHexString(hex, false))
+                input->setString(hex, true);
+        });
+        return true;
+    }
+
+   public:
+    static MobileColorPopup* create(std::array<float, 4>* target) {
+        auto* popup = new MobileColorPopup();
+        if (popup->init(target)) {
+            popup->autorelease();
+            return popup;
+        }
+        delete popup;
+        return nullptr;
+    }
+};
+
 void openColorPicker(std::array<float, 4>* target) {
-    auto* popup = geode::ColorPickPopup::create(toColor(*target));
-    popup->setCallback([target](ccColor4B const& color) {
-        (*target)[0] = color.r / 255.f;
-        (*target)[1] = color.g / 255.f;
-        (*target)[2] = color.b / 255.f;
-        (*target)[3] = color.a / 255.f;
-    });
-    popup->show();
+    if (auto* popup = MobileColorPopup::create(target)) popup->show();
 }
 
 class MobileFeaturePopup final : public geode::Popup {
@@ -1104,8 +1150,27 @@ void MobileMenu::buildRecordPage() {
               updater.m_extrapolateFrames->inner(), [&](bool value) {
                   updater.m_extrapolateFrames->inner() = value;
               });
-    addButton("Macro editor", columnX(1), rowY(6),
-              [] { MobileMacroEditorPopup::open(); }, 130.f);
+    addButton("Editor", 300.f, rowY(6),
+              [] { MobileMacroEditorPopup::open(); }, 75.f);
+    addButton("Convert", 390.f, rowY(6), [this] {
+        m_macroPick.spawn(
+            geode::utils::file::pick(
+                geode::utils::file::PickMode::OpenFile,
+                ReplaySystem::converterFileOptions()),
+            [this](geode::utils::file::PickResult result) {
+                if (result.isErr()) {
+                    m_status = "File picker failed";
+                    return;
+                }
+                auto path = std::move(result).unwrap();
+                if (!path) return;
+                auto converted =
+                    Bot::get()->replaySystem().convertAndPlay(*path);
+                m_status = converted.isOk()
+                    ? fmt::format("Converted [{} inputs]", converted.unwrap())
+                    : converted.unwrapErr();
+            });
+    }, 75.f);
 
     m_statusLabel = CCLabelBMFont::create("", "bigFont.fnt");
     m_statusLabel->setScale(.27f);
