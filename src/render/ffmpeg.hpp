@@ -2,7 +2,7 @@
 #define FFMPEG_HPP
 
 #pragma once
-#include "util/paths.hpp"
+#include "util/storage.hpp"
 
 #ifdef GEODE_IS_WINDOWS
 #include <Windows.h>
@@ -132,10 +132,10 @@ inline bool loadFFmpegFunctions(void* ff) {
     for (std::string& s : dlls) {
         geode::log::info(
             "[RENDERER] Loading library {}",
-            silicate::paths::directory("libraries") / s);
+            grape::paths::directory("libraries") / s);
 
         HMODULE mod = LoadLibraryW(
-            (silicate::paths::directory("libraries") / s)
+            (grape::paths::directory("libraries") / s)
                 .wstring()
                 .c_str());
 

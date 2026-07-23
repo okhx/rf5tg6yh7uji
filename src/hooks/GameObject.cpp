@@ -5,8 +5,8 @@ using namespace geode::prelude;
 #include <Geode/modify/CCNode.hpp>
 #include <Geode/modify/GameObject.hpp>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 
 static const std::unordered_set<int> OTHER_DECO_IDS = {
     902,  943,  944,  945,  946,  947,  948,  949,  950,  951,
@@ -14,7 +14,7 @@ static const std::unordered_set<int> OTHER_DECO_IDS = {
     1024, 1025, 1026, 1027, 1028, 1029, 1030, 1031, 1032, 1063,
     1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071};
 
-struct SLGameObject : Modify<SLGameObject, GameObject> {
+struct GrapeGameObject : Modify<GrapeGameObject, GameObject> {
     bool isNoHitboxObject() {
         auto rect = this->getObjectRect();
 
@@ -27,7 +27,7 @@ struct SLGameObject : Modify<SLGameObject, GameObject> {
 
         if (LevelEditorLayer::get()) return;
 
-        if (Bot::get()->updater().m_layoutMode->inner()) {
+        if (GrapeEngine::get()->timeline().m_layoutMode->inner()) {
             if (m_objectType == GameObjectType::Decoration || m_isNoTouch ||
                 (m_objectID >= 506 && m_objectID <= 640) ||
                 OTHER_DECO_IDS.contains(m_objectID)) {

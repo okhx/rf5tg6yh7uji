@@ -14,7 +14,7 @@ struct ScheduledJob {
     void update(float dt);
 };
 
-class BotScheduler {
+class GameScheduler {
    public:
     using JobExecutor = std::function<void()>;
     using JobId = uint64_t;

@@ -1,16 +1,16 @@
 #include <Geode/Geode.hpp>
 
-#include "../bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "../engine/engine.hpp"
+#include "engine/timeline.hpp"
 
 using namespace geode::prelude;
 
 #include <Geode/modify/ShaderLayer.hpp>
 
-struct SLShaderLayer : Modify<SLShaderLayer, ShaderLayer> {
+struct GrapeShaderLayer : Modify<GrapeShaderLayer, ShaderLayer> {
     void performCalculations() {
-        if (Bot::get()->isEnabled() &&
-            Bot::get()->updater().m_layoutMode->inner() &&
+        if (GrapeEngine::get()->isEnabled() &&
+            GrapeEngine::get()->timeline().m_layoutMode->inner() &&
             !LevelEditorLayer::get()) {
             m_state.m_usesShaders = false;
             return;

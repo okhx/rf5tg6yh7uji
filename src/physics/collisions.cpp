@@ -3,7 +3,7 @@
 #include <Geode/Enums.hpp>
 #include <Geode/Geode.hpp>
 
-#include "bot/bot.hpp"
+#include "engine/engine.hpp"
 #include "gravity.hpp"
 #include "player.hpp"
 #include "trajectory/trajectory.hpp"
@@ -226,7 +226,7 @@ void preSlopeCollision(PlayerObject* player, float dt, GameObject* slope) {
 void collidedWithSlopeInternal(PlayerObject*) {}
 
 void activateForTrajectory(EffectGameObject* obj, PlayerObject* player) {
-    auto bot = Bot::get();
+    auto bot = GrapeEngine::get();
 
     bot->trajectory().rememberActivatedObject(obj, player);
 }
@@ -350,7 +350,7 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
             continue;
         }
 
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         EffectGameObject* obj = (EffectGameObject*)object;
         if (!obj) continue;
 
@@ -569,7 +569,7 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
 
 void triggerObject(EffectGameObject* object, GJBaseGameLayer* pl,
                    PlayerObject* player) {
-    auto bot = Bot::get();
+    auto bot = GrapeEngine::get();
     switch (object->m_objectID) {
         case 200:
             *(float*)(&pl->m_gameState.m_timeModRelated) = 0.7;
@@ -664,7 +664,7 @@ void checkSpawnObjects(GJBaseGameLayer* pl, PlayerObject* player) {
         }
 
         if (object->m_isGroupDisabled) continue;
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().playerHasActivated(player, object) ||
             bot->trajectory().realPlayerHasActivated(player, object))
             continue;

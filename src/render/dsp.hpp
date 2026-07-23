@@ -9,7 +9,7 @@
 #include <mutex>
 #include <vector>
 
-#include "settings/settings.hpp"
+#include "config/config.hpp"
 
 class AudioMonitorRing {
    public:
@@ -91,8 +91,8 @@ class AudioRecorder {
                                                       void* data,
                                                       unsigned int datalen);
 
-    SLValuePtr<bool> m_audioPreview = SLValue<bool>::create(
-        "renderer.audio_preview", &SLSettings::get()->previewAudio);
+    ConfigValuePtr<bool> m_audioPreview = ConfigValue<bool>::create(
+        "renderer.audio_preview", &GrapeSettings::get()->previewAudio);
     bool m_attached = false;
     bool m_collectedData = false;
     std::mutex m_lock;

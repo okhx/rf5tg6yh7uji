@@ -10,7 +10,7 @@
 
 #include "keybind.hpp"
 
-struct SLBindingInterface {
+struct BindingInterface {
     const virtual std::string& getId() = 0;
 
     virtual void* getValue() = 0;
@@ -19,17 +19,17 @@ struct SLBindingInterface {
     virtual void notifyChange() = 0;
     virtual std::shared_ptr<KeybindControl> createKeybind(RawKeybind& kb) = 0;
 
-    virtual ~SLBindingInterface() = default;
+    virtual ~BindingInterface() = default;
 };
 
-class SLBindingManager {
-    std::unordered_map<std::string, std::shared_ptr<SLBindingInterface>>
+class BindingManager {
+    std::unordered_map<std::string, std::shared_ptr<BindingInterface>>
         m_values;
 
     using KeybindVector = std::vector<std::shared_ptr<KeybindControl>>;
     std::unordered_map<KeybindControl::HashT, KeybindVector> m_keybinds;
 
-    SLBindingManager() = default;
+    BindingManager() = default;
 
     bool m_needsNewKey  = false;
     bool m_keyReceived  = false;
@@ -38,8 +38,8 @@ class SLBindingManager {
     bool m_hasRead = false;
 
    public:
-    static SLBindingManager* get() {
-        static SLBindingManager instance;
+    static BindingManager* get() {
+        static BindingManager instance;
         return &instance;
     }
 
@@ -208,10 +208,10 @@ class SLBindingManager {
         return true;
     }
 
-    SLBindingManager(SLBindingManager const&) = delete;
-    void operator=(SLBindingManager const&) = delete;
+    BindingManager(BindingManager const&) = delete;
+    void operator=(BindingManager const&) = delete;
 
-    void registerValue(std::shared_ptr<SLBindingInterface> value) {
+    void registerValue(std::shared_ptr<BindingInterface> value) {
         m_values[value->getId()] = value;
     }
 
@@ -227,9 +227,9 @@ class SLBindingManager {
     void processKeyEvent(int key, bool pressed, bool ctrl, bool shift,
                          bool alt) {
         int modifiers = 0;
-        if (ctrl) modifiers |= SLKeybind<void*>::MODIFIER_CTRL;
-        if (shift) modifiers |= SLKeybind<void*>::MODIFIER_SHIFT;
-        if (alt) modifiers |= SLKeybind<void*>::MODIFIER_ALT;
+        if (ctrl) modifiers |= GrapeKeybind<void*>::MODIFIER_CTRL;
+        if (shift) modifiers |= GrapeKeybind<void*>::MODIFIER_SHIFT;
+        if (alt) modifiers |= GrapeKeybind<void*>::MODIFIER_ALT;
         KeybindControl::HashT hash = key | (modifiers << 20);
 
         if (!m_keybinds.contains(hash)) return;
@@ -245,10 +245,10 @@ class SLBindingManager {
 };
 
 template <typename T>
-struct SLValuePtr;
+struct ConfigValuePtr;
 
 template <typename T>
-class SLValue : public KeybindContainer<T>, public SLBindingInterface {
+class ConfigValue : public KeybindContainer<T>, public BindingInterface {
    private:
     T* m_value;
     T m_previousValue;
@@ -258,7 +258,7 @@ class SLValue : public KeybindContainer<T>, public SLBindingInterface {
    public:
     explicit operator bool() const = delete;
 
-    SLValue(std::string tag, T* value)
+    ConfigValue(std::string tag, T* value)
         : m_value(value), m_previousValue(*value) {
         this->m_tag = tag;
     }
@@ -266,7 +266,7 @@ class SLValue : public KeybindContainer<T>, public SLBindingInterface {
     T& inner() { return *m_value; }
     const T& inner() const { return *m_value; }
 
-    SLValue& operator=(T value) {
+    ConfigValue& operator=(T value) {
         *m_value = value;
         return *this;
     }
@@ -287,24 +287,24 @@ class SLValue : public KeybindContainer<T>, public SLBindingInterface {
 
     void* getPrevious() override { return &m_previousValue; }
 
-    static SLValuePtr<T> create(std::string tag, T* value) {
-        auto binding = SLValuePtr<T>::make(tag, value);
-        SLBindingManager::get()->registerValue(binding.inner);
+    static ConfigValuePtr<T> create(std::string tag, T* value) {
+        auto binding = ConfigValuePtr<T>::make(tag, value);
+        BindingManager::get()->registerValue(binding.inner);
         return binding;
     }
 
     std::shared_ptr<KeybindControl> createKeybind(RawKeybind& kb) override {
-        return SLKeybind<T>::createFromString(
+        return GrapeKeybind<T>::createFromString(
             kb.m_valueTag, kb.m_key, kb.m_type, kb.m_value, kb.m_modifiers);
     }
 };
 
 template <typename T>
-struct SLValuePtr {
+struct ConfigValuePtr {
    private:
-    using Self = SLValuePtr<T>;
-    std::shared_ptr<SLValue<T>> inner;
-    SLValuePtr() = default;
+    using Self = ConfigValuePtr<T>;
+    std::shared_ptr<ConfigValue<T>> inner;
+    ConfigValuePtr() = default;
 
    public:
     explicit operator bool() const = delete;
@@ -313,13 +313,13 @@ struct SLValuePtr {
     static Self make(Args&&... args) {
         Self instance;
         instance.inner =
-            std::make_shared<SLValue<T>>(std::forward<decltype(args)>(args)...);
+            std::make_shared<ConfigValue<T>>(std::forward<decltype(args)>(args)...);
         return instance;
     }
 
-    SLValue<T>* operator->() { return inner.get(); }
-    SLValue<T> const* operator->() const { return inner.get(); }
+    ConfigValue<T>* operator->() { return inner.get(); }
+    ConfigValue<T> const* operator->() const { return inner.get(); }
 
-    friend class SLBindingManager;
-    friend class SLValue<T>;
+    friend class BindingManager;
+    friend class ConfigValue<T>;
 };

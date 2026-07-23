@@ -1,7 +1,7 @@
 #include <Geode/Geode.hpp>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 #include "checkpoint/fix.hpp"
 #include "trajectory/trajectory.hpp"
 
@@ -14,23 +14,23 @@ using namespace geode::prelude;
 #include "physics/object.hpp"
 #include "physics/player.hpp"
 
-struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
+struct GrapePlayerObject : Modify<GrapePlayerObject, PlayerObject> {
     void update(float dt) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (!bot->trajectory().isFakePlayer(this)) {
-            bot->updater().m_lastPlayerX = bot->updater().m_currentPlayerX;
+            bot->timeline().m_lastPlayerX = bot->timeline().m_currentPlayerX;
         }
 
         PlayerObject::update(dt);
 
         if (!bot->trajectory().isFakePlayer(this)) {
             bot->trajectory().setDelta(dt);
-            bot->updater().m_currentPlayerX = this->getPositionX();
+            bot->timeline().m_currentPlayerX = this->getPositionX();
         }
     }
 
     void playSpawnEffect() {
-        if (Bot::get()->practiceFix().m_loadCheckpoint) {
+        if (GrapeEngine::get()->practiceFix().m_loadCheckpoint) {
             return;
         }
 
@@ -38,7 +38,7 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
     }
 
     void playDeathEffect() {
-        auto& updater = Bot::get()->updater();
+        auto& updater = GrapeEngine::get()->timeline();
         if (updater.m_preventDeath->inner() || updater.m_predicting) {
             return;
         }
@@ -47,12 +47,12 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
     }
 
     void handleButton(bool down, int button, bool player1) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (button == 1) bot->trajectory().handleButton(player1, down);
     }
 
     void playSpiderDashEffect(cocos2d::CCPoint p0, cocos2d::CCPoint p1) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (!bot->trajectory().drawing()) {
             PlayerObject::playSpiderDashEffect(p0, p1);
         }
@@ -69,14 +69,14 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
 #endif
 
     void incrementJumps() {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (!bot->trajectory().drawing()) {
             PlayerObject::incrementJumps();
         }
     }
 
     void ringJump(RingObject* ring, bool unk) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(this)) {
             phys::ringJump(this, ring);
         } else {
@@ -86,7 +86,7 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
 
     void bumpPlayer(float force, int objectType, bool playEffect,
                     GameObject* object) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(this)) {
             phys::bumpPlayer(this, force, objectType, playEffect, object);
         } else {
@@ -95,7 +95,7 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
     }
 
     void propellPlayer(float force, bool dontPlayEffect, int objectType) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(this)) {
             phys::propellPlayer(this, force, dontPlayEffect, objectType);
         } else {
@@ -104,7 +104,7 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
     }
 
     void startDashing(DashRingObject* obj) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(this)) {
             phys::startDashing(this, obj);
         } else {
@@ -131,21 +131,21 @@ struct SLPlayerObject : Modify<SLPlayerObject, PlayerObject> {
     }
 
     void releaseAllButtons() {
-        if (!Bot::get()->isEnabled()) {
+        if (!GrapeEngine::get()->isEnabled()) {
             return PlayerObject::releaseAllButtons();
         }
 
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         auto gjbgl = GJBaseGameLayer::get();
         if ((this == gjbgl->m_player2 && !gjbgl->m_gameState.m_isDualMode) ||
-            bot->updater().m_canDie->inner() || bot->isPlaying()) {
+            bot->timeline().m_canDie->inner() || bot->isPlaying()) {
             PlayerObject::releaseAllButtons();
         }
     }
 
 #ifdef GEODE_IS_WINDOWS
     void stopDashing() {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(this)) {
             phys::stopDashing(this);
         } else {

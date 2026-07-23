@@ -7,7 +7,7 @@
 #include <functional>
 #include <unordered_set>
 
-#include "../settings/settings.hpp"
+#include "../config/config.hpp"
 #include "../shared/value/value.hpp"
 #include "Geode/cocos/cocoa/CCGeometry.h"
 
@@ -39,12 +39,12 @@ struct TrajectoryPlayerData {
 };
 
 struct TrajectoryState {
-    SLValuePtr<bool> m_enabled = SLValue<bool>::create(
-        "trajectory.enabled", &SLSettings::get()->trajectory.enabled);
-    SLValuePtr<double> m_width = SLValue<double>::create(
-        "trajectory.width", &SLSettings::get()->trajectory.width);
-    SLValuePtr<double> m_length = SLValue<double>::create(
-        "trajectory.length", &SLSettings::get()->trajectory.length);
+    ConfigValuePtr<bool> m_enabled = ConfigValue<bool>::create(
+        "trajectory.enabled", &GrapeSettings::get()->trajectory.enabled);
+    ConfigValuePtr<double> m_width = ConfigValue<double>::create(
+        "trajectory.width", &GrapeSettings::get()->trajectory.width);
+    ConfigValuePtr<double> m_length = ConfigValue<double>::create(
+        "trajectory.length", &GrapeSettings::get()->trajectory.length);
 };
 
 struct PredictionConfig {
@@ -55,7 +55,7 @@ struct PredictionConfig {
 
 class Trajectory {
    public:
-    using TrajectoryMode = SLSettings::TrajectorySettings::Mode;
+    using TrajectoryMode = GrapeSettings::TrajectorySettings::Mode;
 
     constexpr static int CLICK_MASK = 0b111;
     constexpr static int DIRECTION_MASK = 0b11000;

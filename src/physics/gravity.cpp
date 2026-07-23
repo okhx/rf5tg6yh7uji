@@ -2,8 +2,8 @@
 
 #include <Geode/Geode.hpp>
 
-#include "bot/bot.hpp"
-#include "replay/system.hpp"
+#include "engine/engine.hpp"
+#include "replay/macro.hpp"
 #include "trajectory/trajectory.hpp"
 
 using namespace geode::prelude;
@@ -11,7 +11,7 @@ using namespace geode::prelude;
 namespace phys {
 void flipGravityInner(PlayerObject* player, bool gravity) {
     bool ignoreUpsideDown =
-        player->m_isDart && Bot::get()->replaySystem().m_maintainGravity;
+        player->m_isDart && GrapeEngine::get()->macro().m_maintainGravity;
 
     if (!ignoreUpsideDown) {
         player->m_isUpsideDown = gravity;
@@ -54,11 +54,11 @@ void flipGravity(PlayerObject* player, bool gravity) {
     auto& gameState = GJBaseGameLayer::get()->m_gameState;
 
     flipGravityInner(player, gravity);
-    if (Bot::get()->trajectory().isFakePlayer(player) &&
+    if (GrapeEngine::get()->trajectory().isFakePlayer(player) &&
         !gameState.m_unkBool31 && gameState.m_isDualMode &&
         !GJBaseGameLayer::get()->m_levelSettings->m_twoPlayerMode) {
         auto p1 = player;
-        auto p2 = Bot::get()->trajectory().getOtherPlayer(player);
+        auto p2 = GrapeEngine::get()->trajectory().getOtherPlayer(player);
         if (!(p1->m_isShip == p2->m_isShip && p1->m_isBall == p2->m_isBall &&
               p1->m_isBird == p2->m_isBird &&
               p1->m_isSpider == p2->m_isSpider &&

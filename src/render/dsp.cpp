@@ -4,7 +4,7 @@
 #include <Geode/fmod/fmod.hpp>
 #include <cstring>
 
-#include "bot/bot.hpp"
+#include "engine/engine.hpp"
 #include "renderer.hpp"
 
 #ifdef SL_DEV_MODE
@@ -23,7 +23,7 @@ FMOD_RESULT F_CALLBACK AudioRecorder::writeCallback(FMOD_DSP_STATE*,
         return FMOD_OK;
     }
 
-    SL_LOG_DEV("length: {}, inChannels: {}, outChannels: {}", length,
+    GRAPE_LOG_DEV("length: {}, inChannels: {}, outChannels: {}", length,
                inChannels, *outChannels);
 
     recorder->m_lastCollectedLength = length;
@@ -58,7 +58,7 @@ FMOD_RESULT F_CALLBACK AudioRecorder::monitorReadCallback(
 
 void AudioRecorder::haltWithData(float* data, unsigned int length) {
 
-    SL_LOG_DEV("Collected data, unpausing... {}", collected++);
+    GRAPE_LOG_DEV("Collected data, unpausing... {}", collected++);
 
     m_buffer.insert(m_buffer.end(), data, data + length);
 
@@ -66,7 +66,7 @@ void AudioRecorder::haltWithData(float* data, unsigned int length) {
         m_buffer[i] = std::clamp(m_buffer[i], -1.0f, 1.0f);
     }
 
-    SL_LOG_DEV("Setting collected data to true");
+    GRAPE_LOG_DEV("Setting collected data to true");
     m_collectedData = true;
 }
 

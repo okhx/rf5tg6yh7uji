@@ -3,10 +3,10 @@
 
 using namespace geode::prelude;
 
-#include "bot/bot.hpp"
+#include "engine/engine.hpp"
 #include "util/crash_log.hpp"
 
 $on_mod(Loaded) {
     crash_log::install();
-    Bot::get()->initialize();
+    GrapeEngine::get()->initialize();
 }

@@ -28,7 +28,7 @@ bool shouldUpdateAudio() {
     return true;
 }
 
-struct SLAudioEngine : Modify<SLAudioEngine, FMODAudioEngine> {
+struct GrapeAudioEngine : Modify<GrapeAudioEngine, FMODAudioEngine> {
     void update(float dt) {
         if (!shouldUpdateAudio()) {
             return;

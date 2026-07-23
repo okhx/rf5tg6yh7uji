@@ -3,13 +3,13 @@
 
 #include "assist/autoclicker.hpp"
 #include "assist/hitboxes.hpp"
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 #include "checkpoint/fix.hpp"
 #include "label/label.hpp"
 #include "render/renderer.hpp"
-#include "replay/system.hpp"
-#include "settings/settings.hpp"
+#include "replay/macro.hpp"
+#include "config/config.hpp"
 #include "Geode/utils/random.hpp"
 #include "Geode/utils/string.hpp"
 #include "trajectory/trajectory.hpp"
@@ -29,18 +29,18 @@ using namespace geode::prelude;
 #endif
 
 #include <Geode/modify/PlayLayer.hpp>
-#include "util/paths.hpp"
+#include "util/storage.hpp"
 
-struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
+struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
 #ifndef GEODE_IS_WINDOWS
     void postUpdate(float dt) override {
         PlayLayer::postUpdate(dt);
-        Bot::get()->updater().portableFrameUpdate(this, dt);
+        GrapeEngine::get()->timeline().portableFrameUpdate(this, dt);
     }
 #endif
 
     CheckpointObject* markCheckpoint() {
-        if (!Bot::get()->isEnabled()) {
+        if (!GrapeEngine::get()->isEnabled()) {
             return PlayLayer::markCheckpoint();
         }
 
@@ -51,7 +51,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void storeCheckpoint(CheckpointObject* obj) {
-        if (!Bot::get()->isEnabled()) {
+        if (!GrapeEngine::get()->isEnabled()) {
             return PlayLayer::storeCheckpoint(obj);
         }
 
@@ -59,23 +59,23 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
             obj->retain();
             addToSection(obj->m_physicalCheckpointObject);
 
-            Bot::get()->practiceFix().m_platformerCheckpoints.push_back(
+            GrapeEngine::get()->practiceFix().m_platformerCheckpoints.push_back(
                 {obj, this->m_activatedCheckpoint});
             return;
         }
 
         obj->retain();
         addToSection(obj->m_physicalCheckpointObject);
-        Bot::get()->practiceFix().saveCurrent(
-            obj, Bot::get()->updater().m_frameOnLastAttempt);
+        GrapeEngine::get()->practiceFix().saveCurrent(
+            obj, GrapeEngine::get()->timeline().m_frameOnLastAttempt);
     }
 
     void loadFromCheckpoint(CheckpointObject* obj) {
-        if (!Bot::get()->isEnabled()) {
+        if (!GrapeEngine::get()->isEnabled()) {
             return PlayLayer::loadFromCheckpoint(obj);
         }
 
-        auto& pf = Bot::get()->practiceFix();
+        auto& pf = GrapeEngine::get()->practiceFix();
 
         if (pf.m_forcedState) {
             PlayLayer::loadFromCheckpoint(pf.m_forcedState->m_checkpoint);
@@ -114,9 +114,9 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
     void delayedResetLevel() {
 
-        auto bot = Bot::get();
-        if (bot->updater().m_canDie->inner()) {
-            bot->updater().m_inputIsDeath = true;
+        auto bot = GrapeEngine::get();
+        if (bot->timeline().m_canDie->inner()) {
+            bot->timeline().m_inputIsDeath = true;
         }
 
         PlayLayer::delayedResetLevel();
@@ -134,7 +134,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         this->m_objectsDeactivated = true;
         this->m_freezeStartCamera = true;
 
-        Bot::get()->practiceFix().clearPlatformer(true);
+        GrapeEngine::get()->practiceFix().clearPlatformer(true);
         this->resetLevel();
         this->m_attemptLabel->setPosition(CCPoint{
             winSize.width, winSize.width * 0.5f +
@@ -142,12 +142,12 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void fullReset() {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (!bot->isEnabled()) {
             return PlayLayer::fullReset();
         }
 
-        auto& updater = bot->updater();
+        auto& updater = bot->timeline();
 
         if (updater.m_canDie->inner()) {
             updater.m_fullReset = true;
@@ -167,8 +167,8 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void checkIfResetWasExpected(uint64_t deathFrame) {
-        auto bot = Bot::get();
-        auto& replay = bot->replaySystem();
+        auto bot = GrapeEngine::get();
+        auto& replay = bot->macro();
         const auto input = replay.getCurrentQueuedInput();
         if (!input.has_value() ||
             input->m_type != slc::Action::ActionType::Death) {
@@ -182,22 +182,22 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 #endif
         if (isDue) {
             replay.advanceInputIndex();
-            bot->updater().m_expectsDeath = true;
+            bot->timeline().m_expectsDeath = true;
         }
     }
 
     bool isResetIntentional() {
-        auto bot = Bot::get();
-        return bot->updater().m_canDie->inner() ||
-               bot->updater().m_expectsDeath;
+        auto bot = GrapeEngine::get();
+        return bot->timeline().m_canDie->inner() ||
+               bot->timeline().m_expectsDeath;
     }
 
     bool handleResetWithCheckpoints(uint64_t deathFrame) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         auto& pf = bot->practiceFix();
 
         if (this->isResetIntentional()) {
-            bot->updater().m_frameOnLastAttempt = deathFrame + 1;
+            bot->timeline().m_frameOnLastAttempt = deathFrame + 1;
 
             if (!pf.m_platformerCheckpoints.empty()) {
                 this->m_checkpointArray->addObject(
@@ -222,18 +222,18 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
             return true;
         }
 
-        bot->updater().m_frameOnLastAttempt = 0;
+        bot->timeline().m_frameOnLastAttempt = 0;
         pf.clearPlatformer(true);
         return false;
     }
 
     void updateRandomSeedOnReset() {
-        auto bot = Bot::get();
-        auto& rs = bot->replaySystem();
-        uint64_t& state = bot->replaySystem().getCurrentRandomState();
-        if (!bot->updater().m_expectsDeath) {
-            bot->replaySystem().m_startingSeedThisAttempt =
-                bot->replaySystem().m_startingSeed;
+        auto bot = GrapeEngine::get();
+        auto& rs = bot->macro();
+        uint64_t& state = bot->macro().getCurrentRandomState();
+        if (!bot->timeline().m_expectsDeath) {
+            bot->macro().m_startingSeedThisAttempt =
+                bot->macro().m_startingSeed;
         }
 
         if (bot->isRecording()) {
@@ -241,13 +241,13 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                 state = rs.m_overriddenSeed;
             }
 
-            bot->replaySystem().m_startingSeedThisAttempt = state;
+            bot->macro().m_startingSeedThisAttempt = state;
             if (bot->practiceFix().m_savedCheckpoints.empty() &&
                 !bot->practiceFix().m_loadCheckpoint &&
-                !bot->updater().m_canDie->inner()) {
+                !bot->timeline().m_canDie->inner()) {
                 state = 214013 * state + 2531011;
-                bot->replaySystem().m_startingSeed = state;
-                bot->replaySystem().m_startingSeedThisAttempt = state;
+                bot->macro().m_startingSeed = state;
+                bot->macro().m_startingSeedThisAttempt = state;
 
                 uint64_t varianceState = state;
                 for (auto& v : m_varianceValues) {
@@ -256,11 +256,11 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                 }
             }
         } else {
-            bot->replaySystem().getCurrentRandomState() =
-                bot->replaySystem().m_startingSeedThisAttempt;
+            bot->macro().getCurrentRandomState() =
+                bot->macro().m_startingSeedThisAttempt;
 
             uint64_t varianceState =
-                bot->replaySystem().getCurrentRandomState();
+                bot->macro().getCurrentRandomState();
             for (auto& v : m_varianceValues) {
                 v = (float)(varianceState & 0xFFFF) / 32768.0 - 1.0;
                 varianceState = 214013 * varianceState + 2531011;
@@ -269,7 +269,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void restoreHoldOnReset(uint64_t deathFrame, bool restoringBackstep) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         bot->practiceFix().updatePlatformerInputs(m_queuedButtons);
         m_queuedButtons.clear();
 
@@ -281,38 +281,38 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                 m_player2->releaseAllButtons();
             }
 
-            if (bot->updater().m_expectsDeath) {
-                while (auto input = bot->replaySystem().getNextQueuedInput()) {
+            if (bot->timeline().m_expectsDeath) {
+                while (auto input = bot->macro().getNextQueuedInput()) {
                     if (input->m_frame == deathFrame) {
-                        bot->replaySystem().advanceInputIndex();
+                        bot->macro().advanceInputIndex();
                     } else {
                         break;
                     }
                 }
             }
 
-            auto& canDie = bot->updater().m_canDie;
+            auto& canDie = bot->timeline().m_canDie;
             if (canDie->inner()) {
                 canDie->inner() = false;
                 canDie->notifyChange();
             }
-            bot->updater().m_inputIsDeath = false;
-            bot->updater().m_expectsDeath = false;
+            bot->timeline().m_inputIsDeath = false;
+            bot->timeline().m_expectsDeath = false;
 
             this->processQueuedButtons(0.0, true);
 
-            bot->updater().m_tpsOverflow = 0.0;
+            bot->timeline().m_tpsOverflow = 0.0;
             return;
         }
 
         if (bot->isRecording()) {
-            if (bot->updater().m_canDie->inner()) {
+            if (bot->timeline().m_canDie->inner()) {
                 m_player1->releaseAllButtons();
                 m_player2->releaseAllButtons();
                 return;
             }
 
-            auto& rs = bot->replaySystem();
+            auto& rs = bot->macro();
 
             bool p1Holding = this->m_uiLayer->m_p1Jumping ||
                              this->m_uiLayer->m_p1TouchId != -1;
@@ -359,27 +359,27 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void addDeathInput(uint64_t deathFrame) {
-        auto bot = Bot::get();
-        if (bot->updater().m_canDie->inner()) {
-            if (bot->updater().m_inputIsDeath) {
-                (void)bot->replaySystem().m_actionAtom.addAction(
+        auto bot = GrapeEngine::get();
+        if (bot->timeline().m_canDie->inner()) {
+            if (bot->timeline().m_inputIsDeath) {
+                (void)bot->macro().m_actionAtom.addAction(
                     deathFrame, slc::Action::ActionType::Death,
-                    bot->replaySystem().m_startingSeedThisAttempt);
-            } else if (bot->updater().m_fullReset) {
-                (void)bot->replaySystem().m_actionAtom.addAction(
+                    bot->macro().m_startingSeedThisAttempt);
+            } else if (bot->timeline().m_fullReset) {
+                (void)bot->macro().m_actionAtom.addAction(
                     deathFrame, slc::Action::ActionType::RestartFull,
-                    bot->replaySystem().m_startingSeedThisAttempt);
+                    bot->macro().m_startingSeedThisAttempt);
             } else {
-                (void)bot->replaySystem().m_actionAtom.addAction(
+                (void)bot->macro().m_actionAtom.addAction(
                     deathFrame, slc::Action::ActionType::Restart,
-                    bot->replaySystem().m_startingSeedThisAttempt);
+                    bot->macro().m_startingSeedThisAttempt);
             }
         }
     }
 
     void intentionalResetDone() {
-        auto bot = Bot::get();
-        auto updater = bot->updater();
+        auto bot = GrapeEngine::get();
+        auto updater = bot->timeline();
         updater.m_canDie->inner() = false;
         updater.m_canDie->notifyChange();
         updater.m_inputIsDeath = false;
@@ -389,7 +389,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void resetLevel() override {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (!bot->isEnabled()) {
             m_player1->releaseAllButtons();
             m_player2->releaseAllButtons();
@@ -400,25 +400,25 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         const bool restartingCompleted =
             m_hasCompletedLevel || m_levelEndAnimationStarted;
         if (restartingCompleted && !bot->isRecording() &&
-            !bot->replaySystem().m_actionAtom.m_actions.empty()) {
-            bot->setMode(Bot::Playing);
+            !bot->macro().m_actionAtom.m_actions.empty()) {
+            bot->setMode(GrapeEngine::Playing);
         }
 
         m_practiceMusicSync = true;
 
-        bot->updater().m_tpsOverflow = 0.0;
-        bot->updater().m_respawnTimer = 2;
+        bot->timeline().m_tpsOverflow = 0.0;
+        bot->timeline().m_respawnTimer = 2;
 
-        bot->updater().incrementFrame();
+        bot->timeline().incrementFrame();
 
-        uint64_t deathFrame = bot->updater().getFrame();
+        uint64_t deathFrame = bot->timeline().getFrame();
 
         this->checkIfResetWasExpected(deathFrame);
 
         bool hasAddedCheckpoint = this->handleResetWithCheckpoints(deathFrame);
 
 
-        bot->updater().resetFrame();
+        bot->timeline().resetFrame();
 
         bot->hitboxes().clearTrail();
 
@@ -428,22 +428,22 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         PlayLayer::resetLevel();
 
         if (hasAddedCheckpoint) {
-            Bot::get()->practiceFix().m_shouldLoadPlatformer = false;
+            GrapeEngine::get()->practiceFix().m_shouldLoadPlatformer = false;
             this->m_checkpointArray->removeLastObject();
 
-            bot->updater().m_onlyRefresh = true;
+            bot->timeline().m_onlyRefresh = true;
             this->m_extraDelta = 0.0f;
             CCScheduler::get()->update(0.0f);
 
             bool disableLabels = Renderer::get()->isRecording() &&
-                                 !SLSettings::get()->renderLabelsWhileRecording;
+                                 !GrapeSettings::get()->renderLabelsWhileRecording;
             bot->labels().update(disableLabels);
-            bot->updater().m_onlyRefresh = false;
+            bot->timeline().m_onlyRefresh = false;
         }
 
         const bool restoredBackstep = bot->practiceFix().m_isBackstep;
         if (!restoredBackstep) {
-            bot->replaySystem().onReset(bot->updater().getFrame());
+            bot->macro().onReset(bot->timeline().getFrame());
         }
         bot->autoclicker().reset();
 
@@ -452,10 +452,10 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         this->restoreHoldOnReset(deathFrame, restoredBackstep);
         this->addDeathInput(deathFrame);
 
-        if (!bot->updater().m_canDie->inner() && !restoredBackstep) {
-            bot->replaySystem().m_flipProcessingInputs = true;
+        if (!bot->timeline().m_canDie->inner() && !restoredBackstep) {
+            bot->macro().m_flipProcessingInputs = true;
             this->processQueuedButtons(0.0, true);
-            bot->replaySystem().m_flipProcessingInputs = false;
+            bot->macro().m_flipProcessingInputs = false;
         }
 
         this->intentionalResetDone();
@@ -463,11 +463,11 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         bot->practiceFix().m_hasDiedNormally = false;
         bot->practiceFix().m_isBackstep = false;
 
-        bot->updater().breakLoop();
+        bot->timeline().breakLoop();
     }
 
     void updateAttempts() {
-        if (Bot::get()->practiceFix().m_isBackstep) {
+        if (GrapeEngine::get()->practiceFix().m_isBackstep) {
             return;
         }
 
@@ -484,9 +484,9 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
             Renderer::get()->signalStop();
         }
 
-        auto bot = Bot::get();
-        bot->updater().setPaused(false);
-        bot->updater().m_stepOnce->inner() = false;
+        auto bot = GrapeEngine::get();
+        bot->timeline().setPaused(false);
+        bot->timeline().m_stepOnce->inner() = false;
 
         bot->trajectory().uninit();
         bot->hitboxes().destroy();
@@ -496,19 +496,19 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         bot->practiceFix().clearStoredFrames();
         bot->practiceFix().removeAll();
 
-        bot->replaySystem().onExit();
+        bot->macro().onExit();
     }
 
     void removeCheckpoint(bool p0) {
-        if (!Bot::get()->isEnabled()) {
+        if (!GrapeEngine::get()->isEnabled()) {
             return PlayLayer::removeCheckpoint(p0);
         }
 
-        if (Bot::get()->practiceFix().m_savedCheckpoints.empty()) {
+        if (GrapeEngine::get()->practiceFix().m_savedCheckpoints.empty()) {
             return;
         }
 
-        auto checkpoint = Bot::get()->practiceFix().m_savedCheckpoints.back();
+        auto checkpoint = GrapeEngine::get()->practiceFix().m_savedCheckpoints.back();
 
         auto obj = checkpoint.m_checkpoint->m_physicalCheckpointObject;
         this->removeObjectFromSection(obj);
@@ -524,27 +524,27 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 
         checkpoint.m_checkpoint->release();
 
-        Bot::get()->practiceFix().popLatest();
+        GrapeEngine::get()->practiceFix().popLatest();
     }
 
     void removeAllCheckpoints() override {
-        if (!Bot::get()->isEnabled()) {
+        if (!GrapeEngine::get()->isEnabled()) {
             return PlayLayer::removeAllCheckpoints();
         }
 
-        if (Bot::get()->updater().m_fullReset) return;
+        if (GrapeEngine::get()->timeline().m_fullReset) return;
 
-        while (!Bot::get()->practiceFix().m_savedCheckpoints.empty()) {
+        while (!GrapeEngine::get()->practiceFix().m_savedCheckpoints.empty()) {
             removeCheckpoint(false);
         }
     }
 
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-        if (!Bot::get()->isEnabled()) {
+        if (!GrapeEngine::get()->isEnabled()) {
             return PlayLayer::init(level, useReplay, dontCreateObjects);
         }
 
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         bot->practiceFix().clearStoredFrames();
         if (bot->trajectory().exists()) {
             bot->trajectory().uninit();
@@ -568,15 +568,15 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
         bot->trajectory().init();
         bot->hitboxes().init(this);
         bot->hitboxes().clearTrail();
-        bot->updater().m_frameOnLastAttempt = 0;
-        bot->updater().m_lastTfp = 0.0f;
-        bot->updater().setPaused(false);
-        bot->updater().m_stepOnce->inner() = false;
+        bot->timeline().m_frameOnLastAttempt = 0;
+        bot->timeline().m_lastTfp = 0.0f;
+        bot->timeline().setPaused(false);
+        bot->timeline().m_stepOnce->inner() = false;
         bot->labels().m_requiresRefresh = true;
 
-        if (SLSettings::get()->autoMacroName)
-            bot->replaySystem().m_replayName = geode::utils::string::replace(
-                SLSettings::get()->macroNameTemplate, "%name%",
+        if (GrapeSettings::get()->autoMacroName)
+            bot->macro().m_replayName = geode::utils::string::replace(
+                GrapeSettings::get()->macroNameTemplate, "%name%",
                 level->m_levelName);
 
         return true;
@@ -588,19 +588,19 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
             return PlayLayer::destroyPlayer(player, gameObject);
         }
 
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
 
-        using N = BotUpdater::NoclipType;
-        bool shouldDie = (bot->updater().m_noclipType == N::Player1 &&
+        using N = FrameEngine::NoclipType;
+        bool shouldDie = (bot->timeline().m_noclipType == N::Player1 &&
                           (player == m_player2)) ||
-                         (bot->updater().m_noclipType == N::Player2 &&
+                         (bot->timeline().m_noclipType == N::Player2 &&
                           (player == m_player1));
 
-        if (!bot->updater().m_noclip->inner() || shouldDie) {
+        if (!bot->timeline().m_noclip->inner() || shouldDie) {
             return PlayLayer::destroyPlayer(player, gameObject);
         }
 
-        auto* settings = SLSettings::get();
+        auto* settings = GrapeSettings::get();
         if (settings->noclipTintEnabled) {
             constexpr auto tintID = "noclip-tint"_spr;
             auto* tint =
@@ -636,17 +636,17 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void destroyPlayer(PlayerObject* player, GameObject* gameObject) override {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
 
         if (!bot->trajectory().hasDied(player)) {
             this->conditionalDestroyPlayer(player, gameObject);
 
-            if (bot->updater().m_preventDeath->inner() &&
-                !bot->updater().m_noclip->inner() &&
+            if (bot->timeline().m_preventDeath->inner() &&
+                !bot->timeline().m_noclip->inner() &&
                 gameObject != m_anticheatSpike) {
-                bot->updater().backwardsStep();
+                bot->timeline().backwardsStep();
 
-                if (bot->updater().m_autoFlipOnDeath->inner() &&
+                if (bot->timeline().m_autoFlipOnDeath->inner() &&
                     !bot->practiceFix().m_isBackstep) {
                     if (player == m_player1) {
                         this->queueButton(1, !player->m_jumpBuffered, false,
@@ -656,7 +656,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                                           0.0);
                     }
 
-                    bot->updater().setPaused(false);
+                    bot->timeline().setPaused(false);
                 }
             }
 
@@ -674,7 +674,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void updateVisibility(float dt) override {
-        auto& updater = Bot::get()->updater();
+        auto& updater = GrapeEngine::get()->timeline();
         if (updater.m_extrapolateFrames->inner()) {
             dt = CCDirector::get()->getDeltaTime();
         }
@@ -694,7 +694,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                         m_effectManager->getColorAction(color)) {
                     switch (color) {
                         case 1000: {
-                            auto& col = SLSettings::get()->layoutBgColor;
+                            auto& col = GrapeSettings::get()->layoutBgColor;
                             action->m_color = {
                                 static_cast<GLubyte>(col[0] * 255),
                                 static_cast<GLubyte>(col[1] * 255),
@@ -704,7 +704,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
                         }
                         case 1001:
                         case 1009: {
-                            auto& col = SLSettings::get()->layoutGroundColor;
+                            auto& col = GrapeSettings::get()->layoutGroundColor;
                             action->m_color = {
                                 static_cast<GLubyte>(col[0] * 255),
                                 static_cast<GLubyte>(col[1] * 255),
@@ -720,14 +720,14 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
             }
         }
 
-        Bot::get()->hitboxes().draw(this);
+        GrapeEngine::get()->hitboxes().draw(this);
     }
 
     void levelComplete() {
         PlayLayer::levelComplete();
 
-        auto bot = Bot::get();
-        auto& replay = bot->replaySystem();
+        auto bot = GrapeEngine::get();
+        auto& replay = bot->macro();
         if (!replay.m_autosaveAtLevelEnd->inner()) return;
 
         if (replay.m_replayName.empty()) replay.m_replayName = "autosave";
@@ -740,7 +740,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void setupHasCompleted() {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (!bot->isEnabled()) {
             return PlayLayer::setupHasCompleted();
         }
@@ -760,8 +760,8 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
     }
 
     void addObject(GameObject* obj) {
-        if (!Bot::get()->isEnabled() ||
-            !Bot::get()->updater().m_layoutMode->inner()) {
+        if (!GrapeEngine::get()->isEnabled() ||
+            !GrapeEngine::get()->timeline().m_layoutMode->inner()) {
             return PlayLayer::addObject(obj);
         }
 
@@ -793,7 +793,7 @@ struct SLPlayLayer : Modify<SLPlayLayer, PlayLayer> {
 constexpr int QUEUE_CHECKPOINT_OFFSET = 0x4ce060;
 
 void PlayLayer_queueCheckpoint(void* unk, void* unk2) {
-    if (!Bot::get()->isEnabled()) {
+    if (!GrapeEngine::get()->isEnabled()) {
         return reinterpret_cast<void (*)(void*, void*)>(
             geode::base::get() + QUEUE_CHECKPOINT_OFFSET)(unk, unk2);
     }
@@ -805,7 +805,7 @@ void PlayLayer_queueCheckpoint(void* unk, void* unk2) {
         return;
     }
 
-    Bot::get()->updater().scheduleFrozenFunction(
+    GrapeEngine::get()->timeline().scheduleFrozenFunction(
         [pl](float) { pl->markCheckpoint(); });
 }
 
@@ -819,14 +819,14 @@ $execute {
 
 #ifdef GEODE_IS_WINDOWS
 static void resetLevelSeedMidhook(SafetyHookContext&) {
-    if (!Bot::get()->isEnabled()) {
+    if (!GrapeEngine::get()->isEnabled()) {
         return;
     }
 
-    Bot::get()->replaySystem().getCurrentRandomState() =
-        Bot::get()->replaySystem().m_startingSeedThisAttempt;
-    Bot::get()->replaySystem().m_shakeRandomState =
-        Bot::get()->replaySystem().m_startingSeedThisAttempt & 0x7FFF;
+    GrapeEngine::get()->macro().getCurrentRandomState() =
+        GrapeEngine::get()->macro().m_startingSeedThisAttempt;
+    GrapeEngine::get()->macro().m_shakeRandomState =
+        GrapeEngine::get()->macro().m_startingSeedThisAttempt & 0x7FFF;
 }
 
 $execute {
@@ -837,17 +837,17 @@ $execute {
 
 $execute {
 
-    Bot::get()->updater().m_tps->handle([](double& tps) {
+    GrapeEngine::get()->timeline().m_tps->handle([](double& tps) {
         if (tps <= 0.0) {
             tps = 240.0;
         }
 
         if (auto pl = GJBaseGameLayer::get(); pl) {
-            Bot::get()->updater().scheduleFrozenFunction([pl](float) {
-                if (auto t = Bot::get()->trajectory().unsafeInner(); t) {
+            GrapeEngine::get()->timeline().scheduleFrozenFunction([pl](float) {
+                if (auto t = GrapeEngine::get()->trajectory().unsafeInner(); t) {
                     t->invalidateCache();
                 }
-                Bot::get()->trajectory().update(pl);
+                GrapeEngine::get()->trajectory().update(pl);
             });
         }
     });

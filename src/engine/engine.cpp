@@ -1,5 +1,5 @@
-#include "bot.hpp"
-#include "util/paths.hpp"
+#include "engine.hpp"
+#include "util/storage.hpp"
 
 #include <Geode/Geode.hpp>
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
@@ -11,14 +11,14 @@
 #include "checkpoint/fix.hpp"
 #include "label/label.hpp"
 #include "render/renderer.hpp"
-#include "replay/system.hpp"
-#include "scheduler.hpp"
+#include "replay/macro.hpp"
+#include "clock.hpp"
 #include "shared/value/value.hpp"
 #include "trajectory/trajectory.hpp"
 #ifndef GEODE_IS_ANDROID
 #include "ui/manager.hpp"
 #endif
-#include "updater.hpp"
+#include "timeline.hpp"
 #ifdef GEODE_IS_MOBILE
 #include "ui/touch_overlay.hpp"
 #endif
@@ -29,15 +29,15 @@
 
 using namespace geode::prelude;
 
-class Bot::Impl {
-    BotUpdater m_updater;
-    BotScheduler m_scheduler;
+class GrapeEngine::Impl {
+    FrameEngine m_timeline;
+    GameScheduler m_clock;
 
 #ifndef GEODE_IS_ANDROID
     UIManager m_ui;
 #endif
 
-    ReplaySystem m_replaySystem;
+    MacroEngine m_macro;
 
     PracticeFix m_practiceFix;
     TrajectoryManager m_trajectory;
@@ -47,28 +47,28 @@ class Bot::Impl {
 
     LabelManager m_labels;
 
-    friend class Bot;
+    friend class GrapeEngine;
 };
 
-#define BOT_GETTER(ty, name) \
-    ty& Bot::name() { return m_impl->m_##name; }
+#define ENGINE_COMPONENT(ty, name) \
+    ty& GrapeEngine::name() { return m_impl->m_##name; }
 
-BOT_GETTER(BotScheduler, scheduler)
-BOT_GETTER(BotUpdater, updater)
+ENGINE_COMPONENT(GameScheduler, clock)
+ENGINE_COMPONENT(FrameEngine, timeline)
 #ifndef GEODE_IS_ANDROID
-BOT_GETTER(UIManager, ui)
+ENGINE_COMPONENT(UIManager, ui)
 #endif
-BOT_GETTER(ReplaySystem, replaySystem)
-BOT_GETTER(PracticeFix, practiceFix)
-BOT_GETTER(TrajectoryManager, trajectory)
-BOT_GETTER(Autoclicker, autoclicker)
-BOT_GETTER(Hitboxes, hitboxes)
-BOT_GETTER(LabelManager, labels)
+ENGINE_COMPONENT(MacroEngine, macro)
+ENGINE_COMPONENT(PracticeFix, practiceFix)
+ENGINE_COMPONENT(TrajectoryManager, trajectory)
+ENGINE_COMPONENT(Autoclicker, autoclicker)
+ENGINE_COMPONENT(Hitboxes, hitboxes)
+ENGINE_COMPONENT(LabelManager, labels)
 
-Bot::Bot() : m_impl(std::make_unique<Impl>()) {}
-Bot::~Bot() = default;
+GrapeEngine::GrapeEngine() : m_impl(std::make_unique<Impl>()) {}
+GrapeEngine::~GrapeEngine() = default;
 
-void Bot::initialize() {
+void GrapeEngine::initialize() {
 #ifdef SILICATE_PROTECT
     VMProtectBegin("BotInitialize");
 
@@ -83,7 +83,7 @@ void Bot::initialize() {
 #endif
     namespace fs = std::filesystem;
 
-    fs::path dir = silicate::paths::dataRoot();
+    fs::path dir = grape::paths::dataRoot();
 
     fs::create_directories(dir / "replays");
     fs::create_directories(dir / "videos");
@@ -102,8 +102,8 @@ void Bot::initialize() {
     }
 
     std::filesystem::path settingsPath =
-        silicate::paths::file("settings.json");
-    auto& settings = *SLSettings::get();
+        grape::paths::file("settings.json");
+    auto& settings = *GrapeSettings::get();
     auto ec =
         glz::read_file_json(settings, settingsPath.string(), std::string{});
     if (ec) {
@@ -117,7 +117,7 @@ void Bot::initialize() {
     this->autoclicker().m_performSwifts = settings.autoclickerSwifts;
     this->autoclicker().m_player = static_cast<Autoclicker::PlayerToggle>(
         std::clamp(settings.autoclickerPlayer, 0, 2));
-    this->updater().m_noclipType = static_cast<BotUpdater::NoclipType>(
+    this->timeline().m_noclipType = static_cast<FrameEngine::NoclipType>(
         std::clamp(settings.noclipPlayer, 0, 2));
 
 #ifdef GEODE_IS_MOBILE
@@ -125,17 +125,17 @@ void Bot::initialize() {
 #endif
 
     std::filesystem::path keybindsPath =
-        silicate::paths::file("keybinds.json");
-    SLBindingManager::get()->readFromFile(keybindsPath);
+        grape::paths::file("keybinds.json");
+    BindingManager::get()->readFromFile(keybindsPath);
 
     if (settings.lastLoadedPreset != "") {
-        auto presetPath = silicate::paths::directory("presets") /
+        auto presetPath = grape::paths::directory("presets") /
                           std::string(settings.lastLoadedPreset + ".json");
         if (std::filesystem::exists(presetPath)) {
             geode::log::info("Loading preset {}", settings.lastLoadedPreset);
             Renderer::get()->loadSettings(presetPath);
 #ifndef GEODE_IS_ANDROID
-            Bot::get()->ui().m_state.m_presetName = settings.lastLoadedPreset;
+            GrapeEngine::get()->ui().m_state.m_presetName = settings.lastLoadedPreset;
 #endif
         } else {
             geode::log::error("Preset {} does not exist",
@@ -147,7 +147,7 @@ void Bot::initialize() {
 
     m_enabled->handle([&](bool& enabled) {
 #ifdef GEODE_IS_MOBILE
-        auto& updater = this->updater();
+        auto& updater = this->timeline();
         auto* playLayer = PlayLayer::get();
 
         if (!enabled) {
@@ -201,8 +201,8 @@ void Bot::initialize() {
         }
 
         if (!enabled) {
-            this->updater().m_tps->inner() = 240.0;
-            this->updater().m_tps->notifyChange();
+            this->timeline().m_tps->inner() = 240.0;
+            this->timeline().m_tps->notifyChange();
         }
 
         auto patches = Mod::get()->getPatches();
@@ -237,11 +237,11 @@ void Bot::initialize() {
 #endif
     });
 
-    this->replaySystem().m_autosaveInterval->notifyChange();
+    this->macro().m_autosaveInterval->notifyChange();
 
     m_hasInitialized = true;
 
     m_enabled->notifyChange();
 }
 
-bool Bot::isEnabled() { return m_enabled->inner(); }
+bool GrapeEngine::isEnabled() { return m_enabled->inner(); }

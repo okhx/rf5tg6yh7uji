@@ -13,12 +13,12 @@
 #endif
 #include <vector>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 #include "checkpoint/fix.hpp"
 #include "physics/collisions.hpp"
 #include "physics/gjbasegamelayer.hpp"
-#include "replay/system.hpp"
+#include "replay/macro.hpp"
 #include "trajectory/trajectory.hpp"
 #ifdef GEODE_IS_WINDOWS
 #include "util/midhook.hpp"
@@ -59,7 +59,7 @@ $execute {
 }
 #endif
 
-struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
+struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
     struct PlayerState {
         float m_rotation;
 
@@ -116,7 +116,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     bool shouldExtrapolate() {
-        auto& updater = Bot::get()->updater();
+        auto& updater = GrapeEngine::get()->timeline();
         if (updater.estimatedStepCount != 0) {
             return false;
         }
@@ -125,12 +125,12 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void extrapolateVisualUpdates(float dt) {
-        auto& updater = Bot::get()->updater();
+        auto& updater = GrapeEngine::get()->timeline();
 
         float dt60 = dt * 60.0;
 
-        using Mode = SLSettings::TrajectorySettings::Mode;
-        auto* t = Bot::get()->trajectory().unsafeInner();
+        using Mode = GrapeSettings::TrajectorySettings::Mode;
+        auto* t = GrapeEngine::get()->trajectory().unsafeInner();
 
         m_player1->setRotation(m_fields->m_lastActualP1.m_rotation);
         m_player2->setRotation(m_fields->m_lastActualP2.m_rotation);
@@ -191,8 +191,8 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void update(float dt) override {
-        auto& updater = Bot::get()->updater();
-        if (updater.m_onlyRefresh || !Bot::get()->isEnabled()) {
+        auto& updater = GrapeEngine::get()->timeline();
+        if (updater.m_onlyRefresh || !GrapeEngine::get()->isEnabled()) {
             GJBaseGameLayer::update(dt);
             return;
         }
@@ -226,18 +226,18 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void gameEventTriggered(GJGameEvent event, int p1, int p2) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
 
         if (bot->trajectory().drawing()) return;
         if (event == GJGameEvent::CheckpointRespawn &&
-            !Bot::get()->practiceFix().m_shouldLoadPlatformer)
+            !GrapeEngine::get()->practiceFix().m_shouldLoadPlatformer)
             return;
 
         GJBaseGameLayer::gameEventTriggered(event, p1, p2);
     }
 
     void destroyObject(GameObject* obj) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().drawing()) return;
 
         if (this->m_isPracticeMode) {
@@ -248,14 +248,14 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void updateCamera(float dt) {
-        Bot::get()->updater().m_lastCameraPos =
-            Bot::get()->updater().m_currentCameraPos;
+        GrapeEngine::get()->timeline().m_lastCameraPos =
+            GrapeEngine::get()->timeline().m_currentCameraPos;
         GJBaseGameLayer::updateCamera(dt);
-        Bot::get()->updater().m_currentCameraPos = m_objectLayer->getPosition();
+        GrapeEngine::get()->timeline().m_currentCameraPos = m_objectLayer->getPosition();
     }
 
     double getModifiedDelta(float dt) {
-        if (!Bot::get()->isEnabled()) {
+        if (!GrapeEngine::get()->isEnabled()) {
             return GJBaseGameLayer::getModifiedDelta(dt);
         }
 
@@ -264,7 +264,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
             return modDelta;
         }
 
-        auto& updater = Bot::get()->updater();
+        auto& updater = GrapeEngine::get()->timeline();
         if (updater.m_onlyRefresh) {
             return 0.0f;
         }
@@ -280,21 +280,21 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
             cmd.m_isPlayer2 = false;
         }
 
-        auto bot = Bot::get();
-        auto& replay = bot->replaySystem().m_actionAtom;
+        auto bot = GrapeEngine::get();
+        auto& replay = bot->macro().m_actionAtom;
         if (replay.length() > 0 &&
-            replay.m_actions.back() > bot->updater().getFrame()) {
+            replay.m_actions.back() > bot->timeline().getFrame()) {
             return;
         }
 
         auto _result = replay.addAction(
-            bot->updater().getFrame(),
+            bot->timeline().getFrame(),
             static_cast<slc::Action::ActionType>(cmd.m_button), cmd.m_isPush,
-            bot->replaySystem().playerFlipped(cmd.m_isPlayer2));
+            bot->macro().playerFlipped(cmd.m_isPlayer2));
     }
 
     void performMaintainGravity() {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
 
         m_queuedButtons.clear();
 
@@ -306,13 +306,13 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
 
         bool p1Jumping = m_uiLayer->m_p1Jumping || m_uiLayer->m_p1TouchId != -1;
         bool p2Jumping = m_uiLayer->m_p2Jumping || m_uiLayer->m_p2TouchId != -1;
-        if (bot->replaySystem().hasFlippedControls()) {
+        if (bot->macro().hasFlippedControls()) {
             std::swap(p1Jumping, p2Jumping);
         }
 
-        if (bot->replaySystem().m_mirrorInputs) {
-            p1Jumping |= p2Jumping ^ bot->replaySystem().m_mirrorInverted;
-            p2Jumping |= p1Jumping ^ bot->replaySystem().m_mirrorInverted;
+        if (bot->macro().m_mirrorInputs) {
+            p1Jumping |= p2Jumping ^ bot->macro().m_mirrorInverted;
+            p2Jumping |= p1Jumping ^ bot->macro().m_mirrorInverted;
         }
 
         while (p1->m_isUpsideDown == (p1Jumping == p1->m_jumpBuffered) &&
@@ -320,12 +320,12 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
             addInputToReplay(PlayerButtonCommand{
                 .m_button = static_cast<PlayerButton>(1),
                 .m_isPush = (bool)(p1Jumping ^ p1->m_isUpsideDown),
-                .m_isPlayer2 = bot->replaySystem().playerFlipped(false),
+                .m_isPlayer2 = bot->macro().playerFlipped(false),
                 .m_step = 0,
                 .m_timestamp = 0.0});
 
             this->handleButton(p1Jumping ^ p1->m_isUpsideDown, 1,
-                               bot->replaySystem().playerFlipped(true));
+                               bot->macro().playerFlipped(true));
         }
 
         while (this->m_gameState.m_isDualMode &&
@@ -335,45 +335,45 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
             addInputToReplay(PlayerButtonCommand{
                 .m_button = static_cast<PlayerButton>(1),
                 .m_isPush = (bool)(p2Jumping ^ p2->m_isUpsideDown),
-                .m_isPlayer2 = bot->replaySystem().playerFlipped(true),
+                .m_isPlayer2 = bot->macro().playerFlipped(true),
                 .m_step = 0,
                 .m_timestamp = 0.0});
 
             this->handleButton(p2Jumping ^ p2->m_isUpsideDown, 1,
-                               bot->replaySystem().playerFlipped(false));
+                               bot->macro().playerFlipped(false));
         }
     }
 
     void requeueInverted() {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
 
         for (auto& cmd : m_queuedButtons) {
-            bot->replaySystem().m_lastInputs.insert_or_assign(
+            bot->macro().m_lastInputs.insert_or_assign(
                 static_cast<int>(cmd.m_button) +
                     ((cmd.m_isPlayer2 && this->m_levelSettings->m_twoPlayerMode)
                          ? 4
                          : 0),
                 slc::Action(
-                    bot->replaySystem().m_forceNextInput
+                    bot->macro().m_forceNextInput
                         ? std::numeric_limits<uint32_t>::max()
-                        : bot->updater().getFrame(),
+                        : bot->timeline().getFrame(),
                     0, static_cast<slc::Action::ActionType>(cmd.m_button),
                     cmd.m_isPush,
                     cmd.m_isPlayer2 && this->m_levelSettings->m_twoPlayerMode));
 
-            if (!bot->replaySystem().m_mirrorInputs) continue;
+            if (!bot->macro().m_mirrorInputs) continue;
 
-            bool inverted = bot->replaySystem().m_mirrorInverted;
+            bool inverted = bot->macro().m_mirrorInverted;
 
             this->queueButton(
                 static_cast<int>(cmd.m_button), cmd.m_isPush ^ inverted,
-                bot->replaySystem().playerFlipped(!cmd.m_isPlayer2), 0.0);
+                bot->macro().playerFlipped(!cmd.m_isPlayer2), 0.0);
         }
     }
 
     void handleButton(bool pressed, int button, bool player1) {
-        auto bot = Bot::get();
-        if (!bot->replaySystem().m_useAlternateHook->inner() ||
+        auto bot = GrapeEngine::get();
+        if (!bot->macro().m_useAlternateHook->inner() ||
             !bot->isRecording()) {
             return GJBaseGameLayer::handleButton(pressed, button, player1);
         }
@@ -395,36 +395,36 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     bool processReplayAction(slc::Action& action) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
 
         int button = static_cast<int>(action.m_type);
         if (action.m_type == slc::Action::ActionType::Death) {
-            bot->updater().m_expectsDeath = true;
-            bot->replaySystem().m_startingSeedThisAttempt =
-                bot->replaySystem().getCurrentRandomState();
+            bot->timeline().m_expectsDeath = true;
+            bot->macro().m_startingSeedThisAttempt =
+                bot->macro().getCurrentRandomState();
             return false;
         }
 
         if (action.m_type == slc::Action::ActionType::RestartFull) {
-            bot->updater().m_expectsDeath = true;
-            bot->replaySystem().m_startingSeedThisAttempt =
-                bot->replaySystem().getCurrentRandomState();
+            bot->timeline().m_expectsDeath = true;
+            bot->macro().m_startingSeedThisAttempt =
+                bot->macro().getCurrentRandomState();
             ((PlayLayer*)this)->fullReset();
             return true;
         }
 
         if (action.m_type == slc::Action::ActionType::Restart) {
-            bot->updater().m_expectsDeath = true;
-            bot->replaySystem().m_startingSeedThisAttempt =
-                bot->replaySystem().getCurrentRandomState();
+            bot->timeline().m_expectsDeath = true;
+            bot->macro().m_startingSeedThisAttempt =
+                bot->macro().getCurrentRandomState();
             ((PlayLayer*)this)->resetLevel();
             return true;
         }
 
         if (action.m_type == slc::Action::ActionType::TPS) {
-            bot->updater().m_tps->inner() = action.m_tps;
-            bot->updater().estimatedStepCount = 0;
-            bot->updater().totalStepCount = 0;
+            bot->timeline().m_tps->inner() = action.m_tps;
+            bot->timeline().estimatedStepCount = 0;
+            bot->timeline().totalStepCount = 0;
             return false;
         }
 
@@ -433,13 +433,13 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         }
 
         this->queueButton(button, action.m_holding,
-                          bot->replaySystem().playerFlipped(action.m_player2),
+                          bot->macro().playerFlipped(action.m_player2),
                           0);
         return false;
     }
 
     void performAutoFlipOnDeath() {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
 
         if (PlayLayer::get()->m_levelEndAnimationStarted) {
             return;
@@ -447,19 +447,19 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
 
         bool p1Jumping = m_uiLayer->m_p1Jumping || m_uiLayer->m_p1TouchId != -1;
         bool p2Jumping = m_uiLayer->m_p2Jumping || m_uiLayer->m_p2TouchId != -1;
-        if (bot->replaySystem().hasFlippedControls()) {
+        if (bot->macro().hasFlippedControls()) {
             std::swap(p1Jumping, p2Jumping);
         }
 
-        if (bot->replaySystem().m_mirrorInputs) {
-            p1Jumping |= p2Jumping ^ bot->replaySystem().m_mirrorInverted;
-            p2Jumping |= p1Jumping ^ bot->replaySystem().m_mirrorInverted;
+        if (bot->macro().m_mirrorInputs) {
+            p1Jumping |= p2Jumping ^ bot->macro().m_mirrorInverted;
+            p2Jumping |= p1Jumping ^ bot->macro().m_mirrorInverted;
         }
 
-        if (this->m_player1->m_jumpBuffered != bot->updater().m_isAutoFlipped) {
+        if (this->m_player1->m_jumpBuffered != bot->timeline().m_isAutoFlipped) {
             m_queuedButtons.push_back(
                 {.m_button = (PlayerButton)1,
-                 .m_isPush = bot->updater().m_isAutoFlipped,
+                 .m_isPush = bot->timeline().m_isAutoFlipped,
                  .m_isPlayer2 = false,
                  .m_step = 0,
                  .m_timestamp = 0.0});
@@ -467,33 +467,33 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void processQueuedButtons(float dt, bool clearInputQueue) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (!bot->isEnabled()) {
             return GJBaseGameLayer::processQueuedButtons(dt, clearInputQueue);
         }
 
         bot->practiceFix().updatePlatformerInputs(m_queuedButtons);
 
-        if (bot->replaySystem().m_ignoreInputs->inner() && bot->isPlaying()) {
+        if (bot->macro().m_ignoreInputs->inner() && bot->isPlaying()) {
             m_queuedButtons.clear();
         }
 
         if (bot->isRecording()) {
-            if (bot->replaySystem().m_maintainGravity) {
+            if (bot->macro().m_maintainGravity) {
                 this->performMaintainGravity();
                 return;
             }
 
             this->requeueInverted();
-            if (!bot->replaySystem().m_useAlternateHook->inner()) {
+            if (!bot->macro().m_useAlternateHook->inner()) {
                 this->saveQueuedButtons();
             }
         } else if (!LevelEditorLayer::get() || bot->isPlaying()) {
-            uint32_t frame = bot->updater().getFrame();
+            uint32_t frame = bot->timeline().getFrame();
 
-            if (auto input = bot->replaySystem().getCurrentQueuedInput();
+            if (auto input = bot->macro().getCurrentQueuedInput();
                 input.has_value()) {
-                uint32_t delayInFrames = bot->updater().m_tps->inner() * 0.5;
+                uint32_t delayInFrames = bot->timeline().m_tps->inner() * 0.5;
 
                 if (input.value().m_type ==
                         slc::Action::ActionType::RestartFull &&
@@ -507,7 +507,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
                 }
             }
 
-            while (auto input = bot->replaySystem().getNextInput(frame)) {
+            while (auto input = bot->macro().getNextInput(frame)) {
                 if (input.has_value() &&
                     this->processReplayAction(input.value())) {
                     return;
@@ -518,7 +518,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
         GJBaseGameLayer::processQueuedButtons(dt, clearInputQueue);
 
         if (bot->isRecording()) {
-            if (bot->updater().m_autoFlipOnDeath->inner()) {
+            if (bot->timeline().m_autoFlipOnDeath->inner()) {
                 this->performAutoFlipOnDeath();
                 this->saveQueuedButtons();
                 GJBaseGameLayer::processQueuedButtons(dt, clearInputQueue);
@@ -530,7 +530,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     void collisionCheckObjects(PlayerObject* player,
                                gd::vector<GameObject*>* objects, int length,
                                float p3) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
 
         if (!bot->trajectory().isFakePlayer(player)) {
             return GJBaseGameLayer::collisionCheckObjects(player, objects,
@@ -541,7 +541,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void teleportPlayer(TeleportPortalObject* obj, PlayerObject* player) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(player)) {
             phys::teleportPlayer(this, obj, player);
         } else {
@@ -550,7 +550,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void flipGravity(PlayerObject* player, bool gravity, bool unk) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(player)) {
             phys::flipGravity(player, gravity);
         } else {
@@ -559,7 +559,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void toggleFlipped(bool flipped, bool noEffects) {
-        if (Bot::get()->updater().m_noMirror->inner()) {
+        if (GrapeEngine::get()->timeline().m_noMirror->inner()) {
             this->m_gameState.m_unkBool10 = flipped;
             return;
         }
@@ -570,7 +570,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     void processMoveActionsStep(float dt, bool visibleFrame) {
         const auto& randomHashObject = [](GameObject* object, int group,
                                           int index) {
-            return (Bot::get()->replaySystem().m_startingSeed *
+            return (GrapeEngine::get()->macro().m_startingSeed *
                     (int)(object->m_objectID + 5541) *
                     (int)(fabs(object->m_startPosition.x) + 1.0) *
                     (int)(fabs(object->m_startPosition.y) + 1.0) *
@@ -611,13 +611,13 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void createBackground(int background) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (!bot->isEnabled() || LevelEditorLayer::get()) {
             GJBaseGameLayer::createBackground(background);
             return;
         }
 
-        auto& u = bot->updater();
+        auto& u = bot->timeline();
         if (u.m_layoutMode->inner() && !u.m_useRegularBg->inner()) {
             background = 13;
         }
@@ -626,9 +626,9 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void createMiddleground(int mg) {
-        auto bot = Bot::get();
-        if (!bot->isEnabled() || !bot->updater().m_layoutMode->inner() ||
-            !bot->updater().m_useRegularBg->inner() ||
+        auto bot = GrapeEngine::get();
+        if (!bot->isEnabled() || !bot->timeline().m_layoutMode->inner() ||
+            !bot->timeline().m_useRegularBg->inner() ||
             LevelEditorLayer::get()) {
             GJBaseGameLayer::createMiddleground(mg);
         } else {
@@ -640,14 +640,14 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void createGroundLayer(int ground, int lineType) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (!bot->isEnabled() || LevelEditorLayer::get() ||
-            !bot->updater().m_useRegularBg->inner()) {
+            !bot->timeline().m_useRegularBg->inner()) {
             GJBaseGameLayer::createGroundLayer(ground, lineType);
             return;
         }
 
-        if (bot->updater().m_layoutMode->inner()) {
+        if (bot->timeline().m_layoutMode->inner()) {
             ground = 18;
             lineType = 2;
         }
@@ -660,8 +660,8 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
                      int colorIDToCopy, bool copyOpacity,
                      EffectGameObject* callerObject, int unk1,
                      int unk2) override {
-        if (!LevelEditorLayer::get() && Bot::get()->isEnabled() &&
-            Bot::get()->updater().m_layoutMode->inner()) {
+        if (!LevelEditorLayer::get() && GrapeEngine::get()->isEnabled() &&
+            GrapeEngine::get()->timeline().m_layoutMode->inner()) {
             return;
         }
 
@@ -671,8 +671,8 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void triggerGradientCommand(GradientTriggerObject* obj) {
-        if (!LevelEditorLayer::get() && Bot::get()->isEnabled() &&
-            Bot::get()->updater().m_layoutMode->inner()) {
+        if (!LevelEditorLayer::get() && GrapeEngine::get()->isEnabled() &&
+            GrapeEngine::get()->timeline().m_layoutMode->inner()) {
             return;
         }
 
@@ -682,7 +682,7 @@ struct SLGJBaseGameLayer : Modify<SLGJBaseGameLayer, GJBaseGameLayer> {
 
 #ifdef GEODE_IS_WINDOWS
 static void shakeRandomOverride(SafetyHookContext& ctx) {
-    uint64_t& state = Bot::get()->replaySystem().m_shakeRandomState;
+    uint64_t& state = GrapeEngine::get()->macro().m_shakeRandomState;
     state = (int)((214013 * state + 2531011) >> 16) & 0x7FFF;
 
     ctx.rax = (uintptr_t)state;
@@ -708,6 +708,6 @@ $execute {
 #endif
 
 $execute {
-    Bot::get()->updater().m_lockDelta->handle(
-        [](bool&) { Bot::get()->updater().m_tpsOverflow = 0.0; });
+    GrapeEngine::get()->timeline().m_lockDelta->handle(
+        [](bool&) { GrapeEngine::get()->timeline().m_tpsOverflow = 0.0; });
 }

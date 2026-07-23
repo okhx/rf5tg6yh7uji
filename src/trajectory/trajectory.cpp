@@ -4,14 +4,14 @@
 #include <array>
 #include <cmath>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 #include "ccTypes.h"
 #include "checkpoint/checkpoint.hpp"
 #include "physics/collisions.hpp"
 #include "physics/object.hpp"
-#include "replay/system.hpp"
-#include "settings/settings.hpp"
+#include "replay/macro.hpp"
+#include "config/config.hpp"
 
 #ifdef SILICATE_PROTECT
 #include "VMProtect/VMProtectSDK.h"
@@ -66,7 +66,7 @@ static uint64_t packPlayerFlags(PlayerObject* p) {
 
 static size_t hashTrajectoryCategories() {
     size_t h = 0;
-    for (const auto& [key, state] : SLSettings::get()->trajectory.categories) {
+    for (const auto& [key, state] : GrapeSettings::get()->trajectory.categories) {
         size_t e = std::hash<int>{}(key);
         e = e * 31 + (state.enabled ? 1u : 0u);
         for (const float c : state.colors) e = e * 31 + std::hash<float>{}(c);
@@ -89,7 +89,7 @@ static double trajectoryPredictionTps(double actualTps,
 
 Trajectory::Signature Trajectory::computeSignature(GJBaseGameLayer* pl) {
     Signature s;
-    s.frame = Bot::get()->updater().getFrame();
+    s.frame = GrapeEngine::get()->timeline().getFrame();
 
     auto fillPlayer = [](float out[7], uint64_t& flags, PlayerObject* p) {
         const CCPoint pos = p->getPosition();
@@ -107,7 +107,7 @@ Trajectory::Signature Trajectory::computeSignature(GJBaseGameLayer* pl) {
     s.cameraZoom  = pl->m_gameState.m_cameraZoom;
     s.width       = static_cast<float>(m_state->m_width->inner());
     s.length      = static_cast<float>(m_state->m_length->inner());
-    s.maxSteps    = SLSettings::get()->trajectory.maxSteps;
+    s.maxSteps    = GrapeSettings::get()->trajectory.maxSteps;
 
     uint32_t b = 0;
     int bit = 0;
@@ -127,21 +127,21 @@ Trajectory::Signature Trajectory::computeSignature(GJBaseGameLayer* pl) {
 }
 
 int Trajectory::getPredictionLength() {
-    auto bot = Bot::get();
+    auto bot = GrapeEngine::get();
     auto pl  = GJBaseGameLayer::get();
     if (!pl) return 0;
 
-    auto& ts = SLSettings::get()->trajectory;
+    auto& ts = GrapeSettings::get()->trajectory;
 #ifdef GEODE_IS_MOBILE
     const double timeWarp = std::max(
         std::abs(static_cast<double>(pl->m_gameState.m_timeWarp)), 0.001);
     const double length = std::clamp(ts.length, 0.0, 60.0);
     int steps = static_cast<int>(
-        length * trajectoryPredictionTps(bot->updater().getTps()) /
+        length * trajectoryPredictionTps(bot->timeline().getTps()) /
         timeWarp);
 #else
     int steps = static_cast<int>(
-        ts.length * std::max(bot->updater().getTps(), 240.0) /
+        ts.length * std::max(bot->timeline().getTps(), 240.0) /
         pl->m_gameState.m_timeWarp);
 #endif
 
@@ -156,7 +156,7 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
                          PredictionConfig config) {
     const CCPoint prevPos = player->getPosition();
 
-    auto& updater = Bot::get()->updater();
+    auto& updater = GrapeEngine::get()->timeline();
 #ifdef GEODE_IS_MOBILE
     const double predictionTps = trajectoryPredictionTps(
         updater.getTps(), config.m_overridenTPS);
@@ -239,7 +239,7 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
                                                PlayerObject* other, int mode,
                                                float* colors, bool both,
                                                PredictionConfig config) {
-    auto   bot       = Bot::get();
+    auto   bot       = GrapeEngine::get();
     bool   hasClickP1 = false;
     bool   hasClickP2 = false;
 
@@ -308,10 +308,10 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
     int  stepP1  = 0;
     int  stepP2  = 0;
 
-    int trajectoryInputIndex = bot->replaySystem().getInputIndex();
-    const auto& inputs = bot->replaySystem().m_actionAtom.m_actions;
+    int trajectoryInputIndex = bot->macro().getInputIndex();
+    const auto& inputs = bot->macro().m_actionAtom.m_actions;
 #ifdef GEODE_IS_MOBILE
-    const double macroTps = std::max(bot->updater().getTps(), 1.0);
+    const double macroTps = std::max(bot->timeline().getTps(), 1.0);
     const double predictionTps = trajectoryPredictionTps(
         macroTps, config.m_overridenTPS);
 #endif
@@ -320,11 +320,11 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
     for (int i = 0; i < iterations; ++i) {
         if (bot->isPlaying()) {
 #ifdef GEODE_IS_MOBILE
-            const uint64_t frame = bot->updater().getFrame() +
+            const uint64_t frame = bot->timeline().getFrame() +
                 static_cast<uint64_t>(
                     std::floor(i * macroTps / predictionTps));
 #else
-            const uint64_t frame = bot->updater().getFrame() + i;
+            const uint64_t frame = bot->timeline().getFrame() + i;
 #endif
             while (trajectoryInputIndex < static_cast<int>(inputs.size()) &&
                    inputs[trajectoryInputIndex].m_frame <= frame) {
@@ -368,7 +368,7 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
 TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
                                           int mode, bool clickBothPlayers,
                                           PredictionConfig config) {
-    auto& ts = SLSettings::get()->trajectory;
+    auto& ts = GrapeSettings::get()->trajectory;
 
     PlayerObject* player         = p1 ? m_fakePlayer1 : m_fakePlayer2;
     PlayerObject* realPlayer     = p1 ? pl->m_player1  : pl->m_player2;
@@ -452,8 +452,8 @@ void Trajectory::update(GJBaseGameLayer* pl) {
     const Signature sig = computeSignature(pl);
     const bool needsRebuild = !m_calculated || !(sig == m_lastSignature);
 #ifdef GEODE_IS_MOBILE
-    const uint64_t currentFrame = Bot::get()->updater().getFrame();
-    const double currentTps = Bot::get()->updater().getTps();
+    const uint64_t currentFrame = GrapeEngine::get()->timeline().getFrame();
+    const double currentTps = GrapeEngine::get()->timeline().getTps();
     const uint64_t rebuildInterval = currentTps <= 240.0
         ? 1u
         : static_cast<uint64_t>(std::max(
@@ -470,9 +470,9 @@ void Trajectory::update(GJBaseGameLayer* pl) {
         m_drawing = true;
         m_node->clear();
 
-        auto& bot  = *Bot::get();
-        m_lastFrame = bot.updater().getFrame();
-        m_delta     = bot.updater().getPhysicsDt() * 60.0f;
+        auto& bot  = *GrapeEngine::get();
+        m_lastFrame = bot.timeline().getFrame();
+        m_delta     = bot.timeline().getPhysicsDt() * 60.0f;
 
         m_fakePlayer1->setVisible(false);
         if (pl->m_player2) m_fakePlayer2->setVisible(false);
@@ -517,7 +517,7 @@ void Trajectory::update(GJBaseGameLayer* pl) {
     }
 
 applyLayoutColors:
-    auto& updater = Bot::get()->updater();
+    auto& updater = GrapeEngine::get()->timeline();
     if (!updater.m_layoutMode->inner() || LevelEditorLayer::get()) return;
 
     constexpr std::array<int, 5> colorIds = {1000, 1001, 1009, 1013, 1014};
@@ -527,7 +527,7 @@ applyLayoutColors:
 
         switch (colorId) {
             case 1000: {
-                auto& col = SLSettings::get()->layoutBgColor;
+                auto& col = GrapeSettings::get()->layoutBgColor;
                 action->m_color = {static_cast<GLubyte>(col[0] * 255),
                                    static_cast<GLubyte>(col[1] * 255),
                                    static_cast<GLubyte>(col[2] * 255)};
@@ -535,7 +535,7 @@ applyLayoutColors:
             }
             case 1001:
             case 1009: {
-                auto& col = SLSettings::get()->layoutGroundColor;
+                auto& col = GrapeSettings::get()->layoutGroundColor;
                 action->m_color = {static_cast<GLubyte>(col[0] * 255),
                                    static_cast<GLubyte>(col[1] * 255),
                                    static_cast<GLubyte>(col[2] * 255)};
@@ -557,8 +557,8 @@ void Trajectory::drawHitbox(PlayerObject* player) {
     CCRect rect   = usingWidth(player->getObjectRect(), width);
     CCRect scaled = usingWidth(player->getObjectRect(0.3f, 0.3f), width);
 
-    auto& settings = SLSettings::get()->hitboxes;
-    using Type = SLSettings::HitboxSettings::Type;
+    auto& settings = GrapeSettings::get()->hitboxes;
+    using Type = GrapeSettings::HitboxSettings::Type;
 
     drawRotatedRect(m_node, rect, player->getRotation(), CC_COLOR(Type::PlayerRotated), width);
     drawRect(m_node, rect,   CC_COLOR(Type::Player),      width);
@@ -591,5 +591,5 @@ static void* RingObject_spawnCircle_orig = nullptr;
 
 void RingObject_spawnCircle(RingObject* self) {
     auto func = reinterpret_cast<void (*)(RingObject*)>(RingObject_spawnCircle_orig);
-    if (!Bot::get()->trajectory().drawing()) func(self);
+    if (!GrapeEngine::get()->trajectory().drawing()) func(self);
 }

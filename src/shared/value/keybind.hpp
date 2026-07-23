@@ -54,8 +54,8 @@ class KeybindControl {
 };
 
 template <typename T>
-class SLKeybind : public KeybindControl {
-    using Self = SLKeybind<T>;
+class GrapeKeybind : public KeybindControl {
+    using Self = GrapeKeybind<T>;
 
    public:
     /**
@@ -84,7 +84,7 @@ class SLKeybind : public KeybindControl {
     T m_value;
 
    public:
-    SLKeybind(int key, int modifiers, KeybindType type, T value,
+    GrapeKeybind(int key, int modifiers, KeybindType type, T value,
               std::string tag)
         : m_value(value) {
         m_key = key;
@@ -93,18 +93,18 @@ class SLKeybind : public KeybindControl {
         m_type = type;
     }
 
-    static std::shared_ptr<SLKeybind<T>> create(std::string tag, int key,
+    static std::shared_ptr<GrapeKeybind<T>> create(std::string tag, int key,
                                                 KeybindType type, T value,
                                                 int modifiers = 0) {
-        return std::make_shared<SLKeybind<T>>(key, modifiers, type, value, tag);
+        return std::make_shared<GrapeKeybind<T>>(key, modifiers, type, value, tag);
     }
 
-    static std::shared_ptr<SLKeybind<T>> createFromString(std::string tag,
+    static std::shared_ptr<GrapeKeybind<T>> createFromString(std::string tag,
                                                           int key,
                                                           KeybindType type,
                                                           std::string value,
                                                           int modifiers = 0) {
-        return std::make_shared<SLKeybind<T>>(key, modifiers, type,
+        return std::make_shared<GrapeKeybind<T>>(key, modifiers, type,
                                               Self::readFromString(value), tag);
     }
 
@@ -170,7 +170,7 @@ class SLKeybind : public KeybindControl {
         return oss.str();
     }
 
-    friend glz::meta<SLKeybind<T>>;
+    friend glz::meta<GrapeKeybind<T>>;
 };
 
 template <>
@@ -188,14 +188,14 @@ struct glz::meta<KeybindControl> {
 };
 
 template <typename T>
-using KeybindPtr = std::shared_ptr<SLKeybind<T>>;
+using KeybindPtr = std::shared_ptr<GrapeKeybind<T>>;
 
 template <typename T>
 class KeybindContainer {
    protected:
     std::string m_tag;
-    std::vector<SLKeybind<T>> m_keybinds;
+    std::vector<GrapeKeybind<T>> m_keybinds;
 
    public:
-    std::vector<SLKeybind<T>>& getKeybinds() { return m_keybinds; }
+    std::vector<GrapeKeybind<T>>& getKeybinds() { return m_keybinds; }
 };

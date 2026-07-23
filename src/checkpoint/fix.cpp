@@ -14,9 +14,9 @@ using namespace geode::prelude;
 #include <Geode/modify/PlayerObject.hpp>
 #include <Geode/modify/UILayer.hpp>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
-#include "replay/system.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
+#include "replay/macro.hpp"
 
 SavedCheckpoint PracticeFix::createCheckpoint(CheckpointObject* obj,
                                               uint64_t attemptStartFrame) {
@@ -27,11 +27,11 @@ SavedCheckpoint PracticeFix::createCheckpoint(CheckpointObject* obj,
             .m_checkpoint = obj,
             .m_stackSize = m_platformerCheckpoints.size(),
             .m_attemptStartFrame = attemptStartFrame,
-            .m_frame = Bot::get()->updater().getFrame(),
-            .m_replayInputIndex = Bot::get()->replaySystem().m_inputIndex,
-            .m_seedState = Bot::get()->replaySystem().getCurrentRandomState(),
-            .m_shakeRandomState = Bot::get()->replaySystem().m_shakeRandomState,
-            .m_tps = Bot::get()->updater().m_tps->inner(),
+            .m_frame = GrapeEngine::get()->timeline().getFrame(),
+            .m_replayInputIndex = GrapeEngine::get()->macro().m_inputIndex,
+            .m_seedState = GrapeEngine::get()->macro().getCurrentRandomState(),
+            .m_shakeRandomState = GrapeEngine::get()->macro().m_shakeRandomState,
+            .m_tps = GrapeEngine::get()->timeline().m_tps->inner(),
             .m_persistentItemMap =
                 pl->m_effectManager->m_persistentItemCountMap,
             .m_varianceValues = pl->m_varianceValues,
@@ -74,18 +74,18 @@ void PracticeFix::applyCheckpoint(SavedCheckpoint& cp) {
             m_platformerCheckpoints.pop_back();
         }
 
-        auto bot = Bot::get();
-        auto& updater = bot->updater();
+        auto bot = GrapeEngine::get();
+        auto& updater = bot->timeline();
         updater.m_frameOnLastAttempt = cp.m_attemptStartFrame;
         updater.setFrame(cp.m_frame - cp.m_attemptStartFrame);
-        bot->replaySystem().m_inputIndex = std::min(
+        bot->macro().m_inputIndex = std::min(
             cp.m_replayInputIndex,
-            bot->replaySystem().m_actionAtom.m_actions.size());
-        bot->replaySystem().getCurrentRandomState() = cp.m_seedState;
-        bot->replaySystem().m_shakeRandomState = cp.m_shakeRandomState;
-        if (cp.m_tps != bot->updater().m_tps->inner()) {
-            bot->updater().m_tps->inner() = cp.m_tps;
-            bot->updater().m_tps->notifyChange();
+            bot->macro().m_actionAtom.m_actions.size());
+        bot->macro().getCurrentRandomState() = cp.m_seedState;
+        bot->macro().m_shakeRandomState = cp.m_shakeRandomState;
+        if (cp.m_tps != bot->timeline().m_tps->inner()) {
+            bot->timeline().m_tps->inner() = cp.m_tps;
+            bot->timeline().m_tps->notifyChange();
         }
 
         this->m_brokenObjects = cp.m_brokenObjects;
@@ -214,12 +214,12 @@ void PracticeFix::clearPlatformer(bool assumeLoaded) {
 }
 
 $execute {
-    Bot::get()->practiceFix().m_maxStoredFrames->handle([](uint32_t& frames) {
+    GrapeEngine::get()->practiceFix().m_maxStoredFrames->handle([](uint32_t& frames) {
         if (frames <= 0 || frames > 100'000) {
             frames = 1;
         }
 
-        auto& storedFrames = Bot::get()->practiceFix().m_storedFrames;
+        auto& storedFrames = GrapeEngine::get()->practiceFix().m_storedFrames;
         while (storedFrames.size() > frames) {
             storedFrames.front().m_checkpoint->release();
             storedFrames.pop_front();

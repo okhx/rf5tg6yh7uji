@@ -29,9 +29,9 @@ list(GET IMGUI_VENDOR_CANDIDATES 0 IMGUI_VENDOR_DIR)
 add_library(${PROJECT_NAME} SHARED
     src/main.cpp
 
-    src/bot/bot.cpp
-    src/bot/updater.cpp
-    src/bot/scheduler.cpp
+    src/engine/engine.cpp
+    src/engine/timeline.cpp
+    src/engine/clock.cpp
 
     src/assist/autoclicker.cpp
     src/assist/hitboxes.cpp
@@ -52,7 +52,7 @@ add_library(${PROJECT_NAME} SHARED
     src/ui/mobile_menu.cpp
 
     src/replay/replay.cpp
-    src/replay/system.cpp
+    src/replay/macro.cpp
 
     src/physics/collisions.cpp
     src/physics/gjbasegamelayer.cpp

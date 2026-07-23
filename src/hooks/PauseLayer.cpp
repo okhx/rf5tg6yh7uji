@@ -5,11 +5,11 @@
 #endif
 
 #include "assist/hitboxes.hpp"
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 #include "checkpoint/fix.hpp"
 #include "render/renderer.hpp"
-#include "replay/system.hpp"
+#include "replay/macro.hpp"
 #include "trajectory/trajectory.hpp"
 
 #ifdef GEODE_IS_WINDOWS
@@ -21,22 +21,22 @@ using namespace geode::prelude;
 
 #include <Geode/modify/PauseLayer.hpp>
 
-struct SLPauseLayer : Modify<SLPauseLayer, PauseLayer> {
+struct GrapePauseLayer : Modify<GrapePauseLayer, PauseLayer> {
     void goEdit() {
         if (Renderer::get()->isRecording()) {
             Renderer::get()->signalStop();
         }
 
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
 
-        bot->updater().setPaused(false);
+        bot->timeline().setPaused(false);
 
         bot->trajectory().uninit();
         bot->hitboxes().destroy();
 
         PauseLayer::goEdit();
         bot->practiceFix().removeAll();
-        bot->replaySystem().onExit();
+        bot->macro().onExit();
     }
 
     void customSetup() override {
@@ -46,7 +46,7 @@ struct SLPauseLayer : Modify<SLPauseLayer, PauseLayer> {
         sprite->setScale(0.35f);
 
         CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(
-            sprite, this, menu_selector(SLPauseLayer::onSilicateOpen));
+            sprite, this, menu_selector(GrapePauseLayer::onSilicateOpen));
 
         CCNode* menu = this->getChildByID("right-button-menu");
         menu->addChild(btn);
@@ -58,14 +58,14 @@ struct SLPauseLayer : Modify<SLPauseLayer, PauseLayer> {
 #ifdef GEODE_IS_MOBILE
         MobileMenu::open();
 #else
-        Bot::get()->ui().m_state.m_visible->inner() = true;
+        GrapeEngine::get()->ui().m_state.m_visible->inner() = true;
 #endif
     }
 };
 
 #ifdef GEODE_IS_WINDOWS
 static void releaseButtonsMidhook(SafetyHookContext& ctx) {
-    if (Bot::get()->isPlaying()) {
+    if (GrapeEngine::get()->isPlaying()) {
         ctx.rip += 5;
     }
 }

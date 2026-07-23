@@ -1,11 +1,11 @@
 #include "label.hpp"
-#include "util/paths.hpp"
+#include "util/storage.hpp"
 
 #include <glaze/glaze.hpp>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
-#include "replay/system.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
+#include "replay/macro.hpp"
 
 using namespace geode::prelude;
 
@@ -35,7 +35,7 @@ static std::string resolveFontFile(const Label::LabelConfig& cfg) {
 LabelManager::LabelManager() {
     addLabel("frame", "Tick",
              []() {
-                 auto& updater = Bot::get()->updater();
+                 auto& updater = GrapeEngine::get()->timeline();
                  return fmt::format(
                      "Tick: {}", static_cast<uint64_t>(updater.getFrame()) * 2);
              },
@@ -51,7 +51,7 @@ LabelManager::LabelManager() {
 
     addLabel(
         "tps", "TPS",
-        []() { return fmt::format("TPS: {}", Bot::get()->updater().getTps()); },
+        []() { return fmt::format("TPS: {}", GrapeEngine::get()->timeline().getTps()); },
         {});
 
     addLabel("player_x", "Player X",
@@ -103,7 +103,7 @@ LabelManager::LabelManager() {
 
     addLabel("bot_state", "Bot State",
              []() {
-                 return fmt::format("Bot State: {}", Bot::get()->isPlaying()
+                 return fmt::format("Bot State: {}", GrapeEngine::get()->isPlaying()
                                                          ? "Playing"
                                                          : "Recording");
              },
@@ -112,35 +112,35 @@ LabelManager::LabelManager() {
              []() {
                  return fmt::format(
                      "Random State: {}",
-                     Bot::get()->replaySystem().getCurrentRandomState());
+                     GrapeEngine::get()->macro().getCurrentRandomState());
              },
              {});
     addLabel("shake_state", "Random Shake State",
              []() {
                  return fmt::format(
                      "Shake Random State: {}",
-                     Bot::get()->replaySystem().getCurrentShakeState());
+                     GrapeEngine::get()->macro().getCurrentShakeState());
              },
              {});
     addLabel("action_index", "Action Index",
              []() {
                  return fmt::format(
                      "Action Index: {}/{}",
-                     Bot::get()->replaySystem().getInputIndex(),
-                     Bot::get()->replaySystem().m_actionAtom.length());
+                     GrapeEngine::get()->macro().getInputIndex(),
+                     GrapeEngine::get()->macro().m_actionAtom.length());
              },
              {});
     addLabel("intentional_death", "Intentional Death",
              []() {
-                 if (Bot::get()->isRecording()) {
+                 if (GrapeEngine::get()->isRecording()) {
                      return fmt::format("Intentional Death: {}",
-                                        Bot::get()->updater().m_canDie->inner()
+                                        GrapeEngine::get()->timeline().m_canDie->inner()
                                             ? "Enabled"
                                             : "Disabled");
                  }
 
                  return fmt::format("Intentional Death: {}",
-                                    Bot::get()->updater().m_expectsDeath
+                                    GrapeEngine::get()->timeline().m_expectsDeath
                                         ? "Expects Death"
                                         : "Nothing");
              },
@@ -152,25 +152,25 @@ LabelManager::LabelManager() {
                      PlayLayer::get()->m_gameState.m_currentChannel, true, 0);
                  return fmt::format(
                      "SSB DT: {:.10f}",
-                     Bot::get()->updater().m_lockDeltaMode->inner() ==
-                             BotUpdater::LockDeltaMode::Accuracy
-                         ? tfx - Bot::get()->updater().m_lastTfp
-                         : Bot::get()->updater().getPhysicsDt());
+                     GrapeEngine::get()->timeline().m_lockDeltaMode->inner() ==
+                             FrameEngine::LockDeltaMode::Accuracy
+                         ? tfx - GrapeEngine::get()->timeline().m_lastTfp
+                         : GrapeEngine::get()->timeline().getPhysicsDt());
              },
              {});
 
     addLabel("max_upr", "Dynamic UPR",
              []() {
-                 if (Bot::get()->updater().m_realTime->inner()) {
+                 if (GrapeEngine::get()->timeline().m_realTime->inner()) {
                      return std::string("Dynamic UPR: Uncapped");
                  }
 
-                 if (Bot::get()->updater().m_dynamicUpr->inner()) {
+                 if (GrapeEngine::get()->timeline().m_dynamicUpr->inner()) {
                      return fmt::format("Dynamic UPR: {}",
-                                        Bot::get()->updater().m_stepLimit);
+                                        GrapeEngine::get()->timeline().m_stepLimit);
                  } else {
                      return fmt::format("Static UPR: {}",
-                                        Bot::get()->updater().m_stepLimit);
+                                        GrapeEngine::get()->timeline().m_stepLimit);
                  }
              },
              {});
@@ -205,7 +205,7 @@ struct glz::meta<Label::LabelConfig> {
 void LabelManager::readFromConfig() {
     std::unordered_map<std::string, Label::LabelConfig> labels;
 
-    auto labelConfigPath = silicate::paths::file("labels.json");
+    auto labelConfigPath = grape::paths::file("labels.json");
     if (std::filesystem::exists(labelConfigPath)) {
         auto ec = glz::read_file_json(labels, labelConfigPath.string(),
                                       std::string{});
@@ -230,7 +230,7 @@ void LabelManager::writeToConfig() {
         labels[label.getId()] = label.m_config;
     }
 
-    auto labelConfigPath = silicate::paths::file("labels.json");
+    auto labelConfigPath = grape::paths::file("labels.json");
 
     auto ec = glz::write_file_json<glz::opts{.prettify = true}>(
         labels, labelConfigPath.string(), std::string{});
@@ -325,6 +325,6 @@ void Label::update(bool forceDisable, bool refresh, float& currentHeight) {
     }
 }
 
-$on_mod(Loaded) { Bot::get()->labels().readFromConfig(); }
+$on_mod(Loaded) { GrapeEngine::get()->labels().readFromConfig(); }
 
-$on_mod(DataSaved) { Bot::get()->labels().writeToConfig(); }
+$on_mod(DataSaved) { GrapeEngine::get()->labels().writeToConfig(); }

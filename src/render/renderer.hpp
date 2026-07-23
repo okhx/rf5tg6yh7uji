@@ -1,7 +1,7 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
-#include "../settings/settings.hpp"
+#include "../config/config.hpp"
 #include "../shared/value/value.hpp"
 #include "ffmpeg.hpp"
 #include "texture.hpp"
@@ -102,18 +102,18 @@ struct glz::meta<RendererSettings> {
         "render_audio", &T::m_renderAudio);
 };
 
-#define SL_AV_PTR(type) std::unique_ptr<type, std::function<void(type*)>>
+#define GRAPE_AV_PTR(type) std::unique_ptr<type, std::function<void(type*)>>
 
-#define SL_AV_LEAK(type) [](type*) {}
+#define GRAPE_AV_LEAK(type) [](type*) {}
 
-#define SL_AV_DELETER(type, deleteFunc) \
+#define GRAPE_AV_DELETER(type, deleteFunc) \
     [&](type* ptr) {                    \
         if (ptr) {                      \
             deleteFunc(&ptr);           \
         }                               \
     }
 
-#define SL_AV_DELETER2(type, deleteFunc) \
+#define GRAPE_AV_DELETER2(type, deleteFunc) \
     [&](type* ptr) {                     \
         if (ptr) {                       \
             deleteFunc(ptr);             \
@@ -204,10 +204,10 @@ class Renderer {
     std::atomic<bool> m_halting = false;
     std::atomic<bool> m_collected = false;
 
-    SLValuePtr<bool> m_autoVideoName = SLValue<bool>::create(
-        "renderer.auto_video_name", &SLSettings::get()->automaticVideoName);
-    SLValuePtr<std::string> m_videoNameTemplate = SLValue<std::string>::create(
-        "renderer.video_name_template", &SLSettings::get()->videoNameTemplate);
+    ConfigValuePtr<bool> m_autoVideoName = ConfigValue<bool>::create(
+        "renderer.auto_video_name", &GrapeSettings::get()->automaticVideoName);
+    ConfigValuePtr<std::string> m_videoNameTemplate = ConfigValue<std::string>::create(
+        "renderer.video_name_template", &GrapeSettings::get()->videoNameTemplate);
 
     double m_time = 0;
     RenderTexture m_texture;
@@ -215,12 +215,12 @@ class Renderer {
 
    private:
 
-    SL_AV_PTR(AVCodecContext)
+    GRAPE_AV_PTR(AVCodecContext)
     m_videoCodecCtx = {nullptr,
-                       SL_AV_DELETER(AVCodecContext, ff->avcodec_free_context)};
-    SL_AV_PTR(AVCodecContext)
+                       GRAPE_AV_DELETER(AVCodecContext, ff->avcodec_free_context)};
+    GRAPE_AV_PTR(AVCodecContext)
     m_audioCodecCtx = {nullptr,
-                       SL_AV_DELETER(AVCodecContext, ff->avcodec_free_context)};
+                       GRAPE_AV_DELETER(AVCodecContext, ff->avcodec_free_context)};
     AVFormatContext* m_formatCtx = nullptr;
 
     AVStream* m_videoStream = nullptr;
@@ -231,15 +231,15 @@ class Renderer {
     const AVCodec* m_videoCodec = nullptr;
     const AVCodec* m_audioCodec = nullptr;
 
-    SL_AV_PTR(AVFrame)
-    m_frame = {nullptr, SL_AV_DELETER(AVFrame, ff->av_frame_free)};
-    SL_AV_PTR(AVFrame)
-    m_audioFrame = {nullptr, SL_AV_DELETER(AVFrame, ff->av_frame_free)};
+    GRAPE_AV_PTR(AVFrame)
+    m_frame = {nullptr, GRAPE_AV_DELETER(AVFrame, ff->av_frame_free)};
+    GRAPE_AV_PTR(AVFrame)
+    m_audioFrame = {nullptr, GRAPE_AV_DELETER(AVFrame, ff->av_frame_free)};
 
-    SL_AV_PTR(AVPacket)
-    m_pkt = {nullptr, SL_AV_DELETER(AVPacket, ff->av_packet_free)};
-    SL_AV_PTR(AVPacket)
-    m_audioPkt = {nullptr, SL_AV_DELETER(AVPacket, ff->av_packet_free)};
+    GRAPE_AV_PTR(AVPacket)
+    m_pkt = {nullptr, GRAPE_AV_DELETER(AVPacket, ff->av_packet_free)};
+    GRAPE_AV_PTR(AVPacket)
+    m_audioPkt = {nullptr, GRAPE_AV_DELETER(AVPacket, ff->av_packet_free)};
 
     float m_visualFps = 60.0f;
     std::atomic<bool> m_recording = false;

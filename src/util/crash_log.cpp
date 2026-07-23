@@ -1,5 +1,5 @@
 #include "crash_log.hpp"
-#include "paths.hpp"
+#include "storage.hpp"
 
 #include <Geode/Geode.hpp>
 
@@ -64,7 +64,7 @@ void initDbgHelp() {
 }
 
 std::filesystem::path makeLogPath() {
-    auto dir = silicate::paths::directory("logs");
+    auto dir = grape::paths::directory("logs");
     
     std::time_t t  = std::time(nullptr);
     std::tm     tm = {};
@@ -307,7 +307,7 @@ void crash_log::install() {
     SetUnhandledExceptionFilter(unhandledExceptionFilter);
     std::set_terminate(terminateHandler);
 
-    silicate::paths::directory("logs");
+    grape::paths::directory("logs");
 }
 
 void crash_log::breadcrumb(std::string_view message) {
@@ -398,7 +398,7 @@ void mobileTerminateHandler() {
 }
 
 void crash_log::install() {
-    auto path = silicate::paths::directory("logs") / "mobile-last-crash.log";
+    auto path = grape::paths::directory("logs") / "mobile-last-crash.log";
     auto pathString = path.string();
     std::strncpy(g_mobileCrashPath, pathString.c_str(),
                  sizeof(g_mobileCrashPath) - 1);

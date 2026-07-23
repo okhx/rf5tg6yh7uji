@@ -10,12 +10,12 @@
 
 #include "assist/autoclicker.hpp"
 #include "assist/hitboxes.hpp"
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 #include "checkpoint/fix.hpp"
-#include "replay/system.hpp"
+#include "replay/macro.hpp"
 #include "render/renderer.hpp"
-#include "settings/settings.hpp"
+#include "config/config.hpp"
 #include "trajectory/trajectory.hpp"
 #include "util/crash_log.hpp"
 
@@ -234,22 +234,22 @@ class MobileFeaturePopup final : public geode::Popup {
     }
 
     void buildHitboxes() {
-        auto* settings = SLSettings::get();
-        auto* hitboxes = &Bot::get()->hitboxes();
+        auto* settings = GrapeSettings::get();
+        auto* hitboxes = &GrapeEngine::get()->hitboxes();
         static constexpr const char* names[] = {
             "Player", "Inner Player", "Rotated Player", "Player Circle",
             "Solid",  "Hazard",       "Passable",       "Interactable",
             "Interactable Active"};
         static constexpr int categories[] = {
-            SLSettings::HitboxSettings::Player,
-            SLSettings::HitboxSettings::PlayerInner,
-            SLSettings::HitboxSettings::PlayerRotated,
-            SLSettings::HitboxSettings::PlayerCircle,
-            SLSettings::HitboxSettings::Solid,
-            SLSettings::HitboxSettings::Hazard,
-            SLSettings::HitboxSettings::Passable,
-            SLSettings::HitboxSettings::Interactable,
-            SLSettings::HitboxSettings::InteractableActive};
+            GrapeSettings::HitboxSettings::Player,
+            GrapeSettings::HitboxSettings::PlayerInner,
+            GrapeSettings::HitboxSettings::PlayerRotated,
+            GrapeSettings::HitboxSettings::PlayerCircle,
+            GrapeSettings::HitboxSettings::Solid,
+            GrapeSettings::HitboxSettings::Hazard,
+            GrapeSettings::HitboxSettings::Passable,
+            GrapeSettings::HitboxSettings::Interactable,
+            GrapeSettings::HitboxSettings::InteractableActive};
         m_category = std::clamp(m_category, 0, 8);
         auto* state = &settings->hitboxes.categories[categories[m_category]];
 
@@ -292,8 +292,8 @@ class MobileFeaturePopup final : public geode::Popup {
     }
 
     void buildTrajectory() {
-        auto* settings = SLSettings::get();
-        auto* manager = &Bot::get()->trajectory();
+        auto* settings = GrapeSettings::get();
+        auto* manager = &GrapeEngine::get()->trajectory();
         static constexpr const char* names[] = {
             "Hold",          "Swift",          "Release",
             "Hold Still",    "Swift Still",    "Release Still",
@@ -301,7 +301,7 @@ class MobileFeaturePopup final : public geode::Popup {
             "Hold Right",    "Swift Right",    "Release Right",
             "Hold Follow",   "Swift Follow",   "Release Follow",
             "Hold Opposite", "Swift Opposite", "Release Opposite"};
-        using M = SLSettings::TrajectorySettings::Mode;
+        using M = GrapeSettings::TrajectorySettings::Mode;
         static constexpr int categories[] = {
             M::Hold, M::Swift, M::Release,
             M::Hold | M::Platformer, M::Swift | M::Platformer,
@@ -352,7 +352,7 @@ class MobileFeaturePopup final : public geode::Popup {
     }
 
     void buildAutoclicker() {
-        auto* autoclicker = &Bot::get()->autoclicker();
+        auto* autoclicker = &GrapeEngine::get()->autoclicker();
         static constexpr const char* players[] = {"Player 1", "Player 2",
                                                    "Both"};
         int player = std::clamp(static_cast<int>(autoclicker->m_player), 0, 2);
@@ -381,8 +381,8 @@ class MobileFeaturePopup final : public geode::Popup {
     }
 
     void buildLayout() {
-        auto* settings = SLSettings::get();
-        auto* updater = &Bot::get()->updater();
+        auto* settings = GrapeSettings::get();
+        auto* updater = &GrapeEngine::get()->timeline();
         toggle("Use regular background", 0,
                updater->m_useRegularBg->inner(), [updater](bool value) {
                    updater->m_useRegularBg->inner() = value;
@@ -392,8 +392,8 @@ class MobileFeaturePopup final : public geode::Popup {
     }
 
     void buildNoclip() {
-        auto* settings = SLSettings::get();
-        auto* updater = &Bot::get()->updater();
+        auto* settings = GrapeSettings::get();
+        auto* updater = &GrapeEngine::get()->timeline();
         static constexpr const char* players[] = {"Player 1", "Player 2",
                                                    "Both"};
         int player = std::clamp(static_cast<int>(updater->m_noclipType), 0, 2);
@@ -401,8 +401,8 @@ class MobileFeaturePopup final : public geode::Popup {
         button(players[player], 310.f, rowY(0), [this, updater] {
             int next = (static_cast<int>(updater->m_noclipType) + 1) % 3;
             updater->m_noclipType =
-                static_cast<BotUpdater::NoclipType>(next);
-            SLSettings::get()->noclipPlayer = next;
+                static_cast<FrameEngine::NoclipType>(next);
+            GrapeSettings::get()->noclipPlayer = next;
             rebuild();
         }, 120.f);
         toggle("Death tint", 1, settings->noclipTintEnabled,
@@ -419,8 +419,8 @@ class MobileFeaturePopup final : public geode::Popup {
     }
 
     void buildStepper() {
-        auto* settings = SLSettings::get();
-        auto* updater = &Bot::get()->updater();
+        auto* settings = GrapeSettings::get();
+        auto* updater = &GrapeEngine::get()->timeline();
         toggle("Backwards stepping", 0,
                updater->m_backwardsStepping->inner(), [updater](bool value) {
                    updater->m_backwardsStepping->inner() = value;
@@ -478,10 +478,10 @@ class MobileFeaturePopup final : public geode::Popup {
                  renderer->m_settings.m_extension = value;
              });
         button("Save PC preset", 185.f, rowY(6), [renderer] {
-            auto path = silicate::paths::directory("presets") /
+            auto path = grape::paths::directory("presets") /
                         "mobile-render.json";
             renderer->saveSettings(path);
-            SLSettings::get()->lastLoadedPreset = "mobile-render";
+            GrapeSettings::get()->lastLoadedPreset = "mobile-render";
         }, 145.f);
     }
 
@@ -520,23 +520,23 @@ class MobileMacroEditorPopup final : public geode::Popup {
     CCLabelBMFont* m_inputLabel = nullptr;
 
     slc::ActionAtom& atom() {
-        return Bot::get()->replaySystem().m_actionAtom;
+        return GrapeEngine::get()->macro().m_actionAtom;
     }
 
     int currentInputIndex() {
-        auto* bot = Bot::get();
+        auto* bot = GrapeEngine::get();
         const auto size = atom().m_actions.size();
         if (size == 0) return -1;
         if (bot->isRecording()) return static_cast<int>(size - 1);
 
-        const size_t next = bot->replaySystem().m_inputIndex;
+        const size_t next = bot->macro().m_inputIndex;
         return next == 0
             ? -1
             : static_cast<int>(std::min(next - 1, size - 1));
     }
 
     void normalize() {
-        auto& replay = Bot::get()->replaySystem();
+        auto& replay = GrapeEngine::get()->macro();
         auto& inputs = atom().m_actions;
         std::stable_sort(inputs.begin(), inputs.end(), [](const auto& a,
                                                           const auto& b) {
@@ -547,9 +547,9 @@ class MobileMacroEditorPopup final : public geode::Popup {
             input.recalculateDelta(previous);
             previous = input.m_frame;
         }
-        if (Bot::get()->isPlaying()) {
-            replay.seekAfterFrame(Bot::get()->updater().getFrame());
-        } else if (Bot::get()->isRecording()) {
+        if (GrapeEngine::get()->isPlaying()) {
+            replay.seekAfterFrame(GrapeEngine::get()->timeline().getFrame());
+        } else if (GrapeEngine::get()->isRecording()) {
             replay.m_inputIndex = inputs.size();
         } else {
             replay.m_inputIndex = 0;
@@ -620,7 +620,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
         m_selected = std::clamp(
             m_selected, 0, static_cast<int>(inputs.size()) - 1);
         auto* input = &inputs[m_selected];
-        auto* bot = Bot::get();
+        auto* bot = GrapeEngine::get();
         const int currentInput = currentInputIndex();
         const bool isCurrent = (bot->isRecording() || bot->isPlaying()) &&
                                m_selected == currentInput;
@@ -744,7 +744,7 @@ class MobileMacroEditorPopup final : public geode::Popup {
     }
 
     void update(float) override {
-        auto* bot = Bot::get();
+        auto* bot = GrapeEngine::get();
         if ((!bot->isRecording() && !bot->isPlaying()) ||
             atom().m_actions.empty()) {
             if (m_inputLabel) m_inputLabel->setColor({255, 220, 90});
@@ -809,7 +809,7 @@ bool MobileMenu::init() {
 }
 
 void MobileMenu::update(float) {
-    auto* bot = Bot::get();
+    auto* bot = GrapeEngine::get();
     if (m_recordSprite) {
         m_recordSprite->setString(bot->isRecording() ? "Stop recording"
                                                      : "Start recording");
@@ -836,8 +836,8 @@ void MobileMenu::update(float) {
     }
     if (m_frameLabel) {
         m_frameLabel->setString(
-            fmt::format("Frame {}  |  {} inputs", bot->updater().getDisplayFrame(),
-                        bot->replaySystem().m_actionAtom.length())
+            fmt::format("Frame {}  |  {} inputs", bot->timeline().getDisplayFrame(),
+                        bot->macro().m_actionAtom.length())
                 .c_str());
     }
     if (m_statusLabel) m_statusLabel->setString(m_status.c_str());
@@ -995,9 +995,9 @@ void MobileMenu::rebuildPage() {
 }
 
 void MobileMenu::buildRecordPage() {
-    auto* bot = Bot::get();
-    auto& updater = bot->updater();
-    auto& replay = bot->replaySystem();
+    auto* bot = GrapeEngine::get();
+    auto& updater = bot->timeline();
+    auto& replay = bot->macro();
 
     m_frameLabel = CCLabelBMFont::create("", "bigFont.fnt");
     m_frameLabel->setScale(.36f);
@@ -1010,12 +1010,12 @@ void MobileMenu::buildRecordPage() {
         bot->isRecording() ? "Stop recording" : "Start recording",
         columnX(0), rowY(1), [this, bot, &replay, &updater] {
             if (bot->isRecording()) {
-                bot->setMode(Bot::Stopped);
+                bot->setMode(GrapeEngine::Stopped);
             } else {
                 if (!replay.m_actionAtom.m_actions.empty()) {
                     replay.createBackup();
                 }
-                bot->setMode(Bot::Recording);
+                bot->setMode(GrapeEngine::Recording);
                 replay.m_inputIndex = 0;
                 if (auto* playLayer = PlayLayer::get()) {
                     playLayer->resetLevel();
@@ -1034,7 +1034,7 @@ void MobileMenu::buildRecordPage() {
         bot->isPlaying() ? "Stop playback" : "Start playback", columnX(1),
         rowY(1), [this, bot, &replay] {
             if (bot->isPlaying()) {
-                bot->setMode(Bot::Stopped);
+                bot->setMode(GrapeEngine::Stopped);
             } else {
                 if (auto* playLayer = PlayLayer::get(); playLayer &&
                     (playLayer->m_hasCompletedLevel ||
@@ -1042,7 +1042,7 @@ void MobileMenu::buildRecordPage() {
                     m_status = "Close the completion screen before playback";
                     return;
                 }
-                bot->setMode(Bot::Playing);
+                bot->setMode(GrapeEngine::Playing);
                 replay.m_inputIndex = 0;
                 if (auto* playLayer = PlayLayer::get()) {
                     playLayer->resetLevel();
@@ -1116,7 +1116,7 @@ void MobileMenu::buildRecordPage() {
                       replay.load(path);
                       if (replay.m_lastOperationSucceeded) {
                           if (completionOpen) {
-                              Bot::get()->setMode(Bot::Stopped);
+                              GrapeEngine::get()->setMode(GrapeEngine::Stopped);
                               replay.m_inputIndex = 0;
                           } else if (playLayer) {
                               playLayer->resetLevel();
@@ -1156,7 +1156,7 @@ void MobileMenu::buildRecordPage() {
         m_macroPick.spawn(
             geode::utils::file::pick(
                 geode::utils::file::PickMode::OpenFile,
-                ReplaySystem::converterFileOptions()),
+                MacroEngine::converterFileOptions()),
             [this](geode::utils::file::PickResult result) {
                 if (result.isErr()) {
                     m_status = "File picker failed";
@@ -1165,7 +1165,7 @@ void MobileMenu::buildRecordPage() {
                 auto path = std::move(result).unwrap();
                 if (!path) return;
                 auto converted =
-                    Bot::get()->replaySystem().convertAndPlay(*path);
+                    GrapeEngine::get()->macro().convertAndPlay(*path);
                 m_status = converted.isOk()
                     ? fmt::format("Converted [{} inputs]", converted.unwrap())
                     : converted.unwrapErr();
@@ -1181,8 +1181,8 @@ void MobileMenu::buildRecordPage() {
 }
 
 void MobileMenu::buildAssistPage() {
-    auto* bot = Bot::get();
-    auto& updater = bot->updater();
+    auto* bot = GrapeEngine::get();
+    auto& updater = bot->timeline();
     auto& hitboxes = bot->hitboxes();
     auto& trajectory = bot->trajectory();
 
@@ -1250,9 +1250,9 @@ void MobileMenu::buildAssistPage() {
 }
 
 void MobileMenu::buildSettingsPage() {
-    auto* bot = Bot::get();
-    auto& updater = bot->updater();
-    auto& replay = bot->replaySystem();
+    auto* bot = GrapeEngine::get();
+    auto& updater = bot->timeline();
+    auto& replay = bot->macro();
 
     addToggle("Bot enabled", 0, 0, bot->m_enabled->inner(), [bot](bool value) {
         bot->m_enabled->inner() = value;
@@ -1279,8 +1279,8 @@ void MobileMenu::buildSettingsPage() {
               });
 
     addToggle("End screen menu", 3, 1,
-              SLSettings::get()->showEndMenuButton, [](bool value) {
-                  SLSettings::get()->showEndMenuButton = value;
+              GrapeSettings::get()->showEndMenuButton, [](bool value) {
+                  GrapeSettings::get()->showEndMenuButton = value;
               });
 
     addNumberInput(

@@ -1,37 +1,37 @@
-#ifndef BOT_HPP
-#define BOT_HPP
+#ifndef GRAPE_ENGINE_HPP
+#define GRAPE_ENGINE_HPP
 
 #include <array>
 #include <memory>
 
-#include "settings/settings.hpp"
+#include "config/config.hpp"
 #include "shared/value/value.hpp"
 
 
-#ifdef SL_DEV_MODE
-#define SL_LOG_DEV(...)                \
-    {                                  \
-        geode::log::info(__VA_ARGS__); \
+#if defined(GRAPE_DEV_MODE) || defined(SL_DEV_MODE)
+#define GRAPE_LOG_DEV(...)               \
+    {                                    \
+        geode::log::info(__VA_ARGS__);   \
     }
 #else
-#define SL_LOG_DEV(...) \
-    {                   \
+#define GRAPE_LOG_DEV(...) \
+    {                       \
     }
 #endif
 
-class BotUpdater;
-class BotScheduler;
+class FrameEngine;
+class GameScheduler;
 #ifndef GEODE_IS_ANDROID
 class UIManager;
 #endif
-class ReplaySystem;
+class MacroEngine;
 class PracticeFix;
 class TrajectoryManager;
 class Autoclicker;
 class Hitboxes;
 class LabelManager;
 
-class Bot {
+class GrapeEngine {
    public:
     enum Mode {
         Stopped,
@@ -40,14 +40,14 @@ class Bot {
     };
 
    public:
-    static Bot* get() {
-        static Bot instance;
+    static GrapeEngine* get() {
+        static GrapeEngine instance;
 
         return &instance;
     }
 
-    Bot(Bot const&) = delete;
-    void operator=(Bot const&) = delete;
+    GrapeEngine(GrapeEngine const&) = delete;
+    void operator=(GrapeEngine const&) = delete;
 
     void initialize();
     inline bool initialized() { return m_hasInitialized; };
@@ -58,12 +58,12 @@ class Bot {
     bool isPlaying() { return m_mode == Playing; }
     void setMode(Mode mode) { m_mode = mode; }
 
-    BotUpdater& updater();
-    BotScheduler& scheduler();
+    FrameEngine& timeline();
+    GameScheduler& clock();
 #ifndef GEODE_IS_ANDROID
     UIManager& ui();
 #endif
-    ReplaySystem& replaySystem();
+    MacroEngine& macro();
     PracticeFix& practiceFix();
     TrajectoryManager& trajectory();
     Autoclicker& autoclicker();
@@ -71,14 +71,14 @@ class Bot {
     LabelManager& labels();
 
     Mode m_mode = Stopped;
-    SLValuePtr<bool> m_enabled = SLValue<bool>::create(
-        "_________________bot.enabled", &SLSettings::get()->botEnabled);
+    ConfigValuePtr<bool> m_enabled = ConfigValue<bool>::create(
+        "_________________bot.enabled", &GrapeSettings::get()->botEnabled);
 
    private:
     bool m_hasInitialized = false;
 
-    Bot();
-    ~Bot();
+    GrapeEngine();
+    ~GrapeEngine();
 
     class Impl;
     std::unique_ptr<Impl> m_impl;

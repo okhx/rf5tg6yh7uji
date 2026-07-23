@@ -4,7 +4,7 @@
 #include <Geode/binding/GJBaseGameLayer.hpp>
 #include <deque>
 
-#include "settings/settings.hpp"
+#include "config/config.hpp"
 #include "shared/value/value.hpp"
 
 struct HitboxTrailUnit {
@@ -52,12 +52,12 @@ class Hitboxes {
    public:
     bool m_initialized = false;
 
-    SLValuePtr<bool> m_enabled =
-        SLValue<bool>::create("hitboxes.enabled", &_enabled);
-    SLValuePtr<bool> m_trailEnabled = SLValue<bool>::create(
-        "hitboxes.trail_enabled", &SLSettings::get()->hitboxes.trailEnabled);
-    SLValuePtr<double> m_width = SLValue<double>::create(
-        "hitboxes.width", &SLSettings::get()->hitboxes.width);
+    ConfigValuePtr<bool> m_enabled =
+        ConfigValue<bool>::create("hitboxes.enabled", &_enabled);
+    ConfigValuePtr<bool> m_trailEnabled = ConfigValue<bool>::create(
+        "hitboxes.trail_enabled", &GrapeSettings::get()->hitboxes.trailEnabled);
+    ConfigValuePtr<double> m_width = ConfigValue<double>::create(
+        "hitboxes.width", &GrapeSettings::get()->hitboxes.width);
 
     void init(GJBaseGameLayer* pl);
     void clearTrail();

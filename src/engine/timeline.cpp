@@ -1,4 +1,4 @@
-#include "updater.hpp"
+#include "timeline.hpp"
 
 #ifdef GEODE_IS_WINDOWS
 #include <Zydis/Zydis.h>
@@ -14,11 +14,11 @@
 #include "Geode/cocos/CCScheduler.h"
 #include "assist/autoclicker.hpp"
 #include "assist/hitboxes.hpp"
-#include "bot.hpp"
+#include "engine.hpp"
 #include "checkpoint/fix.hpp"
 #include "label/label.hpp"
 #include "render/renderer.hpp"
-#include "replay/system.hpp"
+#include "replay/macro.hpp"
 #include "trajectory/trajectory.hpp"
 #ifdef GEODE_IS_WINDOWS
 #include "util/midhook.hpp"
@@ -27,7 +27,7 @@
 
 using namespace geode::prelude;
 
-float BotUpdater::getTimeWarp() {
+float FrameEngine::getTimeWarp() {
     if (auto pl = PlayLayer::get(); pl) {
         return pl->m_gameState.m_timeWarp;
     }
@@ -40,7 +40,7 @@ float BotUpdater::getTimeWarp() {
  * This also handles overflow from previous frames and manages
  * rendering behavior.
  */
-void BotUpdater::calculateSteps(float dt, float targetDt) {
+void FrameEngine::calculateSteps(float dt, float targetDt) {
     dt += m_tpsOverflow;
 
     float wantedDt = targetDt * fminf(getTimeWarp(), 1.0);
@@ -101,10 +101,10 @@ void BotUpdater::calculateSteps(float dt, float targetDt) {
 
 static void runFastLockDeltaUpdates(float realDt,
                                     std::function<void(float)> update) {
-    auto bot = Bot::get();
-    auto& updater = bot->updater();
+    auto bot = GrapeEngine::get();
+    auto& updater = bot->timeline();
 
-    auto& nextInput = Bot::get()->replaySystem().getCurrentQueuedInput();
+    auto& nextInput = GrapeEngine::get()->macro().getCurrentQueuedInput();
 
     SCOPED_TIMER("fastLockDelta")
     updater.m_allowedToProcessActions = false;
@@ -124,7 +124,7 @@ static void runFastLockDeltaUpdates(float realDt,
         int steps = updater.totalStepCount;
 
         while (steps > 0) {
-            auto& input = Bot::get()->replaySystem().getCurrentQueuedInput();
+            auto& input = GrapeEngine::get()->macro().getCurrentQueuedInput();
             uint64_t safeSteps =
                 input.has_value() ? input->m_frame - updater.getFrame() : steps;
             safeSteps = std::min(safeSteps, static_cast<uint64_t>(steps));
@@ -152,8 +152,8 @@ static void runSlowLockDeltaUpdates(float realDt,
         pl = LevelEditorLayer::get();
     }
 
-    auto bot = Bot::get();
-    auto& updater = bot->updater();
+    auto bot = GrapeEngine::get();
+    auto& updater = bot->timeline();
 
     float newTfx = pl->timeForPos(pl->m_player1->m_position, 0,
                                   pl->m_gameState.m_currentChannel, true, 0);
@@ -199,9 +199,9 @@ static void runSlowLockDeltaUpdates(float realDt,
     }
 }
 
-void BotUpdater::runUpdates(std::function<void(float)> update, float realDt,
+void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
                             bool frozen) {
-    auto bot = Bot::get();
+    auto bot = GrapeEngine::get();
     m_allowedToProcessActions = true;
 
     if (frozen) {
@@ -299,15 +299,15 @@ void BotUpdater::runUpdates(std::function<void(float)> update, float realDt,
     }
 }
 
-void BotUpdater::breakLoop() {
+void FrameEngine::breakLoop() {
     this->estimatedStepCount = 0;
     this->totalStepCount = 0;
     this->m_tpsOverflow = 0.0;
 }
 
-bool BotUpdater::isLockDelta() { return m_lockDelta->inner(); }
+bool FrameEngine::isLockDelta() { return m_lockDelta->inner(); }
 
-void BotUpdater::setFps(double fps) {
+void FrameEngine::setFps(double fps) {
     if (fps <= 0.0) {
         return;
     }
@@ -321,7 +321,7 @@ void BotUpdater::setFps(double fps) {
     gm->setGameVariable("0116", true);
 }
 
-void BotUpdater::setSpeed(double speed) {
+void FrameEngine::setSpeed(double speed) {
     if (speed <= 0.0) {
         return;
     }
@@ -332,7 +332,7 @@ void BotUpdater::setSpeed(double speed) {
     gm->setGameVariable("0116", true);
 }
 
-void BotUpdater::updateAudioSpeedhack() {
+void FrameEngine::updateAudioSpeedhack() {
     FMOD::ChannelGroup* master;
     FMODAudioEngine::get()->m_system->getMasterChannelGroup(&master);
 
@@ -343,7 +343,7 @@ void BotUpdater::updateAudioSpeedhack() {
     }
 }
 
-void BotUpdater::runFrozenTick() {
+void FrameEngine::runFrozenTick() {
     if (m_frozenScheduledFunctions.empty()) {
         return;
     }
@@ -361,11 +361,11 @@ void BotUpdater::runFrozenTick() {
     m_frozenScheduledFunctions.clear();
 }
 
-inline double BotUpdater::getVisualDt() {
+inline double FrameEngine::getVisualDt() {
     return 1. / (m_fps * m_speedhack->inner());
 }
 
-uint32_t BotUpdater::getFrame() {
+uint32_t FrameEngine::getFrame() {
     if (auto pl = PlayLayer::get(); pl) {
         return m_frame + m_frameOnLastAttempt;
     }
@@ -382,7 +382,7 @@ uint32_t BotUpdater::getFrame() {
     return 0;
 }
 
-uint32_t BotUpdater::getDisplayFrame() {
+uint32_t FrameEngine::getDisplayFrame() {
     if (auto* lel = LevelEditorLayer::get(); lel) {
         return static_cast<uint32_t>(std::max(
             0, static_cast<int>(lel->m_gameState.m_currentProgress * 2) - 1));
@@ -390,18 +390,18 @@ uint32_t BotUpdater::getDisplayFrame() {
     return getFrame();
 }
 
-bool BotUpdater::useFastLockDelta() {
+bool FrameEngine::useFastLockDelta() {
 #ifdef GEODE_IS_MOBILE
     return false;
 #else
     return this->m_lockDelta->inner() &&
            this->m_lockDeltaMode->inner() ==
-               BotUpdater::LockDeltaMode::Performance &&
-           Bot::get()->isPlaying() && !Renderer::get()->isRecording();
+               FrameEngine::LockDeltaMode::Performance &&
+           GrapeEngine::get()->isPlaying() && !Renderer::get()->isRecording();
 #endif
 }
 
-void BotUpdater::backwardsStep(int n) {
+void FrameEngine::backwardsStep(int n) {
     m_paused->inner() = true;
 
     if (n <= 0) {
@@ -409,13 +409,13 @@ void BotUpdater::backwardsStep(int n) {
     }
 
     if (m_backwardsStepping->inner()) {
-        auto* bot = Bot::get();
+        auto* bot = GrapeEngine::get();
         if (!bot->practiceFix().canRestoreState()) return;
 
         bot->practiceFix().m_isBackstep = true;
         this->scheduleFrozenFunction([n](float) {
             auto pl = PlayLayer::get();
-            auto bot = Bot::get();
+            auto bot = GrapeEngine::get();
 
             if (!pl) {
                 bot->practiceFix().m_isBackstep = false;
@@ -439,8 +439,8 @@ void BotUpdater::backwardsStep(int n) {
     }
 }
 
-void BotUpdater::findBestFrameCandidate() {
-    auto bot = Bot::get();
+void FrameEngine::findBestFrameCandidate() {
+    auto bot = GrapeEngine::get();
     auto pl = PlayLayer::get();
     if (!pl) return;
     if (!m_backwardsStepping->inner()) return;
@@ -462,7 +462,7 @@ void BotUpdater::findBestFrameCandidate() {
     const uint32_t maxIters =
         std::max<uint32_t>(1u, bot->practiceFix().m_maxStoredFrames->inner());
     while (!pl->m_playerDied && iters < maxIters) {
-        using Mode = SLSettings::TrajectorySettings::Mode;
+        using Mode = GrapeSettings::TrajectorySettings::Mode;
 
         int mode = pl->m_player1->m_jumpBuffered ? Mode::Release : Mode::Hold;
 
@@ -491,8 +491,8 @@ void BotUpdater::findBestFrameCandidate() {
 
 }
 
-void BotUpdater::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
-    auto* bot = Bot::get();
+void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
+    auto* bot = GrapeEngine::get();
     if (!playLayer || !bot->isEnabled() || m_onlyRefresh ||
         playLayer->m_resumeTimer > 0) {
         return;
@@ -527,25 +527,25 @@ void BotUpdater::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
 
 #ifdef GEODE_IS_WINDOWS
 static void earlyUpdateMidhook(SafetyHookContext&) {
-    Bot* bot = Bot::get();
-    if (bot->updater().m_onlyRefresh) return;
+    GrapeEngine* bot = GrapeEngine::get();
+    if (bot->timeline().m_onlyRefresh) return;
 
     PlayLayer* pl = PlayLayer::get();
     if (!pl) return;
 
-    if (!pl->m_playerDied && bot->updater().m_backwardsStepping->inner() &&
+    if (!pl->m_playerDied && bot->timeline().m_backwardsStepping->inner() &&
         !Renderer::get()->isRecording()) {
         CheckpointObject* checkpoint = pl->createCheckpoint();
         checkpoint->retain();
         bot->practiceFix().saveState(
-            checkpoint, Bot::get()->updater().m_frameOnLastAttempt);
+            checkpoint, GrapeEngine::get()->timeline().m_frameOnLastAttempt);
     }
 }
 
 static void frameUpdateMidhook(SafetyHookContext&) {
     SCOPED_TIMER("frameUpdate")
 
-    auto bot = Bot::get();
+    auto bot = GrapeEngine::get();
     if (!bot->isEnabled()) return;
 
     auto pl = GJBaseGameLayer::get();
@@ -556,7 +556,7 @@ static void frameUpdateMidhook(SafetyHookContext&) {
     }
 
     PlayLayer* pll = PlayLayer::get();
-    auto& updater = bot->updater();
+    auto& updater = bot->timeline();
 
     if (!pl->m_playerDied) {
         if (pll) {
@@ -568,7 +568,7 @@ static void frameUpdateMidhook(SafetyHookContext&) {
         auto trajectory = bot->trajectory().unsafeInner();
         if (trajectory && pll && updater.m_fullGamePrediction->inner() &&
             updater.m_preventDeath->inner()) {
-            using Mode = SLSettings::TrajectorySettings::Mode;
+            using Mode = GrapeSettings::TrajectorySettings::Mode;
 
             {
                 int mode = Mode::Player1;
@@ -579,13 +579,13 @@ static void frameUpdateMidhook(SafetyHookContext&) {
                                                      .m_bypassConfig = true,
                                                  });
                 if (pred.score <= 2) {
-                    bot->updater().setPaused(true);
+                    bot->timeline().setPaused(true);
                 }
 
-                if (bot->updater().m_autoFlipOnDeath->inner()) {
+                if (bot->timeline().m_autoFlipOnDeath->inner()) {
                     pl->queueButton(1, !pl->m_player1->m_jumpBuffered, false,
                                     0.0);
-                    bot->updater().setPaused(false);
+                    bot->timeline().setPaused(false);
                 }
             }
 
@@ -598,13 +598,13 @@ static void frameUpdateMidhook(SafetyHookContext&) {
                                                      .m_bypassConfig = true,
                                                  });
                 if (pred.score <= 2) {
-                    bot->updater().setPaused(true);
+                    bot->timeline().setPaused(true);
                 }
 
-                if (bot->updater().m_autoFlipOnDeath->inner()) {
+                if (bot->timeline().m_autoFlipOnDeath->inner()) {
                     pl->queueButton(1, !pl->m_player2->m_jumpBuffered, true,
                                     0.0);
-                    bot->updater().setPaused(false);
+                    bot->timeline().setPaused(false);
                 }
             }
         }
@@ -620,23 +620,23 @@ static void physDtMidhook(SafetyHookContext& ctx) {
     if (!pl) return;
     if (LevelEditorLayer::get()) return;
 
-    auto bot = Bot::get();
+    auto bot = GrapeEngine::get();
     if (!bot->isEnabled()) return;
-    if (bot->updater().m_onlyRefresh) return;
+    if (bot->timeline().m_onlyRefresh) return;
 
-    ctx.xmm1.f64[0] *= bot->updater().m_tps->inner() / 60.0;
+    ctx.xmm1.f64[0] *= bot->timeline().m_tps->inner() / 60.0;
     ctx.rip += 0x08;
 }
 
 static void physStepCountMidhook(SafetyHookContext& ctx) {
     if (LevelEditorLayer::get()) return;
-    auto bot = Bot::get();
+    auto bot = GrapeEngine::get();
     if (!bot->isEnabled()) return;
-    bool fastBypass = bot->updater().useFastLockDelta() ||
-                      !bot->updater().m_lockDelta->inner();
+    bool fastBypass = bot->timeline().useFastLockDelta() ||
+                      !bot->timeline().m_lockDelta->inner();
     if (!fastBypass && PlayLayer::get()) return;
 
-    ctx.rdx = 2 - bot->updater().estimatedStepCount;  
+    ctx.rdx = 2 - bot->timeline().estimatedStepCount;  
 }
 
 static void restorePhysDtHook(SafetyHookContext& ctx) {
@@ -644,14 +644,14 @@ static void restorePhysDtHook(SafetyHookContext& ctx) {
     if (!pl) return;
     if (LevelEditorLayer::get()) return;
 
-    auto bot = Bot::get();
+    auto bot = GrapeEngine::get();
     if (!bot->isEnabled()) return;
-    bool fastBypass = bot->updater().useFastLockDelta() ||
-                      !bot->updater().m_lockDelta->inner();
+    bool fastBypass = bot->timeline().useFastLockDelta() ||
+                      !bot->timeline().m_lockDelta->inner();
     if (!fastBypass && PlayLayer::get()) return;
 
     double newDt =
-        bot->updater().getPhysicsDt() * bot->updater().estimatedStepCount;
+        bot->timeline().getPhysicsDt() * bot->timeline().estimatedStepCount;
 
     ctx.xmm9.f64[0] = newDt;
 }
@@ -671,34 +671,34 @@ $execute {
 
 $execute {
 
-    Bot::get()->updater().m_speedhack->handle(
-        [](double) { Bot::get()->updater().updateAudioSpeedhack(); });
+    GrapeEngine::get()->timeline().m_speedhack->handle(
+        [](double) { GrapeEngine::get()->timeline().updateAudioSpeedhack(); });
 
-    Bot::get()->updater().m_paused->handle([](bool& paused) {
+    GrapeEngine::get()->timeline().m_paused->handle([](bool& paused) {
         auto pl = PlayLayer::get();
         if (!pl || pl->m_isPaused || Renderer::get()->isRecording()) {
             paused = false;
         }
     });
 
-    Bot::get()->updater().m_stepOnce->handle([](bool&) {
-        auto& paused = Bot::get()->updater().m_paused;
+    GrapeEngine::get()->timeline().m_stepOnce->handle([](bool&) {
+        auto& paused = GrapeEngine::get()->timeline().m_paused;
 
         paused->inner() = true;
         paused->notifyChange();
     });
 
-    Bot::get()->updater().m_stepBackwards->handle([](bool& paused) {
+    GrapeEngine::get()->timeline().m_stepBackwards->handle([](bool& paused) {
         auto pl = PlayLayer::get();
-        if (pl && paused && Bot::get()->practiceFix().canRestoreState() &&
+        if (pl && paused && GrapeEngine::get()->practiceFix().canRestoreState() &&
             !Renderer::get()->isRecording()) {
-            Bot::get()->updater().backwardsStep();
+            GrapeEngine::get()->timeline().backwardsStep();
         }
 
         paused = false;
     });
 
-    Bot::get()->updater().m_noMirror->handle([](bool& noMirror) {
+    GrapeEngine::get()->timeline().m_noMirror->handle([](bool& noMirror) {
         auto pl = PlayLayer::get();
         if (!pl) return;
         if (noMirror) {
@@ -709,6 +709,6 @@ $execute {
         }
     });
 
-    Bot::get()->updater().m_predictBestPath->handle(
-        [](bool&) { Bot::get()->updater().findBestFrameCandidate(); });
+    GrapeEngine::get()->timeline().m_predictBestPath->handle(
+        [](bool&) { GrapeEngine::get()->timeline().findBestFrameCandidate(); });
 }

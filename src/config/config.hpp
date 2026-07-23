@@ -1,5 +1,5 @@
 #pragma once
-#include "util/paths.hpp"
+#include "util/storage.hpp"
 
 #include <Geode/Geode.hpp>
 #include <fstream>
@@ -9,7 +9,7 @@
 
 #include "../shared/value/value.hpp"
 
-class SLSettings {
+class GrapeSettings {
    public:
     bool botEnabled = true;
 
@@ -178,15 +178,15 @@ class SLSettings {
         };
     } hitboxes;
 
-    static SLSettings* get() {
-        static SLSettings instance;
+    static GrapeSettings* get() {
+        static GrapeSettings instance;
         return &instance;
     }
 };
 
 template <>
-struct glz::meta<SLSettings> {
-    using T = SLSettings;
+struct glz::meta<GrapeSettings> {
+    using T = GrapeSettings;
     static constexpr auto value = object(
         "global_enabled", &T::botEnabled,
         "ui_visible", hide{&T::uiVisible},
@@ -254,16 +254,16 @@ struct glz::meta<SLSettings> {
 
 $on_mod(DataSaved) {
     std::filesystem::path settingsPath =
-        silicate::paths::file("settings.json");
+        grape::paths::file("settings.json");
     std::ofstream settingsFd(settingsPath);
 
-    auto settings = SLSettings::get();
+    auto settings = GrapeSettings::get();
     std::string serialized =
         glz::write<glz::opts{.prettify = true}>(*settings).value_or(
             std::string{});
     settingsFd << serialized;
 
     std::filesystem::path keybindsPath =
-        silicate::paths::file("keybinds.json");
-    SLBindingManager::get()->writeToFile(keybindsPath);
+        grape::paths::file("keybinds.json");
+    BindingManager::get()->writeToFile(keybindsPath);
 }

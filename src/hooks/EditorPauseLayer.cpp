@@ -3,15 +3,15 @@
 #include <Geode/modify/EditorPauseLayer.hpp>
 
 #include "assist/hitboxes.hpp"
-#include "bot/bot.hpp"
+#include "engine/engine.hpp"
 #include "trajectory/trajectory.hpp"
 
 using namespace geode::prelude;
 
-struct SLEditorPauseLayer : Modify<SLEditorPauseLayer, EditorPauseLayer> {
+struct GrapeEditorPauseLayer : Modify<GrapeEditorPauseLayer, EditorPauseLayer> {
     void onSaveAndPlay(cocos2d::CCObject* sender) {
-        Bot::get()->hitboxes().destroy();
-        Bot::get()->trajectory().uninit();
+        GrapeEngine::get()->hitboxes().destroy();
+        GrapeEngine::get()->trajectory().uninit();
 
         EditorPauseLayer::onSaveAndPlay(sender);
     }

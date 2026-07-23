@@ -1,14 +1,14 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/EndLevelLayer.hpp>
 
-#include "settings/settings.hpp"
+#include "config/config.hpp"
 #include "render/renderer.hpp"
 #include "ui/mobile_menu.hpp"
 
 using namespace geode::prelude;
 
 #ifdef GEODE_IS_MOBILE
-struct SLEndLevelLayer : Modify<SLEndLevelLayer, EndLevelLayer> {
+struct GrapeEndLevelLayer : Modify<GrapeEndLevelLayer, EndLevelLayer> {
 #ifdef GEODE_IS_IOS
     void enterAnimFinished() override {
         EndLevelLayer::enterAnimFinished();
@@ -18,12 +18,12 @@ struct SLEndLevelLayer : Modify<SLEndLevelLayer, EndLevelLayer> {
 
     void customSetup() override {
         EndLevelLayer::customSetup();
-        if (!SLSettings::get()->showEndMenuButton) return;
+        if (!GrapeSettings::get()->showEndMenuButton) return;
 
         auto* sprite = CCSprite::create("grape.png"_spr);
         sprite->setScale(.32f);
         auto* button = CCMenuItemSpriteExtra::create(
-            sprite, this, menu_selector(SLEndLevelLayer::onGrape));
+            sprite, this, menu_selector(GrapeEndLevelLayer::onGrape));
         auto* menu = CCMenu::create();
         menu->addChild(button);
         auto size = CCDirector::get()->getWinSize();

@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <cmath>
 
-#include "bot/bot.hpp"
+#include "engine/engine.hpp"
 #include "ccTypes.h"
-#include "settings/settings.hpp"
+#include "config/config.hpp"
 #include "trajectory/trajectory.hpp"
 
 
@@ -58,7 +58,7 @@ struct ResolvedObjectHB {
     ResolvedHBCategory  hazard;
 };
 
-static ResolvedHBCategory resolveHB(SLSettings::HitboxSettings& s,
+static ResolvedHBCategory resolveHB(GrapeSettings::HitboxSettings& s,
                                     int type) noexcept {
     auto& c = s.categories[type];
     const float a = c.colors[3];
@@ -74,8 +74,8 @@ static ResolvedHBCategory resolveHB(SLSettings::HitboxSettings& s,
 static void drawPlayerHitbox(cocos2d::CCDrawNode*       node,
                              GJBaseGameLayer*            pl,
                              PlayerObject*               player,
-                             SLSettings::HitboxSettings& settings) {
-    using Type = SLSettings::HitboxSettings::Type;
+                             GrapeSettings::HitboxSettings& settings) {
+    using Type = GrapeSettings::HitboxSettings::Type;
     if (!player) return;
 
     const float width  = settings.width / pl->m_gameState.m_cameraZoom;
@@ -121,7 +121,7 @@ static void drawObjectHitbox(cocos2d::CCDrawNode*    node,
         return;
 
     if (object == pl->m_player1 || object == pl->m_player2 ||
-        Bot::get()->trajectory().isFakePlayer((PlayerObject*)object))
+        GrapeEngine::get()->trajectory().isFakePlayer((PlayerObject*)object))
         return;
 
     const float width = hb.width;
@@ -299,9 +299,9 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
         m_trailDrawNode->clear();
         m_trailDirty = false;
 
-        auto&       hbs      = SLSettings::get()->hitboxes;
+        auto&       hbs      = GrapeSettings::get()->hitboxes;
         auto&       settings = hbs;
-        using       Type   = SLSettings::HitboxSettings::Type;
+        using       Type   = GrapeSettings::HitboxSettings::Type;
         const float width  = hbs.width / pl->m_gameState.m_cameraZoom;
         const float scale  = pl->m_objectLayer->getScale();
         const float objX   = pl->m_objectLayer->getPositionX();
@@ -391,8 +391,8 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
     if (!m_enabled->inner()) return;
 
     {
-        auto& hbs = SLSettings::get()->hitboxes;
-        using Type = SLSettings::HitboxSettings::Type;
+        auto& hbs = GrapeSettings::get()->hitboxes;
+        using Type = GrapeSettings::HitboxSettings::Type;
         const ResolvedObjectHB objHB{
             .width              = static_cast<float>(hbs.width / pl->m_gameState.m_cameraZoom),
             .interactable       = resolveHB(hbs, Type::Interactable),
@@ -407,7 +407,7 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
         });
     }
 
-    auto& hbs = SLSettings::get()->hitboxes;
+    auto& hbs = GrapeSettings::get()->hitboxes;
     drawPlayerHitbox(m_drawNode, pl, pl->m_player1, hbs);
     if (pl->m_gameState.m_isDualMode)
         drawPlayerHitbox(m_drawNode, pl, pl->m_player2, hbs);
@@ -446,7 +446,7 @@ void Hitboxes::saveToTrail(GJBaseGameLayer* pl) {
     if (pl->m_levelEndAnimationStarted) return;
     if (!m_trailEnabled->inner()) return;
 
-    auto& hbs      = SLSettings::get()->hitboxes;
+    auto& hbs      = GrapeSettings::get()->hitboxes;
     int   maxLen   = std::clamp(hbs.trailMaxLength, 50, 8000);
     int   interval = std::max(1, hbs.trailRebuildInterval);
 

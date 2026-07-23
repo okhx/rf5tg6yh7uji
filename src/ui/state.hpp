@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-#include "../settings/settings.hpp"
+#include "../config/config.hpp"
 #include "../shared/value/value.hpp"
 #include <imgui.h>
 #include "imgui_helpers.hpp"
@@ -22,22 +22,22 @@ struct UIState {
         Theme
     };
 
-    SLValuePtr<bool> m_visible =
-        SLValue<bool>::create("ui.visible", &SLSettings::get()->uiVisible);
-    SLValuePtr<bool> m_useShader =
-        SLValue<bool>::create("ui.glass_ui", &SLSettings::get()->glassUi);
-    SLValuePtr<float> m_uiScale = SLValue<float>::create(
+    ConfigValuePtr<bool> m_visible =
+        ConfigValue<bool>::create("ui.visible", &GrapeSettings::get()->uiVisible);
+    ConfigValuePtr<bool> m_useShader =
+        ConfigValue<bool>::create("ui.glass_ui", &GrapeSettings::get()->glassUi);
+    ConfigValuePtr<float> m_uiScale = ConfigValue<float>::create(
         "ui._______ui_scale",
-        &SLSettings::get()->uiScale);  
+        &GrapeSettings::get()->uiScale);
                                        
-    SLValuePtr<bool> m_rainbow =
-        SLValue<bool>::create("ui.rainbow", &SLSettings::get()->rainbowMode);
-    SLValuePtr<bool> m_playAnimations = SLValue<bool>::create(
-        "ui.play_animations", &SLSettings::get()->playAnimations);
-    SLValuePtr<float> m_animationSpeed = SLValue<float>::create(
-        "ui.animation_speed", &SLSettings::get()->animationSpeed);
-    SLValuePtr<float> m_opacity =
-        SLValue<float>::create("ui.opacity", &SLSettings::get()->uiOpacity);
+    ConfigValuePtr<bool> m_rainbow =
+        ConfigValue<bool>::create("ui.rainbow", &GrapeSettings::get()->rainbowMode);
+    ConfigValuePtr<bool> m_playAnimations = ConfigValue<bool>::create(
+        "ui.play_animations", &GrapeSettings::get()->playAnimations);
+    ConfigValuePtr<float> m_animationSpeed = ConfigValue<float>::create(
+        "ui.animation_speed", &GrapeSettings::get()->animationSpeed);
+    ConfigValuePtr<float> m_opacity =
+        ConfigValue<float>::create("ui.opacity", &GrapeSettings::get()->uiOpacity);
 
     UITab m_currentTab = UITab::Record;
     std::vector<std::string> m_replayNames;
@@ -76,7 +76,7 @@ struct UIState {
     std::string m_scriptName = "";
     slui::AutocompleteState m_scriptAutocomplete;
 
-    using Mode = SLSettings::TrajectorySettings::Mode;
+    using Mode = GrapeSettings::TrajectorySettings::Mode;
     int m_trajectoryMode = Mode::Hold;
     slui::DropdownState m_trajectoryState = {
         .options =
@@ -177,7 +177,7 @@ struct UIState {
             },
     };
 
-    using HitboxType = SLSettings::HitboxSettings::Type;
+    using HitboxType = GrapeSettings::HitboxSettings::Type;
     slui::DropdownState m_hitboxState = {
         .options = {"Player", "Inner Player", "Rotated Player",
                     "Player (Circle)",

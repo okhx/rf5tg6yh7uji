@@ -1,24 +1,24 @@
 #include <Geode/Geode.hpp>
 
-#include "bot/bot.hpp"
-#include "bot/scheduler.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/clock.hpp"
+#include "engine/timeline.hpp"
 #include "render/renderer.hpp"
 
 using namespace geode::prelude;
 
 #include <Geode/modify/CCDirector.hpp>
 
-struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
+struct GrapeCCDirector : Modify<GrapeCCDirector, CCDirector> {
     void drawScene() {
-        if (!Bot::get()->isEnabled()) {
+        if (!GrapeEngine::get()->isEnabled()) {
             return CCDirector::drawScene();
         }
 
-        Bot::get()->scheduler().update(this->getDeltaTime());
+        GrapeEngine::get()->clock().update(this->getDeltaTime());
 
         auto renderer = Renderer::get();
-        Bot::get()->updater().updateAudioSpeedhack();
+        GrapeEngine::get()->timeline().updateAudioSpeedhack();
 
         auto playLayer = PlayLayer::get();
         if (!playLayer) {
@@ -29,7 +29,7 @@ struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
         if (renderer->isRecording()) {
             CCDirector::drawScene();
             renderer->update(playLayer);
-            Bot::get()->updater().runFrozenTick();
+            GrapeEngine::get()->timeline().runFrozenTick();
             return;
         }
 #endif
@@ -39,23 +39,23 @@ struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
              renderer->m_settings.m_firstAttemptPause)) {
             float dt = Renderer::get()->getDt();
 
-            SL_LOG_DEV("Checking if renderer collected in drawScene...");
+            GRAPE_LOG_DEV("Checking if renderer collected in drawScene...");
             if (renderer->m_halting) {
-                SL_LOG_DEV("Collected so not updating yet...");
+                GRAPE_LOG_DEV("Collected so not updating yet...");
                 renderer->displayPreview();
                 this->m_pobOpenGLView->swapBuffers();
 
-                Bot::get()->updater().runFrozenTick();
+                GrapeEngine::get()->timeline().runFrozenTick();
                 return;
             }
 
-            SL_LOG_DEV("Updating because not collected yet...");
+            GRAPE_LOG_DEV("Updating because not collected yet...");
 
             if (!m_bPaused) {
                 m_pScheduler->update(dt);
             }
 
-            SL_LOG_DEV("Scheduler updated, setting next scene...");
+            GRAPE_LOG_DEV("Scheduler updated, setting next scene...");
 
             if (m_pNextScene) {
                 this->setNextScene();
@@ -66,12 +66,12 @@ struct SLCCDirector : Modify<SLCCDirector, CCDirector> {
             renderer->displayPreview();
             this->m_pobOpenGLView->swapBuffers();
 
-            Bot::get()->updater().runFrozenTick();
+            GrapeEngine::get()->timeline().runFrozenTick();
 
             return;
         }
         CCDirector::drawScene();
-        Bot::get()->updater().runFrozenTick();
+        GrapeEngine::get()->timeline().runFrozenTick();
     }
 
 };

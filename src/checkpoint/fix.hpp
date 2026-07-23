@@ -10,14 +10,14 @@
 
 #include "Geode/binding/CheckpointGameObject.hpp"
 #include "checkpoint.hpp"
-#include "settings/settings.hpp"
+#include "config/config.hpp"
 #include "shared/value/value.hpp"
 
 class PracticeFix {
    private:
    public:
-    SLValuePtr<uint32_t> m_maxStoredFrames = SLValue<uint32_t>::create(
-        "practice_fix.max_stored_frames", &SLSettings::get()->stepsToSave);
+    ConfigValuePtr<uint32_t> m_maxStoredFrames = ConfigValue<uint32_t>::create(
+        "practice_fix.max_stored_frames", &GrapeSettings::get()->stepsToSave);
 
     SavedCheckpoint* m_forcedState;
 

@@ -1,7 +1,7 @@
 #include "autoclicker.hpp"
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 
 void Autoclicker::update(PlayLayer* pl) {
     m_frequency = std::max(1, m_frequency);
@@ -23,8 +23,8 @@ void Autoclicker::update(PlayLayer* pl) {
         return;
     }
 
-    auto bot = Bot::get();
-    auto frame = bot->updater().getFrame();
+    auto bot = GrapeEngine::get();
+    auto frame = bot->timeline().getFrame();
 
     if (frame == m_lastFrame) {
         return;

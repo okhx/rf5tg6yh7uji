@@ -1,4 +1,4 @@
-#include "scheduler.hpp"
+#include "clock.hpp"
 
 void ScheduledJob::update(const float dt) {
     m_lastExecuted += dt;
@@ -10,7 +10,7 @@ void ScheduledJob::update(const float dt) {
     m_stale = !m_repeat;
 }
 
-BotScheduler::JobId BotScheduler::schedule(const JobExecutor& executor,
+GameScheduler::JobId GameScheduler::schedule(const JobExecutor& executor,
                                            const double interval,
                                            const bool repeat) {
     m_nextFreeId++;
@@ -25,7 +25,7 @@ BotScheduler::JobId BotScheduler::schedule(const JobExecutor& executor,
     return m_nextFreeId;
 }
 
-void BotScheduler::unschedule(const JobId id) {
+void GameScheduler::unschedule(const JobId id) {
     if (!m_jobs.contains(id)) {
         return;
     }
@@ -33,7 +33,7 @@ void BotScheduler::unschedule(const JobId id) {
     m_jobs.erase(id);
 }
 
-void BotScheduler::reschedule(const JobId id, const double interval) {
+void GameScheduler::reschedule(const JobId id, const double interval) {
     if (!m_jobs.contains(id)) {
         return;
     }
@@ -41,7 +41,7 @@ void BotScheduler::reschedule(const JobId id, const double interval) {
     m_jobs[id].m_interval = interval;
 }
 
-void BotScheduler::update(const float dt) {
+void GameScheduler::update(const float dt) {
     for (auto it = m_jobs.begin(); it != m_jobs.end();) {
         it->second.update(dt);
         if (it->second.m_stale) {

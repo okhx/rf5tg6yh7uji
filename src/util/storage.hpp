@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace silicate::paths {
+namespace grape::paths {
 
 inline const std::filesystem::path& gameRoot() {
     static const std::filesystem::path root = [] {

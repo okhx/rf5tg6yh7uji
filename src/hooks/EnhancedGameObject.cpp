@@ -1,10 +1,10 @@
 #include <Geode/Geode.hpp>
-#include <bot/updater.hpp>
+#include <engine/timeline.hpp>
 #ifdef GEODE_IS_WINDOWS
 #include <safetyhook.hpp>
 #endif
 
-#include "bot/bot.hpp"
+#include "engine/engine.hpp"
 #include "physics/collisions.hpp"
 #include "trajectory/trajectory.hpp"
 
@@ -12,9 +12,9 @@ using namespace geode::prelude;
 
 #include <Geode/modify/EnhancedGameObject.hpp>
 
-struct SLEnhancedGameObject : Modify<SLEnhancedGameObject, EnhancedGameObject> {
+struct GrapeEnhancedGameObject : Modify<GrapeEnhancedGameObject, EnhancedGameObject> {
     void activatedByPlayer(PlayerObject* player) {
-        auto bot = Bot::get();
+        auto bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(player)) {
             phys::activateForTrajectory((EffectGameObject*)this, player);
         } else {

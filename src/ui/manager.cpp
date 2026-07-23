@@ -44,20 +44,20 @@ constexpr int VK_OEM_7 = 0xDE;
 #include "Geode/utils/string.hpp"
 #include "assist/autoclicker.hpp"
 #include "assist/hitboxes.hpp"
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 #include "checkpoint/fix.hpp"
 #include "hook.hpp"
 #include "label/label.hpp"
 #include "render/dsp.hpp"
 #include "render/renderer.hpp"
-#include "replay/system.hpp"
-#include "settings/settings.hpp"
+#include "replay/macro.hpp"
+#include "config/config.hpp"
 #include "shared/keys.hpp"
 #include "trajectory/trajectory.hpp"
 
 #include "imgui.h"
-#include "util/paths.hpp"
+#include "util/storage.hpp"
 #include "imgui_helpers.hpp"
 
 #ifdef SILICATE_PROTECT
@@ -399,7 +399,7 @@ static void drawImGuiThemeEditor(ImFont* headingFont) {
         return c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' ||
                c == '\"' || c == '<' || c == '>' || c == '|';
     }), safeName.end());
-    const auto path = silicate::paths::directory("themes") / (safeName + ".theme");
+    const auto path = grape::paths::directory("themes") / (safeName + ".theme");
     if (ImGui::BeginTable("ThemeSaveLoad", 4, ImGuiTableFlags_None)) {
         ImGui::TableSetupColumn("Input", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("Save", ImGuiTableColumnFlags_WidthFixed);
@@ -415,10 +415,10 @@ static void drawImGuiThemeEditor(ImFont* headingFont) {
         if (ImGui::Button("Load")) loadImGuiTheme(path);
         ImGui::TableNextColumn();
         if (ImGui::Button("Folder"))
-            geode::utils::file::openFolder(silicate::paths::directory("themes"));
+            geode::utils::file::openFolder(grape::paths::directory("themes"));
         ImGui::EndTable();
     }
-    ImGui::Checkbox("Docked", &SLSettings::get()->fitMenuToContent);
+    ImGui::Checkbox("Docked", &GrapeSettings::get()->fitMenuToContent);
 
     auto& s = ImGui::GetStyle();
     ImGui::SeparatorText("Alpha");
@@ -539,7 +539,7 @@ void UIManager::setup() {
 
     {
         namespace fs = std::filesystem;
-        auto fontsDir = silicate::paths::directory("fonts");
+        auto fontsDir = grape::paths::directory("fonts");
         fs::create_directories(fontsDir);
 
         m_state.m_customFontNames.clear();
@@ -571,13 +571,13 @@ void UIManager::setup() {
     m_state.m_playAnimations->notifyChange();
     m_state.m_animationSpeed->notifyChange();
 
-    for (const auto& label : Bot::get()->labels().m_labels) {
+    for (const auto& label : GrapeEngine::get()->labels().m_labels) {
         m_state.m_labelState.options.push_back(label.getFriendlyName().c_str());
     }
 
     m_state.m_replayNames.clear();
     for (const auto& entry : std::filesystem::directory_iterator(
-              silicate::paths::directory("replays"))) {
+              grape::paths::directory("replays"))) {
         if (entry.is_regular_file() &&
             (entry.path().extension() == ".grape" ||
              entry.path().extension() == ".slc")) {
@@ -587,7 +587,7 @@ void UIManager::setup() {
 
     m_state.m_presetNames.clear();
     for (const auto& entry : std::filesystem::directory_iterator(
-              silicate::paths::directory("presets"))) {
+              grape::paths::directory("presets"))) {
         if (entry.is_regular_file() && entry.path().extension() == ".json") {
             m_state.m_presetNames.push_back(entry.path().stem().string());
         }
@@ -595,7 +595,7 @@ void UIManager::setup() {
 
     m_state.m_scriptNames.clear();
     for (const auto& entry : std::filesystem::directory_iterator(
-              silicate::paths::directory("scripts"))) {
+              grape::paths::directory("scripts"))) {
         if (entry.is_regular_file() && entry.path().extension() == ".lua") {
             m_state.m_scriptNames.push_back(entry.path().stem().string());
         }
@@ -605,17 +605,17 @@ void UIManager::setup() {
     m_state.m_presetAutocomplete.suggestions = m_state.m_presetNames;
     m_state.m_scriptAutocomplete.suggestions = m_state.m_scriptNames;
 
-    m_state.m_bgColorState.colors = SLSettings::get()->layoutBgColor;
-    m_state.m_groundColorState.colors = SLSettings::get()->layoutGroundColor;
+    m_state.m_bgColorState.colors = GrapeSettings::get()->layoutBgColor;
+    m_state.m_groundColorState.colors = GrapeSettings::get()->layoutGroundColor;
     m_state.m_holdingTrailColorState.colors =
-        SLSettings::get()->hitboxes.holdingTrailColor;
+        GrapeSettings::get()->hitboxes.holdingTrailColor;
 
     for (auto& theme : s_themes) {
         theme.initialize();
     }
 
-    m_theme = &s_themes[SLSettings::get()->theme];
-    m_state.m_themeState.selectedIndex = SLSettings::get()->theme;
+    m_theme = &s_themes[GrapeSettings::get()->theme];
+    m_state.m_themeState.selectedIndex = GrapeSettings::get()->theme;
     m_theme->apply();
 
     for (const auto& theme : s_themes) {
@@ -661,7 +661,7 @@ static void renderBlurBg(float rounding = 24.0f, float borderSize = 2.5f,
     rounding *= slui::Config::get().uiScale;
     borderSize *= slui::Config::get().uiScale;
 
-    bgOpacity = std::pow(bgOpacity, Bot::get()->ui().m_theme->m_opacityExp);
+    bgOpacity = std::pow(bgOpacity, GrapeEngine::get()->ui().m_theme->m_opacityExp);
 
     if (!useShader) {
         ImGui::GetWindowDrawList()->AddRectFilled(
@@ -813,24 +813,24 @@ static std::string keybindDisplayName(const std::shared_ptr<KeybindControl>& kb)
     int mods = hash >> 20;
 
     std::string name;
-    if (mods & SLKeybind<bool>::MODIFIER_CTRL)  name += "Ctrl+";
-    if (mods & SLKeybind<bool>::MODIFIER_SHIFT) name += "Shift+";
-    if (mods & SLKeybind<bool>::MODIFIER_ALT)   name += "Alt+";
+    if (mods & GrapeKeybind<bool>::MODIFIER_CTRL)  name += "Ctrl+";
+    if (mods & GrapeKeybind<bool>::MODIFIER_SHIFT) name += "Shift+";
+    if (mods & GrapeKeybind<bool>::MODIFIER_ALT)   name += "Alt+";
     name += keyCodeName(key);
     return name;
 }
 
 static std::string keybindDisplayName_fromParts(int key, int mods) {
     std::string name;
-    if (mods & SLKeybind<bool>::MODIFIER_CTRL)  name += "Ctrl+";
-    if (mods & SLKeybind<bool>::MODIFIER_SHIFT) name += "Shift+";
-    if (mods & SLKeybind<bool>::MODIFIER_ALT)   name += "Alt+";
+    if (mods & GrapeKeybind<bool>::MODIFIER_CTRL)  name += "Ctrl+";
+    if (mods & GrapeKeybind<bool>::MODIFIER_SHIFT) name += "Shift+";
+    if (mods & GrapeKeybind<bool>::MODIFIER_ALT)   name += "Alt+";
     name += keyCodeName(key);
     return name;
 }
 
 void UIManager::drawKeybindContextMenu() {
-    auto* bm  = SLBindingManager::get();
+    auto* bm  = BindingManager::get();
     auto& ctx = m_state.m_keybindCtx;
     const auto verticalSpacer = [](float height) {
         ImGui::Dummy(ImVec2(0.0f, height * slui::Config::get().uiScale));
@@ -849,7 +849,7 @@ void UIManager::drawKeybindContextMenu() {
                 ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
             ImGui::SetNextWindowSize(winSize, ImGuiCond_Always);
             ImGui::SetNextWindowBgAlpha(1.0f);
-            if (ImGui::Begin("##SLKeyCapture", nullptr,
+            if (ImGui::Begin("##KeyCapture", nullptr,
                              ImGuiWindowFlags_NoDecoration |
                              ImGuiWindowFlags_NoNav |
                              ImGuiWindowFlags_NoScrollbar)) {
@@ -884,7 +884,7 @@ void UIManager::drawKeybindContextMenu() {
     ImGui::SetNextWindowSizeConstraints(winSize, ImVec2(winSize.x, FLT_MAX));
     ImGui::SetNextWindowBgAlpha(1.0f);
 
-    if (!ImGui::Begin("##SLKeybindWindow", &ctx.open,
+    if (!ImGui::Begin("##KeybindWindow", &ctx.open,
                       ImGuiWindowFlags_NoDecoration |
                       ImGuiWindowFlags_NoNav |
                       ImGuiWindowFlags_NoScrollbar |
@@ -912,7 +912,7 @@ void UIManager::drawKeybindContextMenu() {
                 verticalSpacer(4.0f);
                 if (slui::button(("Remove##" + displayName)).pressed) {
                     bm->removeKeybind(kb);
-                    auto path = silicate::paths::file("keybinds.json");
+                    auto path = grape::paths::file("keybinds.json");
                     bm->writeToFile(path);
                     break;
                 }
@@ -951,7 +951,7 @@ void UIManager::drawKeybindContextMenu() {
                         ctx.capturedKey, ctx.capturedMod,
                         ctx.tag, ctx.pendingType, true, ctx.pendingValue};
                     bm->addKeybindForTag(ctx.tag, raw);
-                    auto path = silicate::paths::file("keybinds.json");
+                    auto path = grape::paths::file("keybinds.json");
                     bm->writeToFile(path);
                     ctx.capturedKey  = 0;
                     ctx.capturedMod  = 0;
@@ -977,7 +977,7 @@ void UIManager::draw() {
     VMProtectBegin("UIDraw");
 #endif
 
-    auto bot = Bot::get();
+    auto bot = GrapeEngine::get();
     auto& cfg = slui::Config::get();
 
     ImGuiHookCtx::get().m_time += cocos2d::CCDirector::get()->getDeltaTime();
@@ -985,7 +985,7 @@ void UIManager::draw() {
     const auto popupShaderFn = []() {};
 
     cfg.uiScale = m_state.m_uiScale->inner() * getWindowDpi();
-    cfg.fitWindowToContent = SLSettings::get()->fitMenuToContent;
+    cfg.fitWindowToContent = GrapeSettings::get()->fitMenuToContent;
     static constexpr float tabHeights[] = {390, 500, 280, 410, 500, 500, 530, 530};
     cfg.fittedWindowHeight = tabHeights[static_cast<int>(m_state.m_currentTab)];
 
@@ -1078,15 +1078,15 @@ void UIManager::draw() {
             if (m_state.m_currentTab != UIState::UITab::Edit)
                 m_state.m_editSelectionInitialized = false;
 
-            if (!Bot::get()->isEnabled()) {
+            if (!GrapeEngine::get()->isEnabled()) {
                 slui::text("The bot is currently disabled.");
                 if (GJBaseGameLayer::get()) {
                     slui::text(
                         "Please exit the level you're in to enable the bot.");
                 } else {
                     if (slui::button("Enable").pressed) {
-                        Bot::get()->m_enabled->inner() = true;
-                        Bot::get()->m_enabled->notifyChange();
+                        GrapeEngine::get()->m_enabled->inner() = true;
+                        GrapeEngine::get()->m_enabled->notifyChange();
                     }
                 }
 
@@ -1097,10 +1097,10 @@ void UIManager::draw() {
                 slui::text("Record", m_bold);
 
                 slui::divider(false);
-                auto& rs = Bot::get()->replaySystem();
+                auto& rs = GrapeEngine::get()->macro();
 
                 slui::text(fmt::format("Frame: {} - Macro Size: {}",
-                                       bot->updater().getDisplayFrame(),
+                                       bot->timeline().getDisplayFrame(),
                                        rs.m_actionAtom.length()));
 
                 if (ImGui::BeginTable("RecordMode", 2,
@@ -1111,14 +1111,14 @@ void UIManager::draw() {
                         ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
                     if (ImGui::Button(recording ? "Stop Recording" : "Start Recording",
                                       ImVec2(-FLT_MIN, 0.0f))) {
-                        bot->m_mode = recording ? Bot::Mode::Stopped
-                                                : Bot::Mode::Recording;
+                        bot->m_mode = recording ? GrapeEngine::Mode::Stopped
+                                                : GrapeEngine::Mode::Recording;
                         if (PlayLayer::get() &&
                             bot->isRecording() &&
                             rs.getInputIndex() < rs.m_actionAtom.length()) {
                             rs.createBackup();
                             rs.m_actionAtom.clipActions(
-                                bot->updater().getFrame());
+                                bot->timeline().getFrame());
                         }
                     }
                     if (recording) ImGui::PopStyleColor();
@@ -1129,8 +1129,8 @@ void UIManager::draw() {
                         ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
                     if (ImGui::Button(playing ? "Stop Playing" : "Start Playing",
                                       ImVec2(-FLT_MIN, 0.0f))) {
-                        bot->m_mode = playing ? Bot::Mode::Stopped
-                                              : Bot::Mode::Playing;
+                        bot->m_mode = playing ? GrapeEngine::Mode::Stopped
+                                              : GrapeEngine::Mode::Playing;
                     }
                     if (playing) ImGui::PopStyleColor();
                     ImGui::EndTable();
@@ -1141,20 +1141,20 @@ void UIManager::draw() {
                 if (ImGui::BeginTable("RecordRate", 2,
                                       ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
-                    if (slui::drag("TPS", bot->updater().m_tps->inner(), 0.0,
+                    if (slui::drag("TPS", bot->timeline().m_tps->inner(), 0.0,
                                    std::numeric_limits<double>::max(), 1.0f,
                                    "{:g}")
                             .changed) {
-                        bot->updater().m_tps->notifyChange();
+                        bot->timeline().m_tps->notifyChange();
                     }
                     keybindRightClick("updater.tps");
 
                     ImGui::TableNextColumn();
-                    if (slui::drag("Speed", bot->updater().m_speedhack->inner(),
+                    if (slui::drag("Speed", bot->timeline().m_speedhack->inner(),
                                    0.0, std::numeric_limits<double>::max(),
                                    0.01f, "{:.2G}x")
                             .changed) {
-                        bot->updater().m_speedhack->notifyChange();
+                        bot->timeline().m_speedhack->notifyChange();
                     }
                     keybindRightClick("updater.speedhack");
                     ImGui::EndTable();
@@ -1164,11 +1164,11 @@ void UIManager::draw() {
                                       ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Audio Speedhack",
-                                   bot->updater().m_speedhackAudio->inner());
+                                   bot->timeline().m_speedhackAudio->inner());
                     keybindRightClick("updater.speedhack_audio");
                     ImGui::TableNextColumn();
                     slui::checkbox("Block/Ignore Inputs During Playback",
-                                   bot->replaySystem().m_ignoreInputs->inner());
+                                   bot->macro().m_ignoreInputs->inner());
                     keybindRightClick("replay.ignore_inputs");
                     ImGui::EndTable();
                 }
@@ -1198,7 +1198,7 @@ void UIManager::draw() {
                         m_state.m_replayNames.clear();
                         for (const auto& entry :
                              std::filesystem::directory_iterator(
-                                 silicate::paths::directory("replays"))) {
+                                 grape::paths::directory("replays"))) {
                             if (entry.is_regular_file() &&
                                 (entry.path().extension() == ".grape" ||
                                  entry.path().extension() == ".slc")) {
@@ -1218,7 +1218,7 @@ void UIManager::draw() {
                     m_macroPick.spawn(
                         geode::utils::file::pick(
                             geode::utils::file::PickMode::OpenFile,
-                            ReplaySystem::converterFileOptions()),
+                            MacroEngine::converterFileOptions()),
                         [this](geode::utils::file::PickResult result) {
                             if (result.isErr()) {
                                 m_converterStatus = "File picker failed";
@@ -1227,7 +1227,7 @@ void UIManager::draw() {
                             auto path = std::move(result).unwrap();
                             if (!path) return;
                             auto converted =
-                                Bot::get()->replaySystem().convertAndPlay(*path);
+                                GrapeEngine::get()->macro().convertAndPlay(*path);
                             m_converterStatus = converted.isOk()
                                 ? fmt::format("Converted [{} inputs]",
                                               converted.unwrap())
@@ -1244,7 +1244,7 @@ void UIManager::draw() {
                     m_state.m_replayNames.clear();
                     for (const auto& entry :
                          std::filesystem::directory_iterator(
-                              silicate::paths::directory("replays"))) {
+                              grape::paths::directory("replays"))) {
                         if (entry.is_regular_file() &&
                             (entry.path().extension() == ".grape" ||
                              entry.path().extension() == ".slc")) {
@@ -1260,11 +1260,11 @@ void UIManager::draw() {
                                       ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Frame Advance",
-                                    Bot::get()->updater().m_paused->inner());
+                                    GrapeEngine::get()->timeline().m_paused->inner());
                     keybindRightClick("updater.frame_advance");
                     ImGui::TableNextColumn();
                     if (ImGui::Button("Advance", ImVec2(-FLT_MIN, 0.0f))) {
-                        bot->updater().stepOnce();
+                        bot->timeline().stepOnce();
                     }
                     keybindRightClick("updater.advance_one");
                     ImGui::EndTable();
@@ -1286,12 +1286,12 @@ void UIManager::draw() {
                                       ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Intentional Death",
-                                    Bot::get()->updater().m_canDie->inner());
+                                    GrapeEngine::get()->timeline().m_canDie->inner());
                     keybindRightClick("updater.intentional_death");
                     ImGui::TableNextColumn();
                     slui::checkbox(
                         "Frame Extrapolation",
-                        Bot::get()->updater().m_extrapolateFrames->inner());
+                        GrapeEngine::get()->timeline().m_extrapolateFrames->inner());
                     keybindRightClick("updater.frame_extrapolation");
                     ImGui::EndTable();
                 }
@@ -1323,34 +1323,34 @@ void UIManager::draw() {
 
                 if (slui::button("Merge").pressed) {
                     auto mergePath =
-                        silicate::paths::directory("replays") /
+                        grape::paths::directory("replays") /
                         (m_state.m_mergeReplayName + ".grape");
                     if (!std::filesystem::exists(mergePath)) {
                         mergePath.replace_extension(".slc");
                     }
-                    using MergeMode = ReplaySystem::MergeMode;
+                    using MergeMode = MacroEngine::MergeMode;
                     MergeMode mode;
                     switch (m_state.m_mergeModeState.selectedIndex) {
                         case 0:  mode = MergeMode::P1FromOther; break;
                         case 1:  mode = MergeMode::P2FromOther; break;
                         default: mode = MergeMode::SwapPlayers; break;
                     }
-                    Bot::get()->replaySystem().merge(mergePath, mode);
+                    GrapeEngine::get()->macro().merge(mergePath, mode);
                 }
 
                 slui::divider();
 
                 slui::text("Hitboxes", m_medium);
                 slui::checkbox("Toggle##Hitboxes",
-                                Bot::get()->hitboxes().m_enabled->inner());
+                                GrapeEngine::get()->hitboxes().m_enabled->inner());
                 keybindRightClick("hitboxes.enabled");
 
                 slui::checkbox("Show Trail##Hitboxes",
-                                Bot::get()->hitboxes().m_trailEnabled->inner());
+                                GrapeEngine::get()->hitboxes().m_trailEnabled->inner());
                 keybindRightClick("hitboxes.trail_enabled");
 
-                if (Bot::get()->hitboxes().m_trailEnabled->inner()) {
-                    auto& hitboxSettings = SLSettings::get()->hitboxes;
+                if (GrapeEngine::get()->hitboxes().m_trailEnabled->inner()) {
+                    auto& hitboxSettings = GrapeSettings::get()->hitboxes;
                     slui::checkbox("Show Holding##Hitboxes",
                                    hitboxSettings.holdingTrailEnabled);
                     m_state.m_holdingTrailColorState.colors =
@@ -1374,7 +1374,7 @@ void UIManager::draw() {
                 }
 
                 slui::drag("Width##Hitboxes",
-                            Bot::get()->hitboxes().m_width->inner(), 0.0, 1.0,
+                            GrapeEngine::get()->hitboxes().m_width->inner(), 0.0, 1.0,
                             0.02f, "{:.2f}");
 
                 slui::dropdown("Hitbox##Selector", m_state.m_hitboxState,
@@ -1387,7 +1387,7 @@ void UIManager::draw() {
                     auto& h = m_state.m_hitboxCategories[m_state.m_hitboxState
                                                              .selectedIndex];
 
-                    auto& category = SLSettings::get()->hitboxes.categories[h];
+                    auto& category = GrapeSettings::get()->hitboxes.categories[h];
 
                     slui::checkbox("Enabled##SpecificHitbox",
                                     category.enabled);
@@ -1411,14 +1411,14 @@ void UIManager::draw() {
                 slui::text("Layout", m_medium);
 
                 if (slui::checkbox("Enabled##LayoutMode",
-                                    Bot::get()->updater().m_layoutMode->inner())
+                                    GrapeEngine::get()->timeline().m_layoutMode->inner())
                         .pressed) {
-                    Bot::get()->updater().m_layoutMode->notifyChange();
+                    GrapeEngine::get()->timeline().m_layoutMode->notifyChange();
                 }
                 keybindRightClick("updater.layout_mode");
 
                 slui::checkbox("Use Regular Background##LayoutMode",
-                                Bot::get()->updater().m_useRegularBg->inner());
+                                GrapeEngine::get()->timeline().m_useRegularBg->inner());
                 keybindRightClick("updater.use_regular_bg");
 
                 slui::color("Background Color##LayoutMode",
@@ -1426,9 +1426,9 @@ void UIManager::draw() {
                 slui::color("Ground Color##LayoutMode",
                              m_state.m_groundColorState, popupShaderFn);
 
-                SLSettings::get()->layoutBgColor =
+                GrapeSettings::get()->layoutBgColor =
                     m_state.m_bgColorState.colors;
-                SLSettings::get()->layoutGroundColor =
+                GrapeSettings::get()->layoutGroundColor =
                     m_state.m_groundColorState.colors;
 
                 slui::divider();
@@ -1439,15 +1439,15 @@ void UIManager::draw() {
                                       ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Enabled##Noclip",
-                                   Bot::get()->updater().m_noclip->inner());
+                                   GrapeEngine::get()->timeline().m_noclip->inner());
                     keybindRightClick("updater.noclip");
                     ImGui::TableNextColumn();
                     slui::dropdown("Player##Noclip", m_state.m_noclipState,
                                    *reinterpret_cast<int*>(
-                                       &Bot::get()->updater().m_noclipType),
+                                       &GrapeEngine::get()->timeline().m_noclipType),
                                    popupShaderFn);
-                    SLSettings::get()->noclipPlayer = static_cast<int>(
-                        Bot::get()->updater().m_noclipType);
+                    GrapeSettings::get()->noclipPlayer = static_cast<int>(
+                        GrapeEngine::get()->timeline().m_noclipType);
                     ImGui::EndTable();
                 }
 
@@ -1457,17 +1457,17 @@ void UIManager::draw() {
 
                 slui::checkbox(
                     "Enabled##Trajectory",
-                    Bot::get()->trajectory().m_state.m_enabled->inner());
+                    GrapeEngine::get()->trajectory().m_state.m_enabled->inner());
                 keybindRightClick("trajectory.enabled");
                 slui::drag("Width##Trajectory",
-                            Bot::get()->trajectory().m_state.m_width->inner(),
+                            GrapeEngine::get()->trajectory().m_state.m_width->inner(),
                             0.0, 1.0, 0.01f, "{:.2f}");
                 slui::drag("Length##Trajectory",
-                            Bot::get()->trajectory().m_state.m_length->inner(),
+                            GrapeEngine::get()->trajectory().m_state.m_length->inner(),
                             0.0, 5.0, 0.01f, "{:.2f}s");
 
                 {
-                    auto& maxSteps = SLSettings::get()->trajectory.maxSteps;
+                    auto& maxSteps = GrapeSettings::get()->trajectory.maxSteps;
                     slui::drag("Max Steps##Trajectory", maxSteps,
                                 0, 100000, 1.0f,
                                 maxSteps == 0 ? "Unlimited" : "{:d} steps");
@@ -1485,7 +1485,7 @@ void UIManager::draw() {
                                                        .selectedIndex];
 
                     auto& category =
-                        SLSettings::get()->trajectory.categories[t];
+                        GrapeSettings::get()->trajectory.categories[t];
 
                     slui::checkbox("Enabled##SpecificTrajectory",
                                     category.enabled);
@@ -1510,17 +1510,17 @@ void UIManager::draw() {
                         ImGui::TableNextColumn();
                         slui::checkbox(
                             "Backwards Stepping",
-                            Bot::get()->updater().m_backwardsStepping->inner());
+                            GrapeEngine::get()->timeline().m_backwardsStepping->inner());
                         keybindRightClick("updater.backwards_stepping");
 
                         ImGui::TableNextColumn();
                         if (slui::drag("Steps",
-                                        Bot::get()
+                                        GrapeEngine::get()
                                             ->practiceFix()
                                             .m_maxStoredFrames->inner(),
                                         1u, 2400u)
                                 .changed) {
-                            Bot::get()
+                            GrapeEngine::get()
                                 ->practiceFix()
                                 .m_maxStoredFrames->notifyChange();
                         }
@@ -1535,22 +1535,22 @@ void UIManager::draw() {
                                       ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Enabled##Autoclicker",
-                                   Bot::get()->autoclicker().m_enabled->inner());
+                                   GrapeEngine::get()->autoclicker().m_enabled->inner());
                     keybindRightClick("autoclicker.enabled");
                     ImGui::TableNextColumn();
                     slui::dropdown(
                         "Player##Autoclicker", m_state.m_autoclickerState,
                         *reinterpret_cast<int*>(
-                            &Bot::get()->autoclicker().m_player), popupShaderFn);
+                            &GrapeEngine::get()->autoclicker().m_player), popupShaderFn);
                     ImGui::EndTable();
                 }
                 slui::drag("Interval##Autoclicker",
-                            Bot::get()->autoclicker().m_frequency, 0,
+                            GrapeEngine::get()->autoclicker().m_frequency, 0,
                             std::numeric_limits<int>::max(), 1.0f,
                             "{} Frame(s)");
                 slui::checkbox("Swift Clicks",
-                                Bot::get()->autoclicker().m_performSwifts);
-                Bot::get()->autoclicker().saveSettings();
+                                GrapeEngine::get()->autoclicker().m_performSwifts);
+                GrapeEngine::get()->autoclicker().saveSettings();
                 keybindRightClick("autoclicker.swift_clicks");
 
                 slui::divider();
@@ -1558,18 +1558,18 @@ void UIManager::draw() {
                 slui::text("Other", m_medium);
 
                 slui::checkbox("Mirror Inputs",
-                                Bot::get()->replaySystem().m_mirrorInputs);
+                                GrapeEngine::get()->macro().m_mirrorInputs);
                 keybindRightClick("replay.mirror_inputs");
                 slui::checkbox("Mirror Inverted",
-                                Bot::get()->replaySystem().m_mirrorInverted);
+                                GrapeEngine::get()->macro().m_mirrorInverted);
                 keybindRightClick("replay.mirror_inverted");
 
                 slui::checkbox("Maintain Gravity",
-                                Bot::get()->replaySystem().m_maintainGravity);
+                                GrapeEngine::get()->macro().m_maintainGravity);
                 keybindRightClick("replay.maintain_gravity");
 
                 slui::checkbox("No Mirror Portals",
-                                Bot::get()->updater().m_noMirror->inner());
+                                GrapeEngine::get()->timeline().m_noMirror->inner());
                 keybindRightClick("updater.no_mirror");
             });
 
@@ -1581,11 +1581,11 @@ void UIManager::draw() {
                 slui::text("Automation", m_medium);
 
                 slui::checkbox("Prevent Death",
-                                Bot::get()->updater().m_preventDeath->inner());
+                                GrapeEngine::get()->timeline().m_preventDeath->inner());
                 keybindRightClick("updater.prevent_death");
                 slui::checkbox(
                     "Use Trajectory##PD",
-                    Bot::get()->updater().m_fullGamePrediction->inner());
+                    GrapeEngine::get()->timeline().m_fullGamePrediction->inner());
                 keybindRightClick("updater.full_game_prediction");
                 
                 slui::divider();
@@ -1593,12 +1593,12 @@ void UIManager::draw() {
                 slui::text("Simulation", m_medium);
 
                 if (slui::button("Find Best Frame").pressed) {
-                    Bot::get()->updater().findBestFrameCandidate();
+                    GrapeEngine::get()->timeline().findBestFrameCandidate();
                 }
 
                 slui::drag(
                     "Threshold##Prediction",
-                    Bot::get()->updater().m_acceptablePrediction->inner(), 0.0f,
+                    GrapeEngine::get()->timeline().m_acceptablePrediction->inner(), 0.0f,
                     1.0f, 0.01f, "{:.2f}");
 
             });
@@ -1608,9 +1608,9 @@ void UIManager::draw() {
 
                 slui::divider(false);
 
-                auto& replay = Bot::get()->replaySystem().m_actionAtom;
+                auto& replay = GrapeEngine::get()->macro().m_actionAtom;
                 auto& inputs = replay.m_actions;
-                int inputIndex = Bot::get()->replaySystem().getInputIndex();
+                int inputIndex = GrapeEngine::get()->macro().getInputIndex();
 
                 if (inputs.empty()) {
                     slui::text("No replay loaded.");
@@ -1658,24 +1658,24 @@ void UIManager::draw() {
                         input.recalculateDelta(i == 0 ? 0 : inputs[i - 1].m_frame);
                         if (i + 1 < static_cast<int>(inputs.size()))
                             inputs[i + 1].recalculateDelta(input.m_frame);
-                        Bot::get()->updater().m_tps->notifyChange();
+                        GrapeEngine::get()->timeline().m_tps->notifyChange();
                     }
                     if (slui::checkbox("Holding / Click", input.m_holding).pressed)
-                        Bot::get()->updater().m_tps->notifyChange();
+                        GrapeEngine::get()->timeline().m_tps->notifyChange();
                     if (slui::checkbox("Player 2", input.m_player2).pressed)
-                        Bot::get()->updater().m_tps->notifyChange();
+                        GrapeEngine::get()->timeline().m_tps->notifyChange();
                     using ActionType = slc::v3::Action::ActionType;
                     bool left = input.m_type == ActionType::Left;
                     if (slui::checkbox("Left", left).pressed) {
                         input.m_type = left
                             ? ActionType::Left : ActionType::Jump;
-                        Bot::get()->updater().m_tps->notifyChange();
+                        GrapeEngine::get()->timeline().m_tps->notifyChange();
                     }
                     bool right = input.m_type == ActionType::Right;
                     if (slui::checkbox("Right", right).pressed) {
                         input.m_type = right
                             ? ActionType::Right : ActionType::Jump;
-                        Bot::get()->updater().m_tps->notifyChange();
+                        GrapeEngine::get()->timeline().m_tps->notifyChange();
                     }
                 }
                 ImGui::EndChild();
@@ -1801,7 +1801,7 @@ void UIManager::draw() {
 
                                 namespace fs = std::filesystem;
 
-                                auto libDir = silicate::paths::directory("libraries");
+                                auto libDir = grape::paths::directory("libraries");
                                 geode::log::info(
                                     "Copying dlls from temp dir `{}`...",
                                     ffmpegDir);
@@ -1871,7 +1871,7 @@ void UIManager::draw() {
                 keybindRightClick("audio.preview");
 
                 slui::checkbox("Show Labels While Recording",
-                                SLSettings::get()->renderLabelsWhileRecording);
+                                GrapeSettings::get()->renderLabelsWhileRecording);
                 keybindRightClick("render.labels_while_recording");
 
                 slui::divider();
@@ -1892,7 +1892,7 @@ void UIManager::draw() {
                         });
                     ImGui::TableNextColumn();
                     if (ImGui::Button("Load##Preset")) {
-                        auto path = silicate::paths::directory("presets") /
+                        auto path = grape::paths::directory("presets") /
                                     (m_state.m_presetName + ".json");
                         if (std::filesystem::exists(path)) {
                             renderer->loadSettings(path);
@@ -1903,7 +1903,7 @@ void UIManager::draw() {
                     }
                     ImGui::TableNextColumn();
                     if (ImGui::Button("Save##Preset")) {
-                        auto path = silicate::paths::directory("presets") /
+                        auto path = grape::paths::directory("presets") /
                                     (m_state.m_presetName + ".json");
                         renderer->saveSettings(path);
                     }
@@ -1944,7 +1944,7 @@ void UIManager::draw() {
                             1.0f, "{:.2f}s");
                 if (m_state.m_showExperimentalFeatures) {
                     slui::checkbox("SSB Fix",
-                                    Bot::get()->updater().m_ssbFix->inner());
+                                    GrapeEngine::get()->timeline().m_ssbFix->inner());
                 }
 
                 slui::drag("Music Volume", renderer->m_settings.m_musicVolume,
@@ -1968,7 +1968,7 @@ void UIManager::draw() {
 
                 if (slui::button("Open Grape Folder").pressed) {
                     geode::utils::file::openFolder(
-                        silicate::paths::dataRoot());
+                        grape::paths::dataRoot());
                 }
 
                 if (slui::drag("UI Scale", m_state.m_uiScale->inner(), 0.1f,
@@ -1999,13 +1999,13 @@ void UIManager::draw() {
 
                 slui::checkbox(
                     "Auto-Save At Level End",
-                    Bot::get()->replaySystem().m_autosaveAtLevelEnd->inner());
+                    GrapeEngine::get()->macro().m_autosaveAtLevelEnd->inner());
                 keybindRightClick("replay.autosave_at_level_end");
 
-                auto& rs = Bot::get()->replaySystem();
+                auto& rs = GrapeEngine::get()->macro();
                 if (slui::checkbox("Auto-Backup",
-                                    Bot::get()
-                                        ->replaySystem()
+                                    GrapeEngine::get()
+                                        ->macro()
                                         .m_autosaveAtInterval->inner())
                         .pressed) {
                     rs.m_autosaveAtInterval->notifyChange();
@@ -2025,7 +2025,7 @@ void UIManager::draw() {
                 slui::text("Labels", m_medium);
 
                 slui::checkbox("Display Labels",
-                                Bot::get()->labels().m_globalEnabled);
+                                GrapeEngine::get()->labels().m_globalEnabled);
                 keybindRightClick("labels.global_enabled");
 
                 slui::dropdown("Label##Selector", m_state.m_labelState,
@@ -2034,7 +2034,7 @@ void UIManager::draw() {
                                                  m_state.m_useShader->inner());
                                 });
 
-                auto& label = Bot::get()
+                auto& label = GrapeEngine::get()
                                   ->labels()
                                   .m_labels[m_state.m_labelState.selectedIndex]
                                   .m_config;
@@ -2090,34 +2090,34 @@ void UIManager::draw() {
                 slui::text("Updater", m_medium);
 
                 slui::checkbox("Lock Delta",
-                                bot->updater().m_lockDelta->inner());
+                                bot->timeline().m_lockDelta->inner());
                 keybindRightClick("updater.lock_delta");
 
                 slui::dropdown("Lock Delta Mode", m_state.m_lockDeltaState,
-                                bot->updater().m_lockDeltaMode->inner(), [&]() {
+                                bot->timeline().m_lockDeltaMode->inner(), [&]() {
                                     renderBlurBg(12.0f, 1.5f,
                                                  m_state.m_useShader->inner());
                                 });
 
                 slui::checkbox("Real Time",
-                                bot->updater().m_realTime->inner());
+                                bot->timeline().m_realTime->inner());
                 keybindRightClick("updater.real_time");
 
-                if (!bot->updater().m_realTime->inner()) {
+                if (!bot->timeline().m_realTime->inner()) {
                     slui::checkbox("Dynamic UPR",
-                                    bot->updater().m_dynamicUpr->inner());
+                                    bot->timeline().m_dynamicUpr->inner());
 
-                    if (bot->updater().m_dynamicUpr->inner()) {
+                    if (bot->timeline().m_dynamicUpr->inner()) {
                         slui::drag("Target FPS",
-                                    bot->updater().m_fpsTarget->inner(), 1.0,
+                                    bot->timeline().m_fpsTarget->inner(), 1.0,
                                     480.0, 1.0f, "{:.0f} FPS");
                     } else {
-                        slui::drag("Max UPR", bot->updater().m_maxUPR->inner(),
+                        slui::drag("Max UPR", bot->timeline().m_maxUPR->inner(),
                                     1u, 1000000u, 1.0f);
 
                         slui::checkbox(
                             "Use Visual Updates",
-                            bot->updater().m_useVisualUpdates->inner());
+                            bot->timeline().m_useVisualUpdates->inner());
                     }
                 }
 
@@ -2127,12 +2127,12 @@ void UIManager::draw() {
 
                 slui::checkbox(
                     "Use Alternate Input Hook",
-                    bot->replaySystem().m_useAlternateHook->inner());
+                    bot->macro().m_useAlternateHook->inner());
                 keybindRightClick("replay.use_alternate_hook");
 
                 if (slui::button("Disable Bot").pressed) {
-                    Bot::get()->m_enabled->inner() = false;
-                    Bot::get()->m_enabled->notifyChange();
+                    GrapeEngine::get()->m_enabled->inner() = false;
+                    GrapeEngine::get()->m_enabled->notifyChange();
                 }
 
                 slui::checkbox("Experimental Features",

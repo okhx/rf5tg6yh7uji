@@ -1,13 +1,13 @@
 #include <functional>
 #include <string>
 
-class SLUITab {
+class MenuTab {
     std::string m_name;
     std::function<void()> m_bodyFn;
 
-    SLUITab(std::string name) : m_name(name) {}
+    MenuTab(std::string name) : m_name(name) {}
 
-    SLUITab& body(std::function<void()> body) {
+    MenuTab& body(std::function<void()> body) {
         m_bodyFn = body;
         return *this;
     }

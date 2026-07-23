@@ -12,9 +12,9 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
 #include "render/renderer.hpp"
-#include "replay/system.hpp"
+#include "replay/macro.hpp"
 #include "ui/manager.hpp"
-#include "util/paths.hpp"
+#include "util/storage.hpp"
 
 using namespace geode::prelude;
 
@@ -47,7 +47,7 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                               wParam, lParam);
     }
 
-    if (Bot::get()->ui().m_state.m_visible->inner()) {
+    if (GrapeEngine::get()->ui().m_state.m_visible->inner()) {
         ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
 
         if (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN || uMsg == WM_KEYUP ||
@@ -69,18 +69,18 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 }
             }
 
-            if (SLBindingManager::get()->isWaitingForKey()) {
-                SLBindingManager::get()->setNewKey(
+            if (BindingManager::get()->isWaitingForKey()) {
+                BindingManager::get()->setNewKey(
                     static_cast<cocos2d::enumKeyCodes>(key));
                 return true;
             }
 
-            SLBindingManager::get()->processKeyEvent(key, true, ctrlHeld,
+            BindingManager::get()->processKeyEvent(key, true, ctrlHeld,
                                                      shiftHeld, altHeld);
         } else if (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP ||
                    uMsg == WM_MBUTTONUP) {
             int key = wParam;
-            SLBindingManager::get()->processKeyEvent(key, false, ctrlHeld,
+            BindingManager::get()->processKeyEvent(key, false, ctrlHeld,
                                                      shiftHeld, altHeld);
         }
 
@@ -102,12 +102,12 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 }
             }
 
-            SLBindingManager::get()->processKeyEvent(key, true, ctrlHeld,
+            BindingManager::get()->processKeyEvent(key, true, ctrlHeld,
                                                      shiftHeld, altHeld);
         } else if (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP ||
                    uMsg == WM_MBUTTONUP) {
             int key = wParam;
-            SLBindingManager::get()->processKeyEvent(key, false, ctrlHeld,
+            BindingManager::get()->processKeyEvent(key, false, ctrlHeld,
                                                      shiftHeld, altHeld);
         }
     }
@@ -119,7 +119,7 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         UINT numFiles = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
 
         for (UINT i = 0; i < numFiles; i++) {
-            auto& rs = Bot::get()->replaySystem();
+            auto& rs = GrapeEngine::get()->macro();
 
             DragQueryFile(drop, i, fileName, 256);
             WIN32_FILE_ATTRIBUTE_DATA fileInfo;
@@ -133,7 +133,7 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             }
 
             std::filesystem::path dest =
-                silicate::paths::directory("replays") / path.filename();
+                grape::paths::directory("replays") / path.filename();
 
             rs.createBackup();
             rs.backupExisting(dest);
@@ -306,7 +306,7 @@ void ImGuiHookCtx::init(cocos2d::CCEGLView* view) {
     m_width = width * BLUR_DOWNSCALING_FACTOR;
     m_height = height * BLUR_DOWNSCALING_FACTOR;
 
-    Bot::get()->ui().setup();
+    GrapeEngine::get()->ui().setup();
 
 #ifndef GEODE_IS_MOBILE
     m_blurPass = RenderPass{.m_width = (unsigned int)width,
@@ -357,7 +357,7 @@ void ImGuiHookCtx::handleResize(float width, float height) {
     m_blurPass.m_height = (unsigned int)height;
     m_blurPass.resize();
 
-    Bot::get()->ui().m_theme->resize(width, height);
+    GrapeEngine::get()->ui().m_theme->resize(width, height);
 
     glBindTexture(GL_TEXTURE_2D, m_inputTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_blurPass.m_width,
@@ -442,7 +442,7 @@ void ImGuiHookCtx::sampleBlurSecondPass() {
 void ImGuiHookCtx::sampleBlurPostprocess() {
     if (!m_inited) return;
 
-    glUseProgram(Bot::get()->ui().m_theme->m_postprocessPass.m_program);
+    glUseProgram(GrapeEngine::get()->ui().m_theme->m_postprocessPass.m_program);
 
     glUniform1i(0, 0);
     glUniform2f(1, 1.0f / m_blurPass.m_width, 1.0f / m_blurPass.m_height);
@@ -497,12 +497,12 @@ void ImGuiHookCtx::draw() {
     ImGui_ImplWin32_NewFrame();
 #endif
     ImGui::NewFrame();
-    Bot::get()->ui().draw();
+    GrapeEngine::get()->ui().draw();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-struct SLEGLView : Modify<SLEGLView, CCEGLView> {
+struct GrapeEGLView : Modify<GrapeEGLView, CCEGLView> {
     void swapBuffers() {
 #ifdef GEODE_IS_MOBILE
         CCEGLView::swapBuffers();

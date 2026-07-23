@@ -1,7 +1,7 @@
 #include <Geode/Geode.hpp>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 
 using namespace geode::prelude;
 
@@ -18,12 +18,12 @@ inline static void CCActionManager_update_orig(CCActionManager* self,
 }
 
 void CCActionManager_update(cocos2d::CCActionManager* mgr, float dt) {
-    Bot::get()->updater().m_actionMgr = mgr;
-    if (!Bot::get()->isEnabled()) {
+    GrapeEngine::get()->timeline().m_actionMgr = mgr;
+    if (!GrapeEngine::get()->isEnabled()) {
         CCActionManager_update_orig(mgr, dt);
         return;
     }
-    if (Bot::get()->updater().m_onlyRefresh) {
+    if (GrapeEngine::get()->timeline().m_onlyRefresh) {
         return;
     }
 

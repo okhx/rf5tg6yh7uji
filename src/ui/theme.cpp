@@ -2,7 +2,7 @@
 
 #include <Geode/Geode.hpp>
 
-#include "bot/bot.hpp"
+#include "engine/engine.hpp"
 #include "hook.hpp"
 #include "manager.hpp"
 
@@ -83,4 +83,4 @@ void Theme::resize(uint32_t width, uint32_t height) {
     m_postprocessPass.resize();
 }
 
-void Theme::apply() { Bot::get()->ui().m_texture = m_texture; }
+void Theme::apply() { GrapeEngine::get()->ui().m_texture = m_texture; }

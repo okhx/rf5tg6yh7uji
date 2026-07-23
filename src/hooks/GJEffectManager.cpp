@@ -4,13 +4,13 @@ using namespace geode::prelude;
 
 #include <Geode/modify/GJEffectManager.hpp>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 
-struct SLGJEffectManager : Modify<SLGJEffectManager, GJEffectManager> {
+struct GrapeGJEffectManager : Modify<GrapeGJEffectManager, GJEffectManager> {
     void updateEffects(float dt) {
-        if (Bot::get()->isEnabled() &&
-            Bot::get()->updater().m_layoutMode->inner() &&
+        if (GrapeEngine::get()->isEnabled() &&
+            GrapeEngine::get()->timeline().m_layoutMode->inner() &&
             !LevelEditorLayer::get()) {
             m_pulseEffectMap.clear();
             m_pulseEffectVector.clear();

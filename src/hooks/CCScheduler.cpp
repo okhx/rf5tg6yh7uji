@@ -1,7 +1,7 @@
 #include <Geode/Geode.hpp>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 #include "render/renderer.hpp"
 #ifdef GEODE_IS_MOBILE
 #include "ui/touch_overlay.hpp"
@@ -11,7 +11,7 @@ using namespace geode::prelude;
 
 #include <Geode/modify/CCScheduler.hpp>
 
-struct SLCCScheduler : Modify<SLCCScheduler, CCScheduler> {
+struct GrapeCCScheduler : Modify<GrapeCCScheduler, CCScheduler> {
     void update(float dt) override {
 #ifdef GEODE_IS_MOBILE
         TouchOverlay::get()->update(dt);
@@ -21,13 +21,13 @@ struct SLCCScheduler : Modify<SLCCScheduler, CCScheduler> {
                 dt = renderer->getDt();
         }
 #endif
-        const auto bot = Bot::get();
-        if (bot->updater().m_onlyRefresh || !bot->isEnabled()) {
+        const auto bot = GrapeEngine::get();
+        if (bot->timeline().m_onlyRefresh || !bot->isEnabled()) {
             CCScheduler::update(dt);
             return;
         }
 
-        bot->updater().runUpdates(
+        bot->timeline().runUpdates(
             [this](float dt) { this->CCScheduler::update(dt); }, dt, false);
     }
 };

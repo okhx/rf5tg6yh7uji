@@ -2,7 +2,7 @@
 
 #include <Geode/Geode.hpp>
 
-#include "bot/bot.hpp"
+#include "engine/engine.hpp"
 #include "object.hpp"
 #include "trajectory/trajectory.hpp"
 
@@ -19,7 +19,7 @@ void activateForTrajectory(EffectGameObject* obj, PlayerObject* player);
 inline bool activatingPortal(GJBaseGameLayer* pl, PlayerObject* player,
                              EffectGameObject* portal) {
     if (pl->canBeActivatedByPlayer(player, portal)) {
-        if (Bot::get()->trajectory().playerHasActivated(player, portal)) {
+        if (GrapeEngine::get()->trajectory().playerHasActivated(player, portal)) {
             return false;
         }
 

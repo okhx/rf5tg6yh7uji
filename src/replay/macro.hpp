@@ -1,21 +1,21 @@
-#ifndef REPLAY_SYSTEM_HPP
-#define REPLAY_SYSTEM_HPP
+#ifndef MACRO_ENGINE_HPP
+#define MACRO_ENGINE_HPP
 
 #include <Geode/utils/file.hpp>
 #include <slc/slc.hpp>
 #include <unordered_map>
 
-#include "../settings/settings.hpp"
+#include "../config/config.hpp"
 #include "../shared/value/value.hpp"
-#include "bot/bot.hpp"
-#include "bot/scheduler.hpp"
+#include "engine/engine.hpp"
+#include "engine/clock.hpp"
 
 struct ReplayMeta {
     uint64_t seed;
     char reserved[56];
 };
 
-class ReplaySystem {
+class MacroEngine {
    private:
     bool processSlc3(slc::v3::Replay<>& replay);
     bool processSlc2(slc::v2::Replay<ReplayMeta>& replay);
@@ -25,13 +25,13 @@ class ReplaySystem {
 
     slc::ActionAtom m_actionAtom;
     bool m_collectInputs = true;
-    SLValuePtr<bool> m_ignoreInputs = SLValue<bool>::create(
-        "replay.ignore_inputs", &SLSettings::get()->blockInputs);
-    SLValuePtr<bool> m_autosaveAtLevelEnd = SLValue<bool>::create(
-        "replay.autosave", &SLSettings::get()->autosaveAtLevelEnd);
+    ConfigValuePtr<bool> m_ignoreInputs = ConfigValue<bool>::create(
+        "replay.ignore_inputs", &GrapeSettings::get()->blockInputs);
+    ConfigValuePtr<bool> m_autosaveAtLevelEnd = ConfigValue<bool>::create(
+        "replay.autosave", &GrapeSettings::get()->autosaveAtLevelEnd);
 
-    SLValuePtr<bool> m_useAlternateHook = SLValue<bool>::create(
-        "replay.althook", &SLSettings::get()->useAlternateHook);
+    ConfigValuePtr<bool> m_useAlternateHook = ConfigValue<bool>::create(
+        "replay.althook", &GrapeSettings::get()->useAlternateHook);
 
     bool m_overrideSeed = false;
     uint64_t m_overriddenSeed = 0;
@@ -53,11 +53,11 @@ class ReplaySystem {
     std::string m_replayName = "";
     bool m_lastOperationSucceeded = false;
 
-    BotScheduler::JobId m_autosaveId;
-    SLValuePtr<bool> m_autosaveAtInterval = SLValue<bool>::create(
-        "replay.autosave_at_interval", &SLSettings::get()->autosaveAtInterval);
-    SLValuePtr<double> m_autosaveInterval = SLValue<double>::create(
-        "replay.autosave_interval", &SLSettings::get()->autosaveInterval);
+    GameScheduler::JobId m_autosaveId;
+    ConfigValuePtr<bool> m_autosaveAtInterval = ConfigValue<bool>::create(
+        "replay.autosave_at_interval", &GrapeSettings::get()->autosaveAtInterval);
+    ConfigValuePtr<double> m_autosaveInterval = ConfigValue<double>::create(
+        "replay.autosave_interval", &GrapeSettings::get()->autosaveInterval);
 
     size_t getInputIndex() const { return m_inputIndex; }
     void onReset(uint32_t newFrame);

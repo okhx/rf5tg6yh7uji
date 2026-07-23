@@ -1,5 +1,5 @@
-#include "system.hpp"
-#include "util/paths.hpp"
+#include "macro.hpp"
+#include "util/storage.hpp"
 
 #include <Geode/Geode.hpp>
 #include <Geode/modify/GJBaseGameLayer.hpp>
@@ -16,17 +16,17 @@
 #include <stdexcept>
 #include <vector>
 
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 
 using namespace geode::prelude;
 
-void ReplaySystem::onReset(uint32_t newFrame) {
+void MacroEngine::onReset(uint32_t newFrame) {
     m_lastInputs.clear();
     m_forceNextInput = false;
     m_flipProcessingInputs = false;
 
-    if (Bot::get()->isRecording()) {
+    if (GrapeEngine::get()->isRecording()) {
         m_actionAtom.clipActions(newFrame);
 
         m_inputIndex = m_actionAtom.length();
@@ -46,7 +46,7 @@ void ReplaySystem::onReset(uint32_t newFrame) {
     }
 }
 
-void ReplaySystem::seekAfterFrame(uint32_t frame) {
+void MacroEngine::seekAfterFrame(uint32_t frame) {
     m_inputIndex = static_cast<size_t>(std::distance(
         m_actionAtom.m_actions.begin(),
         std::upper_bound(
@@ -56,7 +56,7 @@ void ReplaySystem::seekAfterFrame(uint32_t frame) {
             })));
 }
 
-[[nodiscard]] const std::optional<slc::Action> ReplaySystem::getNextInput(
+[[nodiscard]] const std::optional<slc::Action> MacroEngine::getNextInput(
     uint32_t frame) {
     if (m_inputIndex >= m_actionAtom.length()) {
         return std::nullopt;
@@ -75,7 +75,7 @@ void ReplaySystem::seekAfterFrame(uint32_t frame) {
     return std::nullopt;
 }
 
-uint64_t& ReplaySystem::getCurrentRandomState() {
+uint64_t& MacroEngine::getCurrentRandomState() {
 #ifndef GEODE_IS_WINDOWS
     return m_portableRandomState;
 #else
@@ -83,11 +83,11 @@ uint64_t& ReplaySystem::getCurrentRandomState() {
 #endif
 }
 
-uint64_t& ReplaySystem::getCurrentShakeState() {
+uint64_t& MacroEngine::getCurrentShakeState() {
     return this->m_shakeRandomState;
 }
 
-void ReplaySystem::onExit() {
+void MacroEngine::onExit() {
     m_inputIndex = 0;
     m_lastInputs.clear();
     m_forceNextInput = false;
@@ -414,7 +414,7 @@ ImportedReplay parseYbot(const std::filesystem::path& path) {
 }
 }
 
-void ReplaySystem::save(std::filesystem::path path, bool noOverwrite) {
+void MacroEngine::save(std::filesystem::path path, bool noOverwrite) {
     m_lastOperationSucceeded = false;
     if (noOverwrite && std::filesystem::exists(path)) {
         geode::log::info("Not overwriting replay at {}", path);
@@ -436,7 +436,7 @@ void ReplaySystem::save(std::filesystem::path path, bool noOverwrite) {
 
     replay.m_meta.m_build = 81;
     replay.m_meta.m_seed = m_startingSeed;
-    replay.m_meta.m_tps = Bot::get()->updater().m_tps->inner();
+    replay.m_meta.m_tps = GrapeEngine::get()->timeline().m_tps->inner();
 
     std::ofstream fd(path, std::ios::binary);
     if (!fd) {
@@ -454,7 +454,7 @@ void ReplaySystem::save(std::filesystem::path path, bool noOverwrite) {
     m_lastOperationSucceeded = true;
 }
 
-bool ReplaySystem::processSlc3(Replay& replay) {
+bool MacroEngine::processSlc3(Replay& replay) {
     auto& atoms = replay.m_atoms.m_atoms;
     auto it = std::find_if(atoms.begin(), atoms.end(), [](auto& v) {
         return std::visit(
@@ -467,7 +467,7 @@ bool ReplaySystem::processSlc3(Replay& replay) {
     }
 
     auto atom = *it;
-    auto& updater = Bot::get()->updater();
+    auto& updater = GrapeEngine::get()->timeline();
     m_actionAtom = std::get<slc::ActionAtom>(atom);
     std::stable_sort(
         m_actionAtom.m_actions.begin(), m_actionAtom.m_actions.end(),
@@ -491,11 +491,11 @@ bool ReplaySystem::processSlc3(Replay& replay) {
             ? replay.m_meta.m_tps
             : 240.0;
     updater.m_tps->notifyChange();
-    Bot::get()->setMode(Bot::Mode::Stopped);
+    GrapeEngine::get()->setMode(GrapeEngine::Mode::Stopped);
     return true;
 }
 
-bool ReplaySystem::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
+bool MacroEngine::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
     uint64_t currentFrame = 0;
     auto& a = m_actionAtom;
     a.clear();
@@ -530,7 +530,7 @@ bool ReplaySystem::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
         currentFrame = input.m_frame;
     }
 
-    auto& updater = Bot::get()->updater();
+    auto& updater = GrapeEngine::get()->timeline();
     std::stable_sort(
         m_actionAtom.m_actions.begin(), m_actionAtom.m_actions.end(),
         [](const auto& left, const auto& right) {
@@ -552,11 +552,11 @@ bool ReplaySystem::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
         std::isfinite(replay.m_tps) && replay.m_tps > 0.0 ? replay.m_tps
                                                           : 240.0;
     updater.m_tps->notifyChange();
-    Bot::get()->setMode(Bot::Mode::Stopped);
+    GrapeEngine::get()->setMode(GrapeEngine::Mode::Stopped);
     return true;
 }
 
-void ReplaySystem::load(std::filesystem::path path) {
+void MacroEngine::load(std::filesystem::path path) {
     m_lastOperationSucceeded = false;
     if (!std::filesystem::exists(path) && path.extension() == ".grape") {
         auto legacyPath = path;
@@ -587,7 +587,7 @@ void ReplaySystem::load(std::filesystem::path path) {
     }
 }
 
-geode::utils::file::FilePickOptions ReplaySystem::converterFileOptions() {
+geode::utils::file::FilePickOptions MacroEngine::converterFileOptions() {
     return {
         .defaultPath = std::nullopt,
         .filters = {{
@@ -598,7 +598,7 @@ geode::utils::file::FilePickOptions ReplaySystem::converterFileOptions() {
     };
 }
 
-geode::Result<size_t> ReplaySystem::convertAndPlay(
+geode::Result<size_t> MacroEngine::convertAndPlay(
     std::filesystem::path path) {
     if (!std::filesystem::is_regular_file(path))
         return geode::Err("Macro file does not exist");
@@ -665,7 +665,7 @@ geode::Result<size_t> ReplaySystem::convertAndPlay(
         return geode::Err("Converted macro could not be saved");
 
     m_inputIndex = 0;
-    Bot::get()->setMode(Bot::Playing);
+    GrapeEngine::get()->setMode(GrapeEngine::Playing);
     if (auto* playLayer = PlayLayer::get();
         playLayer && !playLayer->m_hasCompletedLevel &&
         !playLayer->m_levelEndAnimationStarted)
@@ -673,7 +673,7 @@ geode::Result<size_t> ReplaySystem::convertAndPlay(
     return geode::Ok(m_actionAtom.length());
 }
 
-void ReplaySystem::merge(std::filesystem::path path, MergeMode mode) {
+void MacroEngine::merge(std::filesystem::path path, MergeMode mode) {
     if (!std::filesystem::exists(path)) {
         geode::log::error("Merge failed: file does not exist at {}", path);
         return;
@@ -775,8 +775,8 @@ void ReplaySystem::merge(std::filesystem::path path, MergeMode mode) {
                      m_actionAtom.m_actions.size());
 }
 
-std::filesystem::path ReplaySystem::getCurrentPath() {
-    return silicate::paths::directory("replays") /
+std::filesystem::path MacroEngine::getCurrentPath() {
+    return grape::paths::directory("replays") /
            (m_replayName + ".grape");
 }
 
@@ -787,13 +787,13 @@ static std::filesystem::path createBackupPath(const std::string& name) {
         time::floor<time::milliseconds>(time::system_clock::now());
 
     const std::filesystem::path path =
-        silicate::paths::directory("backups") /
+        grape::paths::directory("backups") /
         fmt::format("_backup_{:%Y%m%d_%H%M%S}_{}.grape", timestamp, name);
 
     return path;
 }
 
-void ReplaySystem::backupExisting(std::filesystem::path path) {
+void MacroEngine::backupExisting(std::filesystem::path path) {
     if (!std::filesystem::exists(path)) {
         return;
     }
@@ -804,28 +804,28 @@ void ReplaySystem::backupExisting(std::filesystem::path path) {
                           std::filesystem::copy_options::skip_existing);
 }
 
-void ReplaySystem::createBackup() {
+void MacroEngine::createBackup() {
     auto path = createBackupPath(m_replayName);
     this->save(path, true);
 }
 
 $execute {
-    auto bot = Bot::get();
-    auto& rs = bot->replaySystem();
+    auto bot = GrapeEngine::get();
+    auto& rs = bot->macro();
 
-    rs.m_autosaveId = bot->scheduler().schedule(
+    rs.m_autosaveId = bot->clock().schedule(
         [&rs]() {
             auto pl = PlayLayer::get();
             if (!pl) return;
             if (!rs.m_autosaveAtInterval->inner()) return;
 
-            if (Bot::get()->isRecording()) {
+            if (GrapeEngine::get()->isRecording()) {
                 rs.createBackup();
             }
         },
         rs.m_autosaveInterval->inner(), true);
 
     rs.m_autosaveInterval->handle([bot, &rs](double& interval) {
-        bot->scheduler().reschedule(rs.m_autosaveId, interval);
+        bot->clock().reschedule(rs.m_autosaveId, interval);
     });
 }

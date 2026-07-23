@@ -1,6 +1,6 @@
 #include "touch_overlay.hpp"
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 
 using namespace geode::prelude;
 
@@ -57,7 +57,7 @@ bool TouchOverlay::init() {
 }
 
 void TouchOverlay::update(float dt) {
-    auto* settings = SLSettings::get();
+    auto* settings = GrapeSettings::get();
     if (!settings->frameStepperHold || !this->isVisible()) {
         m_leftHeld = m_rightHeld = m_leftRepeat = m_rightRepeat = 0.f;
         return;
@@ -83,22 +83,22 @@ void TouchOverlay::update(float dt) {
     };
 
     repeat(m_leftBtn, m_leftHeld, m_leftRepeat,
-           [] { Bot::get()->updater().backwardsStep(); });
+           [] { GrapeEngine::get()->timeline().backwardsStep(); });
     repeat(m_rightBtn, m_rightHeld, m_rightRepeat,
-           [] { Bot::get()->updater().stepOnce(); });
+           [] { GrapeEngine::get()->timeline().stepOnce(); });
 }
 
 void TouchOverlay::onLeft(CCObject*) {
-    Bot::get()->updater().backwardsStep();
+    GrapeEngine::get()->timeline().backwardsStep();
 }
 
 void TouchOverlay::onRight(CCObject*) {
-    Bot::get()->updater().stepOnce();
+    GrapeEngine::get()->timeline().stepOnce();
 }
 
 void TouchOverlay::updateVisibility() {
     auto playLayer = PlayLayer::get();
-    bool shouldBeVisible = playLayer && Bot::get()->updater().isPaused();
+    bool shouldBeVisible = playLayer && GrapeEngine::get()->timeline().isPaused();
     this->setVisible(shouldBeVisible);
 }
 
@@ -108,6 +108,6 @@ void TouchOverlay::hide() {
 
 void TouchOverlay::show() {
     this->setVisible(true);
-    Bot::get()->updater().m_paused->inner() = true;
-    Bot::get()->updater().m_paused->notifyChange();
+    GrapeEngine::get()->timeline().m_paused->inner() = true;
+    GrapeEngine::get()->timeline().m_paused->notifyChange();
 }

@@ -1,5 +1,5 @@
 #include "renderer.hpp"
-#include "util/paths.hpp"
+#include "util/storage.hpp"
 
 #ifdef GEODE_IS_WINDOWS
 #include <Zydis/Zydis.h>
@@ -23,8 +23,8 @@
 
 #include "Geode/utils/random.hpp"
 #include "Geode/utils/string.hpp"
-#include "bot/bot.hpp"
-#include "bot/updater.hpp"
+#include "engine/engine.hpp"
+#include "engine/timeline.hpp"
 #ifndef GEODE_IS_ANDROID
 #include "colorspace/nv12.hpp"
 #include "colorspace/rgb0.hpp"
@@ -32,7 +32,7 @@
 #include "colorspace/yuv420p.hpp"
 #endif
 #include "dsp.hpp"
-#include "replay/system.hpp"
+#include "replay/macro.hpp"
 #ifndef GEODE_IS_ANDROID
 #include "ui/manager.hpp"
 #endif
@@ -228,7 +228,7 @@ geode::Result<> Renderer::startMobile() {
     extension = "mp4";
 #endif
     if (extension.front() == '.') extension.erase(extension.begin());
-    const auto legacyOutput = silicate::paths::directory("videos") /
+    const auto legacyOutput = grape::paths::directory("videos") /
                               (name + "." + extension);
     auto output = legacyOutput;
 #ifdef GEODE_IS_IOS
@@ -335,7 +335,7 @@ geode::Result<> Renderer::startMobile() {
     }
 #endif
     m_mobileNextFrameTime = 0.0;
-    m_mobileArmFrame = Bot::get()->updater().getFrame();
+    m_mobileArmFrame = GrapeEngine::get()->timeline().getFrame();
     m_mobileStartFrame = 0;
     m_mobileCaptureStarted = false;
     m_mobileSaveError.clear();
@@ -457,8 +457,8 @@ void Renderer::notifyEndLevelMenuReady() {
 void Renderer::updateMobile(PlayLayer* pl) {
     if (!m_mobileRecording || !pl) return;
 
-    const double tps = std::max(Bot::get()->updater().getTps(), 1.0);
-    const uint32_t currentFrame = Bot::get()->updater().getFrame();
+    const double tps = std::max(GrapeEngine::get()->timeline().getTps(), 1.0);
+    const uint32_t currentFrame = GrapeEngine::get()->timeline().getFrame();
     if (!m_mobileCaptureStarted) {
         if (pl->m_isPaused || !pl->m_started) return;
 
@@ -644,9 +644,9 @@ void Renderer::loadSettings(fs::path& path) {
     }
 
 #ifndef GEODE_IS_ANDROID
-    Bot::get()->ui().m_state.m_bitrate = settings.m_bitrate / 1000000.0;
+    GrapeEngine::get()->ui().m_state.m_bitrate = settings.m_bitrate / 1000000.0;
 #endif
-    SLSettings::get()->lastLoadedPreset = path.stem().string();
+    GrapeSettings::get()->lastLoadedPreset = path.stem().string();
 }
 
 static void silentChangeSize(CCSize size) {
@@ -752,7 +752,7 @@ geode::Result<> Renderer::start() {
     }
 
     std::string outPath = geode::utils::string::pathToString(
-        silicate::paths::directory("videos") /
+        grape::paths::directory("videos") /
         std::filesystem::path(fileName));
 
     if (m_formatCtx) {
@@ -1296,7 +1296,7 @@ void Renderer::update(PlayLayer* pl) {
     m_time = ++m_updateIndex * this->getDt();
 
     if (pl->m_hasCompletedLevel &&
-        !Bot::get()->replaySystem().getNextQueuedInput().has_value()) {
+        !GrapeEngine::get()->macro().getNextQueuedInput().has_value()) {
         if (this->m_endTime >= this->m_settings.m_afterEndTime) {
             this->signalStop();
             return;
