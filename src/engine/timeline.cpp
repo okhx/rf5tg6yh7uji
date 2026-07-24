@@ -454,7 +454,7 @@ void FrameEngine::findBestFrameCandidate() {
     this->setPaused(true);
 
     int lowestAcceptable =
-        static_cast<int>((float)trajectory->getPredictionLength() *
+        static_cast<int>((float)trajectory->getPredictionLength(pl) *
                          m_acceptablePrediction->inner());
 
     m_predicting = true;

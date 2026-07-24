@@ -61,6 +61,7 @@ class Trajectory {
     constexpr static int DIRECTION_MASK = 0b11000;
 
    private:
+    GJBaseGameLayer* m_layer = nullptr;
     cocos2d::CCRenderTexture* m_renderTex = nullptr;
     TrajectoryDrawNode* m_node = nullptr;
 
@@ -118,7 +119,7 @@ class Trajectory {
 
         auto releasePlayer = [](PlayerObject*& player) {
             if (!player) return;
-            if (player->getParent()) player->removeFromParentAndCleanup(true);
+            player->setVisible(false);
             player->release();
             player = nullptr;
         };
@@ -126,10 +127,11 @@ class Trajectory {
         releasePlayer(m_fakePlayer2);
 
         if (m_node) {
-            if (m_node->getParent()) m_node->removeFromParentAndCleanup(true);
+            m_node->setVisible(false);
             m_node->release();
             m_node = nullptr;
         }
+        m_layer = nullptr;
     }
 
     TrajectoryState* m_state = nullptr;
@@ -180,10 +182,9 @@ class Trajectory {
         }
     }
 
-    PlayerObject* createFakePlayer(std::string&& id) {
-        GJBaseGameLayer* pl = GJBaseGameLayer::get();
-
+    PlayerObject* createFakePlayer(GJBaseGameLayer* pl, std::string&& id) {
         PlayerObject* player = PlayerObject::create(1, 1, pl, pl, true);
+        if (!player) return nullptr;
         player->retain();
         player->setPosition({0, 105});
         player->setID(id);
@@ -192,27 +193,39 @@ class Trajectory {
         return player;
     }
 
-    static Trajectory* create() {
+    static Trajectory* create(GJBaseGameLayer* pl) {
+        if (!pl || !pl->m_objectLayer || !pl->m_debugDrawNode ||
+            !pl->m_debugDrawNode->getParent())
+            return nullptr;
+
         Trajectory* t = new Trajectory();
+        t->m_layer = pl;
 
         t->m_node = TrajectoryDrawNode::create();
+        if (!t->m_node) {
+            delete t;
+            return nullptr;
+        }
         t->m_node->retain();
         t->m_node->setID("trajectory-node"_spr);
         t->m_node->setBlendFunc(cocos2d::ccBlendFunc{770, 771});
 
-        t->m_fakePlayer1 = t->createFakePlayer("trajectory-fake-player1"_spr);
-        t->m_fakePlayer2 = t->createFakePlayer("trajectory-fake-player2"_spr);
+        t->m_fakePlayer1 =
+            t->createFakePlayer(pl, "trajectory-fake-player1"_spr);
+        t->m_fakePlayer2 =
+            t->createFakePlayer(pl, "trajectory-fake-player2"_spr);
+        if (!t->m_fakePlayer1 || !t->m_fakePlayer2) {
+            delete t;
+            return nullptr;
+        }
 
-        GJBaseGameLayer* pl = GJBaseGameLayer::get();
         pl->m_debugDrawNode->getParent()->addChild(
-            t->m_node, pl->m_uiLayer->getZOrder() + 10000);
-
-
+            t->m_node, (pl->m_uiLayer ? pl->m_uiLayer->getZOrder() : 0) + 10000);
 
         return t;
     }
 
-    int getPredictionLength();
+    int getPredictionLength(GJBaseGameLayer* pl);
 
     void invalidateCache() {
         m_lastFrame = UINT64_MAX;
@@ -233,7 +246,7 @@ class Trajectory {
                                   PredictionConfig config = PredictionConfig());
     void update(GJBaseGameLayer* pl);
     void handlePortal(PlayerObject* player, GameObject* object);
-    void drawHitbox(PlayerObject* player);
+    void drawHitbox(GJBaseGameLayer* pl, PlayerObject* player);
 
     bool playerHasActivated(PlayerObject* player, EnhancedGameObject* object);
     bool realPlayerHasActivated(PlayerObject* player,
@@ -312,9 +325,9 @@ class TrajectoryManager {
         }
     }
 
-    void init() {
+    void init(GJBaseGameLayer* layer) {
         if (m_trajectory) uninit();
-        m_trajectory = Trajectory::create();
+        m_trajectory = Trajectory::create(layer);
         if (m_trajectory) m_trajectory->m_state = &m_state;
     }
 

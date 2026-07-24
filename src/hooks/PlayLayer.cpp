@@ -565,7 +565,7 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
         m_clickOnSteps = false;
         m_clickBetweenSteps = false;
 
-        bot->trajectory().init();
+        bot->trajectory().init(this);
         bot->hitboxes().init(this);
         bot->hitboxes().clearTrail();
         bot->timeline().m_frameOnLastAttempt = 0;
@@ -835,7 +835,9 @@ $execute {
         }
 
         if (auto pl = GJBaseGameLayer::get(); pl) {
-            GrapeEngine::get()->timeline().scheduleFrozenFunction([pl](float) {
+            GrapeEngine::get()->timeline().scheduleFrozenFunction([](float) {
+                auto* pl = GJBaseGameLayer::get();
+                if (!pl) return;
                 if (auto t = GrapeEngine::get()->trajectory().unsafeInner(); t) {
                     t->invalidateCache();
                 }

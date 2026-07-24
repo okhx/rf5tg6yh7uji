@@ -126,9 +126,8 @@ Trajectory::Signature Trajectory::computeSignature(GJBaseGameLayer* pl) {
     return s;
 }
 
-int Trajectory::getPredictionLength() {
+int Trajectory::getPredictionLength(GJBaseGameLayer* pl) {
     auto bot = GrapeEngine::get();
-    auto pl  = GJBaseGameLayer::get();
     if (!pl) return 0;
 
     auto& ts = GrapeSettings::get()->trajectory;
@@ -187,7 +186,7 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
 
     if ((m_deadP1 && (mode & TrajectoryMode::Player1) != 0) ||
         (m_deadP2 && (mode & TrajectoryMode::Player2) != 0)) {
-        if (stepCount > 1) drawHitbox(player);
+        if (stepCount > 1) drawHitbox(pl, player);
         return true;
     }
 
@@ -243,7 +242,7 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
     bool   hasClickP1 = false;
     bool   hasClickP2 = false;
 
-    int iterations = getPredictionLength();
+    int iterations = getPredictionLength(pl);
     if (config.m_maxLength > 0)
         iterations = std::min(iterations, config.m_maxLength);
 
@@ -433,7 +432,9 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
 }
 
 void Trajectory::update(GJBaseGameLayer* pl) {
-    if (!pl) return;
+    if (!pl || pl != m_layer || !m_state || !m_fakePlayer1 ||
+        !m_fakePlayer2 || !m_node)
+        return;
 
     m_fakePlayer1->setVisible(false);
     m_fakePlayer2->setVisible(false);
@@ -548,12 +549,12 @@ applyLayoutColors:
     }
 }
 
-void Trajectory::drawHitbox(PlayerObject* player) {
+void Trajectory::drawHitbox(GJBaseGameLayer* pl, PlayerObject* player) {
 #define CC_COLOR(color_type) \
     *reinterpret_cast<cocos2d::ccColor4F*>(settings.categories[color_type].colors.data())
 
-    const float width = m_state->m_width->inner() /
-                        GJBaseGameLayer::get()->m_gameState.m_cameraZoom;
+    const float width =
+        m_state->m_width->inner() / pl->m_gameState.m_cameraZoom;
     CCRect rect   = usingWidth(player->getObjectRect(), width);
     CCRect scaled = usingWidth(player->getObjectRect(0.3f, 0.3f), width);
 
@@ -582,8 +583,10 @@ bool Trajectory::realPlayerHasActivated(PlayerObject* player,
     if (!isFakePlayer(player))
         return phys::hasBeenActivatedByPlayer(player, object);
 
-    auto pl = GJBaseGameLayer::get();
+    auto* pl = m_layer;
+    if (!pl) return false;
     PlayerObject* realPlayer = (player == m_fakePlayer1) ? pl->m_player1 : pl->m_player2;
+    if (!realPlayer) return false;
     return phys::hasBeenActivatedByPlayer(realPlayer, object);
 }
 

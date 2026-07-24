@@ -180,7 +180,7 @@ void GrapeEngine::initialize() {
             this->hitboxes().destroy();
         } else if (playLayer) {
             if (!this->trajectory().exists()) {
-                this->trajectory().init();
+                this->trajectory().init(playLayer);
             }
             if (!this->hitboxes().m_initialized) {
                 this->hitboxes().init(playLayer);
