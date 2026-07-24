@@ -97,9 +97,12 @@ void TouchOverlay::onRight(CCObject*) {
 }
 
 void TouchOverlay::updateVisibility() {
-    auto playLayer = PlayLayer::get();
-    bool shouldBeVisible = playLayer && GrapeEngine::get()->timeline().isPaused();
-    this->setVisible(shouldBeVisible);
+    auto* playLayer = PlayLayer::get();
+    if (playLayer && this->getParent() != playLayer) {
+        this->removeFromParentAndCleanup(false);
+        playLayer->addChild(this, 1000);
+    }
+    this->setVisible(playLayer && GrapeEngine::get()->timeline().isPaused());
 }
 
 void TouchOverlay::hide() {

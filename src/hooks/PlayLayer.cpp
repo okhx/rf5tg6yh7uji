@@ -748,14 +748,6 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
         Renderer* renderer = Renderer::get();
         renderer->startIfQueued();
 
-#ifdef GEODE_IS_MOBILE
-        if (auto overlay = TouchOverlay::get()) {
-            if (!overlay->getParent()) {
-                this->addChild(overlay, 1000);
-            }
-        }
-#endif
-
         return PlayLayer::setupHasCompleted();
     }
 
