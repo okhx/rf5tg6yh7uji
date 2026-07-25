@@ -87,6 +87,73 @@ static double trajectoryPredictionTps(double actualTps,
 }
 #endif
 
+#ifdef GEODE_IS_MOBILE
+void Trajectory::collectMobileColliders(GJBaseGameLayer* pl) {
+    m_mobileColliders.clear();
+    std::unordered_set<GameObject*> seen;
+
+    const int margin = std::max(
+        3, static_cast<int>(std::ceil(
+               std::clamp(GrapeSettings::get()->trajectory.length,
+                          0.0, 60.0) * 8.0)));
+    const size_t first = static_cast<size_t>(
+        std::max(0, pl->m_leftSectionIndex - margin));
+    const size_t last = std::min(
+        pl->m_sections.size(),
+        static_cast<size_t>(
+            std::max(0, pl->m_rightSectionIndex + margin + 1)));
+
+    for (size_t x = first; x < last; ++x) {
+        auto* column = pl->m_sections[x];
+        if (!column) continue;
+        for (size_t y = 0; y < column->size(); ++y) {
+            auto* section = column->at(y);
+            if (!section) continue;
+
+            size_t count = section->size();
+            if (x < pl->m_sectionSizes.size()) {
+                if (auto* sizes = pl->m_sectionSizes[x];
+                    sizes && y < sizes->size())
+                    count = std::min(
+                        count, static_cast<size_t>(sizes->at(y)));
+            }
+
+            for (size_t i = 0; i < count; ++i) {
+                auto* object = section->at(i);
+                if (!object || !seen.insert(object).second ||
+                    object == pl->m_anticheatSpike ||
+                    object->m_isGroupDisabled || object->m_isDisabled ||
+                    !object->m_isActivated ||
+                    object->m_objectType == GameObjectType::Decoration)
+                    continue;
+
+                const bool rectDirty = object->m_isObjectRectDirty;
+                const bool offsetCalculated = object->m_boxOffsetCalculated;
+                CCRect rect = object->getObjectRect();
+                const float radius =
+                    object->m_objectRadius *
+                    std::max(std::abs(object->m_scaleX),
+                             std::abs(object->m_scaleY));
+                if (radius > 0.f) {
+                    const CCPoint center = object->getPosition();
+                    rect = {{center.x - radius, center.y - radius},
+                            {radius * 2.f, radius * 2.f}};
+                }
+                object->m_isObjectRectDirty = rectDirty;
+                object->m_boxOffsetCalculated = offsetCalculated;
+
+                m_mobileColliders.push_back({
+                    .rect = rect,
+                    .type = object->m_objectType,
+                    .objectID = object->m_objectID,
+                    .passable = object->m_isPassable,
+                });
+            }
+        }
+    }
+}
+#endif
+
 Trajectory::Signature Trajectory::computeSignature(GJBaseGameLayer* pl) {
     Signature s;
     s.frame = GrapeEngine::get()->timeline().getFrame();
@@ -380,6 +447,7 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     const int category = mode | platformer;
     if (!config.m_bypassConfig && !settings.categories[category].enabled)
         return {};
+    if (m_mobileColliders.empty()) collectMobileColliders(pl);
 
     int steps = config.m_maxLength == 0 ? 1 : getPredictionLength(pl);
     if (config.m_maxLength > 0)
@@ -388,17 +456,19 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     const double tps = trajectoryPredictionTps(
         GrapeEngine::get()->timeline().getTps(), config.m_overridenTPS);
     const float dt = static_cast<float>(60.0 / tps);
-    const float gravity =
-        (player->m_isUpsideDown ? 0.958f : -0.958f) *
-        player->m_gravityMod;
+    bool upsideDown = player->m_isUpsideDown;
     float velocity = static_cast<float>(player->m_yVelocity);
+    float speedScale = 1.f;
     CCPoint position = player->getPosition();
     const CCPoint start = position;
+    const CCRect originalBox = player->getObjectRect();
+    const CCPoint boxOffset = originalBox.origin - start;
+    std::unordered_set<size_t> activated;
 
     if (!player->m_isShip && !player->m_isBird && !player->m_isDart &&
         !player->m_isSwing && player->m_isOnGround2 &&
         (mode & CLICK_MASK) != TrajectoryMode::Release) {
-        velocity = player->m_isUpsideDown ? -11.18f : 11.18f;
+        velocity = upsideDown ? -11.18f : 11.18f;
     }
 
     const auto color =
@@ -409,6 +479,7 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     int completed = 0;
     for (; completed < steps; ++completed) {
         const CCPoint previous = position;
+        const CCRect previousBox = {previous + boxOffset, originalBox.size};
         float direction = player->m_isGoingLeft ? -1.f : 1.f;
         if (pl->m_isPlatformer) {
             if (mode & TrajectoryMode::Left) direction = -1.f;
@@ -418,7 +489,9 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
         }
 
         position.x += player->m_playerSpeed * player->m_speedMultiplier *
-                      direction * dt;
+                      speedScale * direction * dt;
+        const float gravity =
+            (upsideDown ? 0.958f : -0.958f) * player->m_gravityMod;
         if (player->m_isShip || player->m_isBird || player->m_isDart ||
             player->m_isSwing) {
             const float thrust =
@@ -430,9 +503,93 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
         }
         position.y += velocity * dt;
 
+        bool dead = false;
+        CCRect box = {position + boxOffset, originalBox.size};
+        for (size_t i = 0; i < m_mobileColliders.size(); ++i) {
+            const auto& object = m_mobileColliders[i];
+            if (!box.intersectsRect(object.rect)) continue;
+
+            switch (object.type) {
+                case GameObjectType::Hazard:
+                case GameObjectType::AnimatedHazard:
+                    dead = true;
+                    break;
+
+                case GameObjectType::Solid:
+                case GameObjectType::Breakable:
+                case GameObjectType::Slope: {
+                    const bool falling = velocity <= 0.f;
+                    if (falling &&
+                        previousBox.getMinY() >= object.rect.getMaxY() - 1.f) {
+                        position.y +=
+                            object.rect.getMaxY() - box.getMinY();
+                        velocity = 0.f;
+                    } else if (!object.passable && !falling &&
+                               previousBox.getMaxY() <=
+                                   object.rect.getMinY() + 1.f) {
+                        position.y -=
+                            box.getMaxY() - object.rect.getMinY();
+                        velocity = 0.f;
+                    } else if (!object.passable) {
+                        if (direction > 0.f)
+                            position.x -=
+                                box.getMaxX() - object.rect.getMinX();
+                        else if (direction < 0.f)
+                            position.x +=
+                                object.rect.getMaxX() - box.getMinX();
+                    }
+                    box.origin = position + boxOffset;
+                    break;
+                }
+
+                default:
+                    if (!activated.insert(i).second) break;
+                    switch (object.type) {
+                        case GameObjectType::InverseGravityPortal:
+                            upsideDown = true;
+                            velocity = -std::abs(velocity);
+                            break;
+                        case GameObjectType::NormalGravityPortal:
+                            upsideDown = false;
+                            velocity = std::abs(velocity);
+                            break;
+                        case GameObjectType::GravityTogglePortal:
+                            upsideDown = !upsideDown;
+                            velocity = -velocity;
+                            break;
+                        case GameObjectType::YellowJumpPad:
+                            velocity = upsideDown ? -11.18f : 11.18f;
+                            break;
+                        case GameObjectType::PinkJumpPad:
+                            velocity = upsideDown ? -8.f : 8.f;
+                            break;
+                        case GameObjectType::RedJumpPad:
+                            velocity = upsideDown ? -14.f : 14.f;
+                            break;
+                        case GameObjectType::GravityPad:
+                            upsideDown = !upsideDown;
+                            velocity = upsideDown ? -8.f : 8.f;
+                            break;
+                        default:
+                            switch (object.objectID) {
+                                case 200: speedScale = .7f; break;
+                                case 201: speedScale = .9f; break;
+                                case 202: speedScale = 1.1f; break;
+                                case 203: speedScale = 1.3f; break;
+                                case 1334: speedScale = 1.6f; break;
+                                default: break;
+                            }
+                            break;
+                    }
+                    break;
+            }
+            if (dead) break;
+        }
+
         if (m_node && config.m_maxLength != 0)
             m_node->drawSegment(previous, position, width, color);
-        if (position.y < -100.f || position.y > pl->m_maxGameplayY + 100.f)
+        if (dead || position.y < -100.f ||
+            position.y > pl->m_maxGameplayY + 100.f)
             break;
     }
 
@@ -541,6 +698,7 @@ void Trajectory::update(GJBaseGameLayer* pl) {
     m_node->setVisible(true);
     m_node->clear();
     m_drawing = true;
+    collectMobileColliders(pl);
 
     const bool both = !pl->m_levelSettings->m_twoPlayerMode;
     for (int click : {static_cast<int>(TrajectoryMode::Hold),
@@ -569,6 +727,7 @@ void Trajectory::update(GJBaseGameLayer* pl) {
     m_lastSignature = signature;
     m_calculated = true;
     m_drawing = false;
+    m_mobileColliders.clear();
     return;
 #else
     m_fakePlayer1->setVisible(false);

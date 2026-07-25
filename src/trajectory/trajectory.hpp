@@ -110,6 +110,17 @@ class Trajectory {
 
     float m_delta = 0.0;
 
+#ifdef GEODE_IS_MOBILE
+    struct MobileCollider {
+        cocos2d::CCRect rect;
+        GameObjectType type;
+        int objectID;
+        bool passable;
+    };
+    std::vector<MobileCollider> m_mobileColliders;
+    void collectMobileColliders(GJBaseGameLayer* pl);
+#endif
+
    public:
     Trajectory() = default;
     ~Trajectory() {
