@@ -61,11 +61,16 @@ struct GrapeLevelEditorLayer : Modify<GrapeLevelEditorLayer, LevelEditorLayer> {
 
     bool init(GJGameLevel* level, bool p1) {
         auto& t = GrapeEngine::get()->trajectory();
+#ifdef GEODE_IS_MOBILE
         t.uninit();
+#endif
 
         if (!LevelEditorLayer::init(level, p1)) return false;
 
         GrapeEngine::get()->hitboxes().init(this);
+#ifndef GEODE_IS_MOBILE
+        t.uninit();
+#endif
         t.init(this);
 
 #ifdef GEODE_IS_MOBILE

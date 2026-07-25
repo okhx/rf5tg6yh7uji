@@ -432,9 +432,13 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
 }
 
 void Trajectory::update(GJBaseGameLayer* pl) {
-    if (!pl || pl != m_layer || !m_state || !m_fakePlayer1 ||
-        !m_fakePlayer2 || !m_node)
+    if (!pl)
         return;
+#ifdef GEODE_IS_MOBILE
+    if (pl != m_layer || !m_state || !m_fakePlayer1 || !m_fakePlayer2 ||
+        !m_node)
+        return;
+#endif
 
     m_fakePlayer1->setVisible(false);
     m_fakePlayer2->setVisible(false);
@@ -583,7 +587,11 @@ bool Trajectory::realPlayerHasActivated(PlayerObject* player,
     if (!isFakePlayer(player))
         return phys::hasBeenActivatedByPlayer(player, object);
 
+#ifdef GEODE_IS_MOBILE
     auto* pl = m_layer;
+#else
+    auto* pl = GJBaseGameLayer::get();
+#endif
     if (!pl) return false;
     PlayerObject* realPlayer = (player == m_fakePlayer1) ? pl->m_player1 : pl->m_player2;
     if (!realPlayer) return false;

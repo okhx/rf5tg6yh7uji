@@ -835,6 +835,7 @@ $execute {
         }
 
         if (auto pl = GJBaseGameLayer::get(); pl) {
+#ifdef GEODE_IS_MOBILE
             GrapeEngine::get()->timeline().scheduleFrozenFunction([](float) {
                 auto* pl = GJBaseGameLayer::get();
                 if (!pl) return;
@@ -843,6 +844,14 @@ $execute {
                 }
                 GrapeEngine::get()->trajectory().update(pl);
             });
+#else
+            GrapeEngine::get()->timeline().scheduleFrozenFunction([pl](float) {
+                if (auto t = GrapeEngine::get()->trajectory().unsafeInner(); t) {
+                    t->invalidateCache();
+                }
+                GrapeEngine::get()->trajectory().update(pl);
+            });
+#endif
         }
     });
 }

@@ -119,7 +119,11 @@ class Trajectory {
 
         auto releasePlayer = [](PlayerObject*& player) {
             if (!player) return;
+#ifdef GEODE_IS_MOBILE
             player->setVisible(false);
+#else
+            if (player->getParent()) player->removeFromParentAndCleanup(true);
+#endif
             player->release();
             player = nullptr;
         };
@@ -127,7 +131,11 @@ class Trajectory {
         releasePlayer(m_fakePlayer2);
 
         if (m_node) {
+#ifdef GEODE_IS_MOBILE
             m_node->setVisible(false);
+#else
+            if (m_node->getParent()) m_node->removeFromParentAndCleanup(true);
+#endif
             m_node->release();
             m_node = nullptr;
         }
@@ -194,9 +202,11 @@ class Trajectory {
     }
 
     static Trajectory* create(GJBaseGameLayer* pl) {
+#ifdef GEODE_IS_MOBILE
         if (!pl || !pl->m_objectLayer || !pl->m_debugDrawNode ||
             !pl->m_debugDrawNode->getParent())
             return nullptr;
+#endif
 
         Trajectory* t = new Trajectory();
         t->m_layer = pl;
@@ -220,7 +230,11 @@ class Trajectory {
         }
 
         pl->m_debugDrawNode->getParent()->addChild(
+#ifdef GEODE_IS_MOBILE
             t->m_node, (pl->m_uiLayer ? pl->m_uiLayer->getZOrder() : 0) + 10000);
+#else
+            t->m_node, pl->m_uiLayer->getZOrder() + 10000);
+#endif
 
         return t;
     }
