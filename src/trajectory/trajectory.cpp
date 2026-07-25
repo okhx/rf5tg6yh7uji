@@ -399,6 +399,12 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     const GJGameState savedState = pl->m_gameState;
     EffectManagerState ems;
     pl->m_effectManager->saveToState(ems);
+#ifdef GEODE_IS_MOBILE
+    const auto solidCount = pl->m_solidCollisionObjectsCount;
+    const auto solidIndex = pl->m_solidCollisionObjectsIndex;
+    const auto hazardCount = pl->m_hazardCollisionObjectsCount;
+    const auto hazardIndex = pl->m_hazardCollisionObjectsIndex;
+#endif
 
     auto syncPlayer = [](PlayerObject* fake, PlayerObject* real) {
         fake->copyAttributes(real);
@@ -427,6 +433,12 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
 
     pl->m_gameState = savedState;
     pl->m_effectManager->loadFromState(ems);
+#ifdef GEODE_IS_MOBILE
+    pl->m_solidCollisionObjectsCount = solidCount;
+    pl->m_solidCollisionObjectsIndex = solidIndex;
+    pl->m_hazardCollisionObjectsCount = hazardCount;
+    pl->m_hazardCollisionObjectsIndex = hazardIndex;
+#endif
 
     return predicted;
 }

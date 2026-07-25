@@ -119,24 +119,20 @@ class Trajectory {
 
         auto releasePlayer = [](PlayerObject*& player) {
             if (!player) return;
-#ifdef GEODE_IS_MOBILE
-            player->setVisible(false);
-#else
+#ifndef GEODE_IS_MOBILE
             if (player->getParent()) player->removeFromParentAndCleanup(true);
-#endif
             player->release();
+#endif
             player = nullptr;
         };
         releasePlayer(m_fakePlayer1);
         releasePlayer(m_fakePlayer2);
 
         if (m_node) {
-#ifdef GEODE_IS_MOBILE
-            m_node->setVisible(false);
-#else
+#ifndef GEODE_IS_MOBILE
             if (m_node->getParent()) m_node->removeFromParentAndCleanup(true);
-#endif
             m_node->release();
+#endif
             m_node = nullptr;
         }
         m_layer = nullptr;
@@ -193,7 +189,9 @@ class Trajectory {
     PlayerObject* createFakePlayer(GJBaseGameLayer* pl, std::string&& id) {
         PlayerObject* player = PlayerObject::create(1, 1, pl, pl, true);
         if (!player) return nullptr;
+#ifndef GEODE_IS_MOBILE
         player->retain();
+#endif
         player->setPosition({0, 105});
         player->setID(id);
         pl->m_objectLayer->addChild(player);
@@ -216,7 +214,9 @@ class Trajectory {
             delete t;
             return nullptr;
         }
+#ifndef GEODE_IS_MOBILE
         t->m_node->retain();
+#endif
         t->m_node->setID("trajectory-node"_spr);
         t->m_node->setBlendFunc(cocos2d::ccBlendFunc{770, 771});
 
@@ -302,11 +302,7 @@ class TrajectoryManager {
     }
 
     bool enabled() const {
-        if (m_trajectory) {
-            return m_trajectory->enabled();
-        }
-
-        return false;
+        return m_state.m_enabled->inner();
     }
 
     PlayerObject* getOtherPlayer(PlayerObject* player) {
@@ -334,13 +330,26 @@ class TrajectoryManager {
     }
 
     void setEnabled(bool enabled) {
+#ifdef GEODE_IS_MOBILE
+        m_state.m_enabled->inner() = enabled;
+        m_state.m_enabled->notifyChange();
+        if (enabled && !m_trajectory) {
+            init(GJBaseGameLayer::get());
+        } else if (m_trajectory) {
+            m_trajectory->setEnabled(enabled);
+        }
+#else
         if (m_trajectory) {
             m_trajectory->setEnabled(enabled);
         }
+#endif
     }
 
     void init(GJBaseGameLayer* layer) {
         if (m_trajectory) uninit();
+#ifdef GEODE_IS_MOBILE
+        if (!m_state.m_enabled->inner()) return;
+#endif
         m_trajectory = Trajectory::create(layer);
         if (m_trajectory) m_trajectory->m_state = &m_state;
     }
