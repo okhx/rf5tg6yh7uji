@@ -43,6 +43,13 @@ static cocos2d::CCRect usingWidth(const cocos2d::CCRect& r, float w) {
             r.size.width - w * 2.0f, r.size.height - w * 2.0f};
 }
 
+static bool isHoldingJump(PlayerObject* player) {
+    if (!player) return false;
+    const auto it =
+        player->m_holdingButtons.find(static_cast<int>(PlayerButton::Jump));
+    return it != player->m_holdingButtons.end() && it->second;
+}
+
 static void drawRect(CCDrawNode* node, CCRect& rect, ccColor4F color, float w) {
     node->drawRect(rect, {0, 0, 0, 0}, w, color);
 }
@@ -71,7 +78,7 @@ static uint64_t packPlayerFlags(PlayerObject* p) {
     set(p->m_isOnGround2); set(p->m_isSideways); set(p->m_isDashing);
     set(p->m_isAccelerating); set(p->m_holdingLeft); set(p->m_holdingRight);
     set(p->m_jumpBuffered); set(p->m_isPlatformer); set(p->m_isGoingLeft);
-    set(p->m_maybeIsBoosted);
+    set(p->m_maybeIsBoosted); set(isHoldingJump(p));
     return flags;
 }
 
@@ -426,7 +433,7 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     m_deadP2 = false;
 
 #ifdef GEODE_IS_MOBILE
-    const bool holding = p1 ? m_p1Holding : m_p2Holding;
+    const bool holding = isHoldingJump(realPlayer);
     const bool current =
         (holding && (mode & CLICK_MASK) == TrajectoryMode::Hold) ||
         (!holding && (mode & CLICK_MASK) == TrajectoryMode::Release);
@@ -452,7 +459,7 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
 }
 
 void Trajectory::update(GJBaseGameLayer* pl) {
-    if (!pl)
+    if (!pl || pl != m_layer)
         return;
     m_fakePlayer1->setVisible(false);
     m_fakePlayer2->setVisible(false);

@@ -188,7 +188,9 @@ class Trajectory {
         player->retain();
         player->setPosition({0, 105});
         player->setID(id);
+#ifndef GEODE_IS_MOBILE
         pl->m_objectLayer->addChild(player);
+#endif
 
         return player;
     }
