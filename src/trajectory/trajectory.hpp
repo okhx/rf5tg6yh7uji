@@ -201,7 +201,7 @@ class Trajectory {
 
     static Trajectory* create(GJBaseGameLayer* pl) {
 #ifdef GEODE_IS_MOBILE
-        if (!pl || !pl->m_objectLayer || !pl->m_debugDrawNode ||
+        if (!pl || !pl->m_debugDrawNode ||
             !pl->m_debugDrawNode->getParent())
             return nullptr;
 #endif
@@ -220,6 +220,7 @@ class Trajectory {
         t->m_node->setID("trajectory-node"_spr);
         t->m_node->setBlendFunc(cocos2d::ccBlendFunc{770, 771});
 
+#ifndef GEODE_IS_MOBILE
         t->m_fakePlayer1 =
             t->createFakePlayer(pl, "trajectory-fake-player1"_spr);
         t->m_fakePlayer2 =
@@ -228,6 +229,7 @@ class Trajectory {
             delete t;
             return nullptr;
         }
+#endif
 
         pl->m_debugDrawNode->getParent()->addChild(
 #ifdef GEODE_IS_MOBILE
@@ -347,9 +349,6 @@ class TrajectoryManager {
 
     void init(GJBaseGameLayer* layer) {
         if (m_trajectory) uninit();
-#ifdef GEODE_IS_MOBILE
-        if (!m_state.m_enabled->inner()) return;
-#endif
         m_trajectory = Trajectory::create(layer);
         if (m_trajectory) m_trajectory->m_state = &m_state;
     }

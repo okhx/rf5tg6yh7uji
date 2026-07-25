@@ -367,6 +367,89 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
 TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
                                           int mode, bool clickBothPlayers,
                                           PredictionConfig config) {
+#ifdef GEODE_IS_MOBILE
+    if (!pl || pl != m_layer) return {};
+    (void)clickBothPlayers;
+
+    PlayerObject* player = p1 ? pl->m_player1 : pl->m_player2;
+    if (!player) return {};
+
+    auto& settings = GrapeSettings::get()->trajectory;
+    const int platformer =
+        pl->m_isPlatformer ? TrajectoryMode::Platformer : 0;
+    const int category = mode | platformer;
+    if (!config.m_bypassConfig && !settings.categories[category].enabled)
+        return {};
+
+    int steps = config.m_maxLength == 0 ? 1 : getPredictionLength(pl);
+    if (config.m_maxLength > 0)
+        steps = std::min(steps, config.m_maxLength);
+
+    const double tps = trajectoryPredictionTps(
+        GrapeEngine::get()->timeline().getTps(), config.m_overridenTPS);
+    const float dt = static_cast<float>(60.0 / tps);
+    const float gravity =
+        (player->m_isUpsideDown ? 0.958f : -0.958f) *
+        player->m_gravityMod;
+    float velocity = static_cast<float>(player->m_yVelocity);
+    CCPoint position = player->getPosition();
+    const CCPoint start = position;
+
+    if (!player->m_isShip && !player->m_isBird && !player->m_isDart &&
+        !player->m_isSwing && player->m_isOnGround2 &&
+        (mode & CLICK_MASK) != TrajectoryMode::Release) {
+        velocity = player->m_isUpsideDown ? -11.18f : 11.18f;
+    }
+
+    const auto color =
+        toCocosColor(settings.categories[category].colors.data());
+    const float width =
+        m_state->m_width->inner() /
+        std::max(std::abs(pl->m_gameState.m_cameraZoom), 0.001f);
+    int completed = 0;
+    for (; completed < steps; ++completed) {
+        const CCPoint previous = position;
+        float direction = player->m_isGoingLeft ? -1.f : 1.f;
+        if (pl->m_isPlatformer) {
+            if (mode & TrajectoryMode::Left) direction = -1.f;
+            else if (mode & TrajectoryMode::Right) direction = 1.f;
+            else if (!player->m_holdingLeft && !player->m_holdingRight)
+                direction = 0.f;
+        }
+
+        position.x += player->m_playerSpeed * player->m_speedMultiplier *
+                      direction * dt;
+        if (player->m_isShip || player->m_isBird || player->m_isDart ||
+            player->m_isSwing) {
+            const float thrust =
+                (mode & CLICK_MASK) == TrajectoryMode::Hold ? -gravity
+                                                            : gravity;
+            velocity += thrust * dt;
+        } else {
+            velocity += gravity * dt;
+        }
+        position.y += velocity * dt;
+
+        if (m_node && config.m_maxLength != 0)
+            m_node->drawSegment(previous, position, width, color);
+        if (position.y < -100.f || position.y > pl->m_maxGameplayY + 100.f)
+            break;
+    }
+
+    CCRect hitbox = player->getObjectRect();
+    hitbox.origin += position - start;
+    CCRect inner = player->getObjectRect(0.3f, 0.3f);
+    inner.origin += position - start;
+    return {
+        .position = position,
+        .hitbox = hitbox,
+        .innerHitbox = inner,
+        .rotation = player->getRotation(),
+        .p1 = p1,
+        .holding = (mode & CLICK_MASK) == TrajectoryMode::Hold,
+        .score = completed,
+    };
+#else
     auto& ts = GrapeSettings::get()->trajectory;
 
     PlayerObject* player         = p1 ? m_fakePlayer1 : m_fakePlayer2;
@@ -399,12 +482,6 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     const GJGameState savedState = pl->m_gameState;
     EffectManagerState ems;
     pl->m_effectManager->saveToState(ems);
-#ifdef GEODE_IS_MOBILE
-    const auto solidCount = pl->m_solidCollisionObjectsCount;
-    const auto solidIndex = pl->m_solidCollisionObjectsIndex;
-    const auto hazardCount = pl->m_hazardCollisionObjectsCount;
-    const auto hazardIndex = pl->m_hazardCollisionObjectsIndex;
-#endif
 
     auto syncPlayer = [](PlayerObject* fake, PlayerObject* real) {
         fake->copyAttributes(real);
@@ -433,25 +510,67 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
 
     pl->m_gameState = savedState;
     pl->m_effectManager->loadFromState(ems);
-#ifdef GEODE_IS_MOBILE
-    pl->m_solidCollisionObjectsCount = solidCount;
-    pl->m_solidCollisionObjectsIndex = solidIndex;
-    pl->m_hazardCollisionObjectsCount = hazardCount;
-    pl->m_hazardCollisionObjectsIndex = hazardIndex;
-#endif
 
     return predicted;
+#endif
 }
 
 void Trajectory::update(GJBaseGameLayer* pl) {
     if (!pl)
         return;
 #ifdef GEODE_IS_MOBILE
-    if (pl != m_layer || !m_state || !m_fakePlayer1 || !m_fakePlayer2 ||
-        !m_node)
+    if (pl != m_layer || !m_state || !m_node || !pl->m_levelSettings ||
+        !pl->m_player1)
         return;
-#endif
 
+    if (auto* editor = LevelEditorLayer::get();
+        editor && editor->m_playbackMode == PlaybackMode::Not) {
+        m_node->setVisible(false);
+        return;
+    }
+
+    if (!m_state->m_enabled->inner()) {
+        m_node->setVisible(false);
+        return;
+    }
+
+    const Signature signature = computeSignature(pl);
+    if (m_calculated && signature == m_lastSignature)
+        return;
+
+    m_node->setVisible(true);
+    m_node->clear();
+    m_drawing = true;
+
+    const bool both = !pl->m_levelSettings->m_twoPlayerMode;
+    for (int click : {static_cast<int>(TrajectoryMode::Hold),
+                      static_cast<int>(TrajectoryMode::Swift),
+                      static_cast<int>(TrajectoryMode::Release)}) {
+        simulate(pl, true, click, both);
+        if (pl->m_isPlatformer) {
+            simulate(pl, true, click | TrajectoryMode::Left, both);
+            simulate(pl, true, click | TrajectoryMode::Right, both);
+        }
+    }
+    if (pl->m_player2 && pl->m_gameState.m_isDualMode &&
+        pl->m_levelSettings->m_twoPlayerMode) {
+        for (int click : {static_cast<int>(TrajectoryMode::Hold),
+                          static_cast<int>(TrajectoryMode::Swift),
+                          static_cast<int>(TrajectoryMode::Release)}) {
+            simulate(pl, false, click, false);
+            if (pl->m_isPlatformer) {
+                simulate(pl, false, click | TrajectoryMode::Left, false);
+                simulate(pl, false, click | TrajectoryMode::Right, false);
+            }
+        }
+    }
+
+    m_lastFrame = GrapeEngine::get()->timeline().getFrame();
+    m_lastSignature = signature;
+    m_calculated = true;
+    m_drawing = false;
+    return;
+#else
     m_fakePlayer1->setVisible(false);
     m_fakePlayer2->setVisible(false);
 
@@ -468,18 +587,6 @@ void Trajectory::update(GJBaseGameLayer* pl) {
 
     const Signature sig = computeSignature(pl);
     const bool needsRebuild = !m_calculated || !(sig == m_lastSignature);
-#ifdef GEODE_IS_MOBILE
-    const uint64_t currentFrame = GrapeEngine::get()->timeline().getFrame();
-    const double currentTps = GrapeEngine::get()->timeline().getTps();
-    const uint64_t rebuildInterval = currentTps <= 240.0
-        ? 1u
-        : static_cast<uint64_t>(std::max(
-              1.0, std::floor(currentTps / 120.0)));
-    if (m_calculated && currentFrame >= m_lastFrame &&
-        currentFrame - m_lastFrame < rebuildInterval) {
-        goto applyLayoutColors;
-    }
-#endif
 
     if (!needsRebuild) goto applyLayoutColors;
 
@@ -563,6 +670,7 @@ applyLayoutColors:
                 break;
         }
     }
+#endif
 }
 
 void Trajectory::drawHitbox(GJBaseGameLayer* pl, PlayerObject* player) {

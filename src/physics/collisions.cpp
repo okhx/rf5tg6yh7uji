@@ -318,18 +318,6 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
 
         if (object->m_objectType == GameObjectType::Solid ||
             object->m_objectType == GameObjectType::Breakable) {
-#ifdef GEODE_IS_MOBILE
-            if (pl->m_solidCollisionObjectsCount <
-                static_cast<int>(pl->m_solidCollisionObjects.size())) {
-                pl->m_solidCollisionObjects.at(
-                    pl->m_solidCollisionObjectsCount) = object;
-            } else {
-                pl->m_solidCollisionObjects.push_back(object);
-            }
-            ++pl->m_solidCollisionObjectsCount;
-            pl->m_solidCollisionObjectsIndex =
-                static_cast<int>(pl->m_solidCollisionObjects.size());
-#else
             if (pl->m_solidCollisionObjectsCount <
                 pl->m_solidCollisionObjectsIndex) {
                 pl->m_solidCollisionObjects.at(
@@ -340,7 +328,6 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
                 pl->m_solidCollisionObjectsCount++;
                 pl->m_solidCollisionObjectsIndex++;
             }
-#endif
 
             continue;
         }
@@ -349,18 +336,6 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
 
         if (object->m_objectType == GameObjectType::Hazard ||
             object->m_objectType == GameObjectType::AnimatedHazard) {
-#ifdef GEODE_IS_MOBILE
-            if (pl->m_hazardCollisionObjectsCount <
-                static_cast<int>(pl->m_hazardCollisionObjects.size())) {
-                pl->m_hazardCollisionObjects.at(
-                    pl->m_hazardCollisionObjectsCount) = object;
-            } else {
-                pl->m_hazardCollisionObjects.push_back(object);
-            }
-            ++pl->m_hazardCollisionObjectsCount;
-            pl->m_hazardCollisionObjectsIndex =
-                static_cast<int>(pl->m_hazardCollisionObjects.size());
-#else
             if (pl->m_hazardCollisionObjectsCount <
                 pl->m_hazardCollisionObjectsIndex) {
                 pl->m_hazardCollisionObjects.at(
@@ -371,7 +346,6 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
                 pl->m_hazardCollisionObjectsCount++;
                 pl->m_hazardCollisionObjectsIndex++;
             }
-#endif
 
             continue;
         }
@@ -650,8 +624,6 @@ void triggerObject(EffectGameObject* object, GJBaseGameLayer* pl,
 }
 
 void checkSpawnObjects(GJBaseGameLayer* pl, PlayerObject* player) {
-    if (!pl || !player || !pl->m_spawnObjects) return;
-
     CCPoint position = player->getPosition();
 
     cocos2d::CCArray* objects =
@@ -660,14 +632,6 @@ void checkSpawnObjects(GJBaseGameLayer* pl, PlayerObject* player) {
     if (!objects) {
         return;
     }
-
-#ifdef GEODE_IS_MOBILE
-    if (!pl->m_gameState.m_spawnChannelRelated0.contains(
-            pl->m_gameState.m_currentChannel) ||
-        !pl->m_gameState.m_spawnChannelRelated1.contains(
-            pl->m_gameState.m_currentChannel))
-        return;
-#endif
 
     int startingIndex = pl->m_gameState.m_spawnChannelRelated0.at(
         pl->m_gameState.m_currentChannel);

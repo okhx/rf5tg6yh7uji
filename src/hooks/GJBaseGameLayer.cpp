@@ -131,6 +131,12 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
 
         using Mode = GrapeSettings::TrajectorySettings::Mode;
         auto* t = GrapeEngine::get()->trajectory().unsafeInner();
+#ifdef GEODE_IS_MOBILE
+        if (!t) {
+            GJBaseGameLayer::update(dt);
+            return;
+        }
+#endif
 
         m_player1->setRotation(m_fields->m_lastActualP1.m_rotation);
         m_player2->setRotation(m_fields->m_lastActualP2.m_rotation);
