@@ -9,6 +9,7 @@
 
 #include "../config/config.hpp"
 #include "../shared/value/value.hpp"
+#include "../util/crash_log.hpp"
 #include "Geode/cocos/cocoa/CCGeometry.h"
 
 class TrajectoryDrawNode : public cocos2d::CCDrawNode {
@@ -64,6 +65,9 @@ class Trajectory {
     GJBaseGameLayer* m_layer = nullptr;
     cocos2d::CCRenderTexture* m_renderTex = nullptr;
     TrajectoryDrawNode* m_node = nullptr;
+#ifdef GEODE_IS_MOBILE
+    cocos2d::CCNode* m_fakePlayerContainer = nullptr;
+#endif
 
    public:
     PlayerObject* m_fakePlayer1 = nullptr;
@@ -125,6 +129,13 @@ class Trajectory {
         };
         releasePlayer(m_fakePlayer1);
         releasePlayer(m_fakePlayer2);
+
+#ifdef GEODE_IS_MOBILE
+        if (m_fakePlayerContainer) {
+            m_fakePlayerContainer->release();
+            m_fakePlayerContainer = nullptr;
+        }
+#endif
 
         if (m_node) {
             if (m_node->getParent()) m_node->removeFromParentAndCleanup(true);
@@ -215,6 +226,15 @@ class Trajectory {
         t->m_node->setID("trajectory-node"_spr);
         t->m_node->setBlendFunc(cocos2d::ccBlendFunc{770, 771});
 
+#ifdef GEODE_IS_MOBILE
+        t->m_fakePlayerContainer = cocos2d::CCNode::create();
+        if (!t->m_fakePlayerContainer) {
+            delete t;
+            return nullptr;
+        }
+        t->m_fakePlayerContainer->retain();
+#endif
+
         t->m_fakePlayer1 =
             t->createFakePlayer(pl, "trajectory-fake-player1"_spr);
         t->m_fakePlayer2 =
@@ -224,8 +244,8 @@ class Trajectory {
             return nullptr;
         }
 #ifdef GEODE_IS_MOBILE
-        t->m_node->addChild(t->m_fakePlayer1);
-        t->m_node->addChild(t->m_fakePlayer2);
+        t->m_fakePlayerContainer->addChild(t->m_fakePlayer1);
+        t->m_fakePlayerContainer->addChild(t->m_fakePlayer2);
 #endif
 
         pl->m_debugDrawNode->getParent()->addChild(
@@ -246,8 +266,7 @@ class Trajectory {
     }
     Signature computeSignature(GJBaseGameLayer* pl);
     bool iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
-                 float* colors, bool& hasHeld, int& stepCount,
-                 PredictionConfig config);
+                 float* colors, PredictionConfig config);
 
     TrajectoryPlayerData runPrediction(GJBaseGameLayer* pl,
                                        PlayerObject* player,
@@ -259,7 +278,6 @@ class Trajectory {
                                   PredictionConfig config = PredictionConfig());
     void update(GJBaseGameLayer* pl);
     void handlePortal(PlayerObject* player, GameObject* object);
-    void drawHitbox(GJBaseGameLayer* pl, PlayerObject* player);
 
     bool playerHasActivated(PlayerObject* player, EnhancedGameObject* object);
     bool realPlayerHasActivated(PlayerObject* player,
@@ -345,8 +363,14 @@ class TrajectoryManager {
     }
 
     void uninit() {
+#ifdef GEODE_IS_MOBILE
+        crash_log::breadcrumb("Trajectory teardown");
+#endif
         delete m_trajectory;
         m_trajectory = nullptr;
+#ifdef GEODE_IS_MOBILE
+        crash_log::breadcrumb("Trajectory removed");
+#endif
     }
 
     bool playerHasActivated(PlayerObject* player, EnhancedGameObject* object) {
