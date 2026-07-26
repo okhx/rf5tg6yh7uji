@@ -12,6 +12,7 @@
 #include "physics/object.hpp"
 #include "replay/macro.hpp"
 #include "config/config.hpp"
+#include "util/crash_log.hpp"
 
 #ifdef SILICATE_PROTECT
 #include "VMProtect/VMProtectSDK.h"
@@ -433,7 +434,9 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     m_deadP2 = false;
 
 #ifdef GEODE_IS_MOBILE
-    const bool holding = isHoldingJump(realPlayer);
+    const bool holding = realPlayer->m_isDart
+                             ? isHoldingJump(realPlayer)
+                             : (p1 ? m_p1Holding : m_p2Holding);
     const bool current =
         (holding && (mode & CLICK_MASK) == TrajectoryMode::Hold) ||
         (!holding && (mode & CLICK_MASK) == TrajectoryMode::Release);
@@ -481,6 +484,9 @@ void Trajectory::update(GJBaseGameLayer* pl) {
     if (!needsRebuild) goto applyLayoutColors;
 
     {
+#ifdef GEODE_IS_MOBILE
+        crash_log::breadcrumb("Trajectory prediction");
+#endif
         m_drawing = true;
         m_node->clear();
 
@@ -529,6 +535,10 @@ void Trajectory::update(GJBaseGameLayer* pl) {
         m_lastSignature = sig;
         m_drawing       = false;
     }
+
+#ifdef GEODE_IS_MOBILE
+    crash_log::breadcrumb("Trajectory idle");
+#endif
 
 applyLayoutColors:
     auto& updater = GrapeEngine::get()->timeline();

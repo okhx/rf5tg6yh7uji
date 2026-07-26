@@ -187,6 +187,7 @@ class Trajectory {
         if (!player) return nullptr;
         player->retain();
         player->setPosition({0, 105});
+        player->setVisible(false);
         player->setID(id);
 #ifndef GEODE_IS_MOBILE
         pl->m_objectLayer->addChild(player);
@@ -222,6 +223,10 @@ class Trajectory {
             delete t;
             return nullptr;
         }
+#ifdef GEODE_IS_MOBILE
+        t->m_node->addChild(t->m_fakePlayer1);
+        t->m_node->addChild(t->m_fakePlayer2);
+#endif
 
         pl->m_debugDrawNode->getParent()->addChild(
 #ifdef GEODE_IS_MOBILE

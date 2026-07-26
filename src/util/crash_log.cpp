@@ -3,6 +3,7 @@
 
 #include <Geode/Geode.hpp>
 
+#include <algorithm>
 #include <exception>
 #include <cstdlib>
 #include <filesystem>
@@ -321,10 +322,12 @@ void crash_log::breadcrumb(std::string_view message) {
 #include <fcntl.h>
 #include <limits.h>
 #include <sys/stat.h>
+#include <ucontext.h>
 #include <unistd.h>
 
 namespace {
 char g_mobileCrashPath[PATH_MAX] = {};
+char g_lastBreadcrumb[256] = "none";
 volatile sig_atomic_t g_handlingSignal = 0;
 struct sigaction g_previousHandlers[64] = {};
 
@@ -341,10 +344,9 @@ void writeLiteral(int fd, char const* text) {
     writeAll(fd, text, std::strlen(text));
 }
 
-void writeSignalNumber(int fd, int signal) {
+void writeNumber(int fd, unsigned int value) {
     char buffer[16] = {};
     int index = 15;
-    unsigned int value = static_cast<unsigned int>(signal);
     do {
         buffer[--index] = static_cast<char>('0' + value % 10);
         value /= 10;
@@ -352,7 +354,67 @@ void writeSignalNumber(int fd, int signal) {
     writeAll(fd, buffer + index, static_cast<size_t>(15 - index));
 }
 
-void mobileSignalHandler(int signal, siginfo_t* info, void*) {
+void writeSignedNumber(int fd, int value) {
+    if (value < 0) {
+        writeLiteral(fd, "-");
+        writeNumber(fd, static_cast<unsigned int>(
+                            -static_cast<long long>(value)));
+        return;
+    }
+    writeNumber(fd, static_cast<unsigned int>(value));
+}
+
+void writeAddress(int fd, uintptr_t value) {
+    constexpr char hex[] = "0123456789abcdef";
+    char address[2 + sizeof(uintptr_t) * 2] = {'0', 'x'};
+    for (size_t i = 0; i < sizeof(uintptr_t) * 2; ++i) {
+        const size_t shift = (sizeof(uintptr_t) * 2 - i - 1) * 4;
+        address[2 + i] = hex[(value >> shift) & 0xf];
+    }
+    writeAll(fd, address, sizeof(address));
+}
+
+void writeContext(int fd, void* context) {
+#if defined(__aarch64__) && defined(__APPLE__)
+    auto* uc = static_cast<ucontext_t*>(context);
+    if (!uc || !uc->uc_mcontext) return;
+    writeLiteral(fd, "\nPC: ");
+    writeAddress(fd, uc->uc_mcontext->__ss.__pc);
+    writeLiteral(fd, "\nLR: ");
+    writeAddress(fd, uc->uc_mcontext->__ss.__lr);
+    writeLiteral(fd, "\nSP: ");
+    writeAddress(fd, uc->uc_mcontext->__ss.__sp);
+#elif defined(__aarch64__) && defined(__ANDROID__)
+    auto* uc = static_cast<ucontext_t*>(context);
+    if (!uc) return;
+    writeLiteral(fd, "\nPC: ");
+    writeAddress(fd, uc->uc_mcontext.pc);
+    writeLiteral(fd, "\nLR: ");
+    writeAddress(fd, uc->uc_mcontext.regs[30]);
+    writeLiteral(fd, "\nSP: ");
+    writeAddress(fd, uc->uc_mcontext.sp);
+#else
+    (void)fd;
+    (void)context;
+#endif
+}
+
+void appendProcessMaps(int fd) {
+#ifdef __ANDROID__
+    const int maps = ::open("/proc/self/maps", O_RDONLY);
+    if (maps < 0) return;
+    writeLiteral(fd, "\nMemory map:\n");
+    char buffer[4096];
+    ssize_t size = 0;
+    while ((size = ::read(maps, buffer, sizeof(buffer))) > 0)
+        writeAll(fd, buffer, static_cast<size_t>(size));
+    ::close(maps);
+#else
+    (void)fd;
+#endif
+}
+
+void mobileSignalHandler(int signal, siginfo_t* info, void* context) {
     if (g_handlingSignal) _exit(128 + signal);
     g_handlingSignal = 1;
 
@@ -360,20 +422,19 @@ void mobileSignalHandler(int signal, siginfo_t* info, void*) {
                           S_IRUSR | S_IWUSR);
     if (fd >= 0) {
         writeLiteral(fd, "\n=== Grape mobile crash ===\nSignal: ");
-        writeSignalNumber(fd, signal);
+        writeNumber(fd, static_cast<unsigned int>(signal));
+        writeLiteral(fd, "\nSignal code: ");
+        writeSignedNumber(fd, info ? info->si_code : 0);
         writeLiteral(fd, "\nFault address: ");
         if (info && info->si_addr) {
-            constexpr char hex[] = "0123456789abcdef";
-            uintptr_t value = reinterpret_cast<uintptr_t>(info->si_addr);
-            char address[2 + sizeof(uintptr_t) * 2] = {'0', 'x'};
-            for (size_t i = 0; i < sizeof(uintptr_t) * 2; ++i) {
-                const size_t shift = (sizeof(uintptr_t) * 2 - i - 1) * 4;
-                address[2 + i] = hex[(value >> shift) & 0xf];
-            }
-            writeAll(fd, address, sizeof(address));
+            writeAddress(fd, reinterpret_cast<uintptr_t>(info->si_addr));
         } else {
             writeLiteral(fd, "unknown");
         }
+        writeContext(fd, context);
+        writeLiteral(fd, "\nLast breadcrumb: ");
+        writeLiteral(fd, g_lastBreadcrumb);
+        appendProcessMaps(fd);
         writeLiteral(fd, "\n");
         writeLiteral(fd, "=== end crash ===\n");
         ::fsync(fd);
@@ -418,9 +479,9 @@ void crash_log::install() {
 }
 
 void crash_log::breadcrumb(std::string_view message) {
-    std::ofstream out(g_mobileCrashPath, std::ios::out | std::ios::app);
-    out << "Breadcrumb: " << message << '\n';
-    out.flush();
+    const size_t size = std::min(message.size(), sizeof(g_lastBreadcrumb) - 1);
+    std::memcpy(g_lastBreadcrumb, message.data(), size);
+    g_lastBreadcrumb[size] = '\0';
 }
 
 #endif
