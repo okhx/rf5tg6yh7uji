@@ -416,6 +416,7 @@ void writeContext(int fd, void* context) {
 #endif
 }
 
+#ifdef __ANDROID__
 uintptr_t parseHex(char const* begin, char const* end) {
     uintptr_t value = 0;
     for (auto* cursor = begin; cursor < end; ++cursor) {
@@ -429,6 +430,7 @@ uintptr_t parseHex(char const* begin, char const* end) {
     }
     return value;
 }
+#endif
 
 void appendAddressMap(int fd, uintptr_t address) {
 #ifdef __ANDROID__
