@@ -443,6 +443,11 @@ class MobileFeaturePopup final : public geode::Popup {
                        std::max(2, static_cast<int>(value));
                },
                2, 10000, 0);
+        number("Arrow opacity", 5, settings->frameStepperArrowOpacity,
+               [settings](double value) {
+                   settings->frameStepperArrowOpacity = value;
+               },
+               0.1, 1.0);
     }
 
     void buildRendering() {
@@ -1185,37 +1190,74 @@ void MobileMenu::buildAssistPage() {
     auto& updater = bot->timeline();
     auto& hitboxes = bot->hitboxes();
     auto& trajectory = bot->trajectory();
+    auto& replay = bot->macro();
 
-    addToggleWithSettings(
-        "Show hitboxes", 0, 0, hitboxes.m_enabled->inner(),
-        [&hitboxes](bool value) { hitboxes.m_enabled->inner() = value; },
-        [] {
-            MobileFeaturePopup::open(MobileFeaturePopup::Feature::Hitboxes);
-        });
-    addToggle("Hitbox trail", 0, 1, hitboxes.m_trailEnabled->inner(),
-              [&](bool value) { hitboxes.m_trailEnabled->inner() = value; });
+    addLabel(m_assistPlayerPage ? "Player  2 / 2" : "Visuals  1 / 2",
+             m_pageNode->getContentSize().width / 2.f, rowY(0), .35f,
+             {255, 220, 90});
+
+    if (!m_assistPlayerPage) {
+        addToggleWithSettings(
+            "Show hitboxes", 1, 0, hitboxes.m_enabled->inner(),
+            [&hitboxes](bool value) { hitboxes.m_enabled->inner() = value; },
+            [] {
+                MobileFeaturePopup::open(
+                    MobileFeaturePopup::Feature::Hitboxes);
+            });
+        addToggle("Hitbox trail", 1, 1, hitboxes.m_trailEnabled->inner(),
+                  [&](bool value) {
+                      hitboxes.m_trailEnabled->inner() = value;
+                  });
+        addToggleWithSettings(
+            "Trajectory", 2, 0, trajectory.m_state.m_enabled->inner(),
+            [&trajectory](bool value) { trajectory.setEnabled(value); }, [] {
+                MobileFeaturePopup::open(
+                    MobileFeaturePopup::Feature::Trajectory);
+            });
+        addToggleWithSettings(
+            "Layout mode", 2, 1, updater.m_layoutMode->inner(),
+            [&updater](bool value) {
+                updater.m_layoutMode->inner() = value;
+                updater.m_layoutMode->notifyChange();
+            },
+            [] {
+                MobileFeaturePopup::open(
+                    MobileFeaturePopup::Feature::Layout);
+            });
+        addAdjuster(
+            "Hitbox width", 3, 0, [&] { return hitboxes.m_width->inner(); },
+            [&](double value) { hitboxes.m_width->inner() = value; }, .05,
+            .05, 1.0,
+            [](double value) { return fmt::format("{:.2f}", value); });
+        addAdjuster(
+            "Path length", 3, 1,
+            [&] { return trajectory.m_state.m_length->inner(); },
+            [&](double value) {
+                trajectory.m_state.m_length->inner() = value;
+            },
+            .1, .1, 5.0,
+            [](double value) { return fmt::format("{:.1f}", value); });
+        addToggle("Use regular updates", 4, 0,
+                  updater.m_useVisualUpdates->inner(), [&](bool value) {
+                      updater.m_useVisualUpdates->inner() = value;
+                  });
+        addButton(">", m_pageNode->getContentSize().width - 10.f, rowY(3),
+                  [this] {
+                      m_assistPlayerPage = true;
+                      rebuildPage();
+                  },
+                  19.f);
+        return;
+    }
+
     addToggleWithSettings(
         "Noclip", 1, 0, updater.m_noclip->inner(),
         [&updater](bool value) { updater.m_noclip->inner() = value; }, [] {
             MobileFeaturePopup::open(MobileFeaturePopup::Feature::Noclip);
         });
-    addToggleWithSettings(
-        "Trajectory", 1, 1, trajectory.m_state.m_enabled->inner(),
-        [&trajectory](bool value) { trajectory.setEnabled(value); }, [] {
-            MobileFeaturePopup::open(MobileFeaturePopup::Feature::Trajectory);
-        });
-    addToggleWithSettings(
-        "Layout mode", 2, 0, updater.m_layoutMode->inner(),
-        [&updater](bool value) {
-                  updater.m_layoutMode->inner() = value;
-                  updater.m_layoutMode->notifyChange();
-        },
-        [] {
-            MobileFeaturePopup::open(MobileFeaturePopup::Feature::Layout);
-        });
     auto* autoclicker = &bot->autoclicker();
     addToggleWithSettings(
-        "Autoclicker", 2, 1, autoclicker->m_enabled->inner(),
+        "Autoclicker", 1, 1, autoclicker->m_enabled->inner(),
         [autoclicker](bool value) {
             autoclicker->m_enabled->inner() = value;
             crash_log::breadcrumb(fmt::format(
@@ -1228,25 +1270,20 @@ void MobileMenu::buildAssistPage() {
             MobileFeaturePopup::open(
                 MobileFeaturePopup::Feature::Autoclicker);
         });
-    addToggle("No mirror", 3, 0, updater.m_noMirror->inner(),
+    addToggle("No mirror", 2, 0, updater.m_noMirror->inner(),
               [&](bool value) { updater.m_noMirror->inner() = value; });
-
-    addAdjuster(
-        "Hitbox width", 4, 0, [&] { return hitboxes.m_width->inner(); },
-        [&](double value) { hitboxes.m_width->inner() = value; }, .05, 0.05,
-        1.0, [](double value) { return fmt::format("{:.2f}", value); });
-    addAdjuster(
-        "Path length", 4, 1,
-        [&] { return trajectory.m_state.m_length->inner(); },
-        [&](double value) { trajectory.m_state.m_length->inner() = value; },
-        .1, .1, 5.0,
-        [](double value) { return fmt::format("{:.1f}", value); });
-    addToggle("SSB fix", 5, 0, updater.m_ssbFix->inner(),
+    addToggle("SSB fix", 2, 1, updater.m_ssbFix->inner(),
               [&](bool value) { updater.m_ssbFix->inner() = value; });
-    addToggle("Use regular updates", 5, 1,
-              updater.m_useVisualUpdates->inner(), [&](bool value) {
-                  updater.m_useVisualUpdates->inner() = value;
-              });
+    addToggle("Mirror inputs", 3, 0, replay.m_mirrorInputs,
+              [&replay](bool value) { replay.m_mirrorInputs = value; });
+    addToggle("Mirror inverted", 3, 1, replay.m_mirrorInverted,
+              [&replay](bool value) { replay.m_mirrorInverted = value; });
+    addToggle("Maintain gravity", 4, 0, replay.m_maintainGravity,
+              [&replay](bool value) { replay.m_maintainGravity = value; });
+    addButton("<", 10.f, rowY(3), [this] {
+        m_assistPlayerPage = false;
+        rebuildPage();
+    }, 19.f);
 }
 
 void MobileMenu::buildSettingsPage() {

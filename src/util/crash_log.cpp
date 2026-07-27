@@ -378,6 +378,19 @@ void writeAddress(int fd, uintptr_t value) {
     writeAll(fd, address, sizeof(address));
 }
 
+uintptr_t instructionPointer(void* context) {
+#if defined(__aarch64__) && defined(__APPLE__)
+    auto* uc = static_cast<ucontext_t*>(context);
+    return uc && uc->uc_mcontext ? uc->uc_mcontext->__ss.__pc : 0;
+#elif defined(__aarch64__) && defined(__ANDROID__)
+    auto* uc = static_cast<ucontext_t*>(context);
+    return uc ? uc->uc_mcontext.pc : 0;
+#else
+    (void)context;
+    return 0;
+#endif
+}
+
 void writeContext(int fd, void* context) {
 #if defined(__aarch64__) && defined(__APPLE__)
     auto* uc = static_cast<ucontext_t*>(context);
@@ -403,18 +416,58 @@ void writeContext(int fd, void* context) {
 #endif
 }
 
-void appendProcessMaps(int fd) {
+uintptr_t parseHex(char const* begin, char const* end) {
+    uintptr_t value = 0;
+    for (auto* cursor = begin; cursor < end; ++cursor) {
+        const char c = *cursor;
+        const unsigned digit =
+            c >= '0' && c <= '9' ? static_cast<unsigned>(c - '0') :
+            c >= 'a' && c <= 'f' ? static_cast<unsigned>(c - 'a' + 10) :
+            c >= 'A' && c <= 'F' ? static_cast<unsigned>(c - 'A' + 10) : 16;
+        if (digit > 15) break;
+        value = value * 16 + digit;
+    }
+    return value;
+}
+
+void appendAddressMap(int fd, uintptr_t address) {
 #ifdef __ANDROID__
+    if (!address) return;
     const int maps = ::open("/proc/self/maps", O_RDONLY);
     if (maps < 0) return;
-    writeLiteral(fd, "\nMemory map:\n");
-    char buffer[4096];
+
+    char input[4096];
+    char line[1024];
+    size_t lineSize = 0;
+    bool found = false;
     ssize_t size = 0;
-    while ((size = ::read(maps, buffer, sizeof(buffer))) > 0)
-        writeAll(fd, buffer, static_cast<size_t>(size));
+    while (!found && (size = ::read(maps, input, sizeof(input))) > 0) {
+        for (ssize_t i = 0; i < size; ++i) {
+            if (input[i] != '\n' && lineSize < sizeof(line) - 1) {
+                line[lineSize++] = input[i];
+                continue;
+            }
+            const char* dash = line;
+            while (dash < line + lineSize && *dash != '-') ++dash;
+            const uintptr_t start = parseHex(line, dash);
+            const uintptr_t end =
+                dash < line + lineSize ? parseHex(dash + 1, line + lineSize)
+                                       : 0;
+            if (address >= start && address < end) {
+                writeLiteral(fd, "\nModule offset: ");
+                writeAddress(fd, address - start);
+                writeLiteral(fd, "\nFaulting module: ");
+                writeAll(fd, line, lineSize);
+                found = true;
+                break;
+            }
+            lineSize = 0;
+        }
+    }
     ::close(maps);
 #else
     (void)fd;
+    (void)address;
 #endif
 }
 
@@ -438,7 +491,7 @@ void mobileSignalHandler(int signal, siginfo_t* info, void* context) {
         writeContext(fd, context);
         writeLiteral(fd, "\nLast breadcrumb: ");
         writeLiteral(fd, g_lastBreadcrumb);
-        appendProcessMaps(fd);
+        appendAddressMap(fd, instructionPointer(context));
         writeLiteral(fd, "\n");
         writeLiteral(fd, "=== end crash ===\n");
         ::fsync(fd);

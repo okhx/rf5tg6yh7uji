@@ -5,6 +5,8 @@
 
 class TouchOverlay : public cocos2d::CCLayer {
 protected:
+    ButtonSprite* m_leftSprite;
+    ButtonSprite* m_rightSprite;
     CCMenuItemSpriteExtra* m_leftBtn;
     CCMenuItemSpriteExtra* m_rightBtn;
     cocos2d::CCMenu* m_menu;

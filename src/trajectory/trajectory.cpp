@@ -214,6 +214,10 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
     if (pl->checkCollisions(player, delta, false) == 1)
         hasDied(player);
 
+    if ((player == m_fakePlayer1 && m_deadP1) ||
+        (player == m_fakePlayer2 && m_deadP2))
+        return true;
+
     phys::checkSpawnObjects(pl, player);
     pl->m_effectManager->postCollisionCheck();
 

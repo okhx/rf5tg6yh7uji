@@ -23,7 +23,9 @@ inline bool activatingPortal(GJBaseGameLayer* pl, PlayerObject* player,
             return false;
         }
 
+#ifndef GEODE_IS_MOBILE
         pl->playerWillSwitchMode(player, portal);
+#endif
 
         bool isTheSame =
             ((portal->m_objectType == GameObjectType::ShipPortal) &&

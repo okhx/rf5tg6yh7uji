@@ -1,4 +1,5 @@
 #include "touch_overlay.hpp"
+#include "config/config.hpp"
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
 
@@ -29,16 +30,16 @@ bool TouchOverlay::init() {
 
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
-    auto leftSprite = ButtonSprite::create(
-        "<", 34, true, "bigFont.fnt", "GJ_button_01.png", 22.f, .65f);
+    m_leftSprite = ButtonSprite::create(
+        "<", 34, true, "bigFont.fnt", "GJ_button_01.png", 28.f, .65f);
     m_leftBtn = CCMenuItemSpriteExtra::create(
-        leftSprite, this, menu_selector(TouchOverlay::onLeft)
+        m_leftSprite, this, menu_selector(TouchOverlay::onLeft)
     );
     
-    auto rightSprite = ButtonSprite::create(
-        ">", 34, true, "bigFont.fnt", "GJ_button_01.png", 22.f, .65f);
+    m_rightSprite = ButtonSprite::create(
+        ">", 34, true, "bigFont.fnt", "GJ_button_01.png", 28.f, .65f);
     m_rightBtn = CCMenuItemSpriteExtra::create(
-        rightSprite, this, menu_selector(TouchOverlay::onRight)
+        m_rightSprite, this, menu_selector(TouchOverlay::onRight)
     );
 
     m_menu = CCMenu::create();
@@ -89,7 +90,8 @@ void TouchOverlay::update(float dt) {
 }
 
 void TouchOverlay::onLeft(CCObject*) {
-    GrapeEngine::get()->timeline().backwardsStep();
+    auto& timeline = GrapeEngine::get()->timeline();
+    if (timeline.m_backwardsStepping->inner()) timeline.backwardsStep();
 }
 
 void TouchOverlay::onRight(CCObject*) {
@@ -98,11 +100,17 @@ void TouchOverlay::onRight(CCObject*) {
 
 void TouchOverlay::updateVisibility() {
     auto* playLayer = PlayLayer::get();
+    auto& timeline = GrapeEngine::get()->timeline();
     if (playLayer && this->getParent() != playLayer) {
         this->removeFromParentAndCleanup(false);
         playLayer->addChild(this, 1000);
     }
-    this->setVisible(playLayer && GrapeEngine::get()->timeline().isPaused());
+    const auto opacity = static_cast<GLubyte>(std::clamp(
+        GrapeSettings::get()->frameStepperArrowOpacity, 0.1, 1.0) * 255.0);
+    m_leftSprite->setOpacity(opacity);
+    m_rightSprite->setOpacity(opacity);
+    m_leftBtn->setVisible(timeline.m_backwardsStepping->inner());
+    this->setVisible(playLayer && timeline.isPaused());
 }
 
 void TouchOverlay::hide() {

@@ -121,6 +121,15 @@ class Trajectory {
         m_activatedObjectsP1.clear();
         m_activatedObjectsP2.clear();
 
+#ifdef GEODE_IS_MOBILE
+        m_fakePlayer1 = nullptr;
+        m_fakePlayer2 = nullptr;
+        if (m_fakePlayerContainer) {
+            m_fakePlayerContainer->removeAllChildrenWithCleanup(true);
+            m_fakePlayerContainer->release();
+            m_fakePlayerContainer = nullptr;
+        }
+#else
         auto releasePlayer = [](PlayerObject*& player) {
             if (!player) return;
             if (player->getParent()) player->removeFromParentAndCleanup(true);
@@ -129,12 +138,6 @@ class Trajectory {
         };
         releasePlayer(m_fakePlayer1);
         releasePlayer(m_fakePlayer2);
-
-#ifdef GEODE_IS_MOBILE
-        if (m_fakePlayerContainer) {
-            m_fakePlayerContainer->release();
-            m_fakePlayerContainer = nullptr;
-        }
 #endif
 
         if (m_node) {
@@ -196,7 +199,9 @@ class Trajectory {
     PlayerObject* createFakePlayer(GJBaseGameLayer* pl, std::string&& id) {
         PlayerObject* player = PlayerObject::create(1, 1, pl, pl, true);
         if (!player) return nullptr;
+#ifndef GEODE_IS_MOBILE
         player->retain();
+#endif
         player->setPosition({0, 105});
         player->setVisible(false);
         player->setID(id);

@@ -70,6 +70,7 @@ class GrapeSettings {
     bool frameStepperHold = true;
     double frameStepperHoldDelay = 0.35;
     double frameStepperHoldSpeed = 12.0;
+    double frameStepperArrowOpacity = 0.8;
     bool showEndMenuButton = true;
 
     bool noclipTintEnabled = true;
@@ -226,6 +227,7 @@ struct glz::meta<GrapeSettings> {
         "frame_stepper_hold", &T::frameStepperHold,
         "frame_stepper_hold_delay", &T::frameStepperHoldDelay,
         "frame_stepper_hold_speed", &T::frameStepperHoldSpeed,
+        "frame_stepper_arrow_opacity", &T::frameStepperArrowOpacity,
         "show_end_menu_button", &T::showEndMenuButton,
 
         "noclip_tint_enabled", &T::noclipTintEnabled,
