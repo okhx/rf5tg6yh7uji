@@ -322,7 +322,11 @@ void crash_log::breadcrumb(std::string_view message) {
 #include <fcntl.h>
 #include <limits.h>
 #include <sys/stat.h>
+#ifdef __APPLE__
+#include <sys/ucontext.h>
+#else
 #include <ucontext.h>
+#endif
 #include <unistd.h>
 
 namespace {
