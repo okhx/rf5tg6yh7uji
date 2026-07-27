@@ -1192,11 +1192,11 @@ void MobileMenu::buildAssistPage() {
     auto& trajectory = bot->trajectory();
     auto& replay = bot->macro();
 
-    addLabel(m_assistPlayerPage ? "Player  2 / 2" : "Visuals  1 / 2",
+    addLabel(s_assistPlayerPage ? "Player  2 / 2" : "Visuals  1 / 2",
              m_pageNode->getContentSize().width / 2.f, rowY(0), .35f,
              {255, 220, 90});
 
-    if (!m_assistPlayerPage) {
+    if (!s_assistPlayerPage) {
         addToggleWithSettings(
             "Show hitboxes", 1, 0, hitboxes.m_enabled->inner(),
             [&hitboxes](bool value) { hitboxes.m_enabled->inner() = value; },
@@ -1241,9 +1241,9 @@ void MobileMenu::buildAssistPage() {
                   updater.m_useVisualUpdates->inner(), [&](bool value) {
                       updater.m_useVisualUpdates->inner() = value;
                   });
-        addButton(">", m_pageNode->getContentSize().width - 10.f, rowY(3),
+        addButton(">", m_pageNode->getContentSize().width - 12.f, 14.f,
                   [this] {
-                      m_assistPlayerPage = true;
+                      s_assistPlayerPage = true;
                       rebuildPage();
                   },
                   19.f);
@@ -1280,8 +1280,8 @@ void MobileMenu::buildAssistPage() {
               [&replay](bool value) { replay.m_mirrorInverted = value; });
     addToggle("Maintain gravity", 4, 0, replay.m_maintainGravity,
               [&replay](bool value) { replay.m_maintainGravity = value; });
-    addButton("<", 10.f, rowY(3), [this] {
-        m_assistPlayerPage = false;
+    addButton("<", m_pageNode->getContentSize().width - 12.f, 14.f, [this] {
+        s_assistPlayerPage = false;
         rebuildPage();
     }, 19.f);
 }

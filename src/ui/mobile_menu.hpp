@@ -13,7 +13,7 @@ class MobileMenu final : public geode::Popup {
     cocos2d::CCMenu* m_pageMenu = nullptr;
     cocos2d::CCLabelBMFont* m_frameLabel = nullptr;
     cocos2d::CCLabelBMFont* m_statusLabel = nullptr;
-    bool m_assistPlayerPage = false;
+    inline static bool s_assistPlayerPage = false;
     ButtonSprite* m_recordSprite = nullptr;
     ButtonSprite* m_playSprite = nullptr;
     ButtonSprite* m_renderSprite = nullptr;

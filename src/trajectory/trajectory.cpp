@@ -46,6 +46,35 @@ static bool isHoldingJump(PlayerObject* player) {
     return it != player->m_holdingButtons.end() && it->second;
 }
 
+#ifdef GEODE_IS_MOBILE
+static cocos2d::CCRect usingWidth(const cocos2d::CCRect& rect, float width) {
+    return {rect.origin.x + width, rect.origin.y + width,
+            rect.size.width - width * 2.f,
+            rect.size.height - width * 2.f};
+}
+
+static void drawRect(CCDrawNode* node, CCRect& rect, ccColor4F color,
+                     float width) {
+    node->drawRect(rect, {0, 0, 0, 0}, width, color);
+}
+
+static void drawRotatedRect(CCDrawNode* node, CCRect& rect, float angle,
+                            ccColor4F color, float width) {
+    std::array<CCPoint, 4> vertices = {
+        CCPoint{rect.getMinX(), rect.getMinY()},
+        CCPoint{rect.getMaxX(), rect.getMinY()},
+        CCPoint{rect.getMaxX(), rect.getMaxY()},
+        CCPoint{rect.getMinX(), rect.getMaxY()},
+    };
+    const CCPoint center{rect.getMidX(), rect.getMidY()};
+    const float radians = -CC_DEGREES_TO_RADIANS(angle);
+    for (auto& vertex : vertices)
+        vertex = vertex.rotateByAngle(center, radians);
+    node->drawPolygon(vertices.data(), vertices.size(), {0, 0, 0, 0}, width,
+                      color);
+}
+#endif
+
 static uint64_t packPlayerFlags(PlayerObject* p) {
     uint64_t flags = 0;
     int bit = 0;
@@ -147,7 +176,8 @@ int Trajectory::getPredictionLength(GJBaseGameLayer* pl) {
 }
 
 bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
-                         float* colors, PredictionConfig config) {
+                         float* colors, int& stepCount,
+                         PredictionConfig config) {
     const CCPoint prevPos = player->getPosition();
 
     auto& updater = GrapeEngine::get()->timeline();
@@ -181,6 +211,9 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
 
     if ((m_deadP1 && (mode & TrajectoryMode::Player1) != 0) ||
         (m_deadP2 && (mode & TrajectoryMode::Player2) != 0)) {
+#ifdef GEODE_IS_MOBILE
+        if (stepCount > 1) drawHitbox(pl, player);
+#endif
         return true;
     }
 
@@ -214,10 +247,6 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
     if (pl->checkCollisions(player, delta, false) == 1)
         hasDied(player);
 
-    if ((player == m_fakePlayer1 && m_deadP1) ||
-        (player == m_fakePlayer2 && m_deadP2))
-        return true;
-
     phys::checkSpawnObjects(pl, player);
     pl->m_effectManager->postCollisionCheck();
 
@@ -226,6 +255,7 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
         prevPos, player->getPosition(), width,
         trajectoryColor(colors, player == m_fakePlayer1));
 
+    ++stepCount;
     return false;
 }
 
@@ -296,6 +326,8 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
 
     bool breakP1 = false;
     bool breakP2 = false;
+    int stepP1 = 0;
+    int stepP2 = 0;
     int trajectoryInputIndex = bot->macro().getInputIndex();
     const auto& inputs = bot->macro().m_actionAtom.m_actions;
 #ifdef GEODE_IS_MOBILE
@@ -333,12 +365,12 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
 
         if (!breakP1) {
             breakP1 =
-                iterate(pl, player, mode | playerMask, colors, config);
+                iterate(pl, player, mode | playerMask, colors, stepP1, config);
             ++predCount;
         }
         if (dualBoth && !breakP2) {
             breakP2 = iterate(pl, other, mode | TrajectoryMode::Player2,
-                              colors, config);
+                              colors, stepP2, config);
         }
     }
 
@@ -543,6 +575,25 @@ applyLayoutColors:
         }
     }
 }
+
+#ifdef GEODE_IS_MOBILE
+void Trajectory::drawHitbox(GJBaseGameLayer* pl, PlayerObject* player) {
+    const float width =
+        m_state->m_width->inner() / pl->m_gameState.m_cameraZoom;
+    CCRect rect = usingWidth(player->getObjectRect(), width);
+    CCRect inner = usingWidth(player->getObjectRect(.3f, .3f), width);
+    auto& settings = GrapeSettings::get()->hitboxes;
+    using Type = GrapeSettings::HitboxSettings::Type;
+    const auto color = [&](Type type) {
+        return toCocosColor(settings.categories[type].colors.data());
+    };
+
+    drawRotatedRect(m_node, rect, player->getRotation(),
+                    color(Type::PlayerRotated), width);
+    drawRect(m_node, rect, color(Type::Player), width);
+    drawRect(m_node, inner, color(Type::PlayerInner), width);
+}
+#endif
 
 bool Trajectory::playerHasActivated(PlayerObject* player,
                                     EnhancedGameObject* object) {

@@ -65,9 +65,6 @@ class Trajectory {
     GJBaseGameLayer* m_layer = nullptr;
     cocos2d::CCRenderTexture* m_renderTex = nullptr;
     TrajectoryDrawNode* m_node = nullptr;
-#ifdef GEODE_IS_MOBILE
-    cocos2d::CCNode* m_fakePlayerContainer = nullptr;
-#endif
 
    public:
     PlayerObject* m_fakePlayer1 = nullptr;
@@ -121,15 +118,6 @@ class Trajectory {
         m_activatedObjectsP1.clear();
         m_activatedObjectsP2.clear();
 
-#ifdef GEODE_IS_MOBILE
-        m_fakePlayer1 = nullptr;
-        m_fakePlayer2 = nullptr;
-        if (m_fakePlayerContainer) {
-            m_fakePlayerContainer->removeAllChildrenWithCleanup(true);
-            m_fakePlayerContainer->release();
-            m_fakePlayerContainer = nullptr;
-        }
-#else
         auto releasePlayer = [](PlayerObject*& player) {
             if (!player) return;
             if (player->getParent()) player->removeFromParentAndCleanup(true);
@@ -138,7 +126,6 @@ class Trajectory {
         };
         releasePlayer(m_fakePlayer1);
         releasePlayer(m_fakePlayer2);
-#endif
 
         if (m_node) {
             if (m_node->getParent()) m_node->removeFromParentAndCleanup(true);
@@ -199,9 +186,7 @@ class Trajectory {
     PlayerObject* createFakePlayer(GJBaseGameLayer* pl, std::string&& id) {
         PlayerObject* player = PlayerObject::create(1, 1, pl, pl, true);
         if (!player) return nullptr;
-#ifndef GEODE_IS_MOBILE
         player->retain();
-#endif
         player->setPosition({0, 105});
         player->setVisible(false);
         player->setID(id);
@@ -231,15 +216,6 @@ class Trajectory {
         t->m_node->setID("trajectory-node"_spr);
         t->m_node->setBlendFunc(cocos2d::ccBlendFunc{770, 771});
 
-#ifdef GEODE_IS_MOBILE
-        t->m_fakePlayerContainer = cocos2d::CCNode::create();
-        if (!t->m_fakePlayerContainer) {
-            delete t;
-            return nullptr;
-        }
-        t->m_fakePlayerContainer->retain();
-#endif
-
         t->m_fakePlayer1 =
             t->createFakePlayer(pl, "trajectory-fake-player1"_spr);
         t->m_fakePlayer2 =
@@ -248,11 +224,6 @@ class Trajectory {
             delete t;
             return nullptr;
         }
-#ifdef GEODE_IS_MOBILE
-        t->m_fakePlayerContainer->addChild(t->m_fakePlayer1);
-        t->m_fakePlayerContainer->addChild(t->m_fakePlayer2);
-#endif
-
         pl->m_debugDrawNode->getParent()->addChild(
 #ifdef GEODE_IS_MOBILE
             t->m_node, (pl->m_uiLayer ? pl->m_uiLayer->getZOrder() : 0) + 10000);
@@ -271,7 +242,10 @@ class Trajectory {
     }
     Signature computeSignature(GJBaseGameLayer* pl);
     bool iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
-                 float* colors, PredictionConfig config);
+                 float* colors, int& stepCount, PredictionConfig config);
+#ifdef GEODE_IS_MOBILE
+    void drawHitbox(GJBaseGameLayer* pl, PlayerObject* player);
+#endif
 
     TrajectoryPlayerData runPrediction(GJBaseGameLayer* pl,
                                        PlayerObject* player,
