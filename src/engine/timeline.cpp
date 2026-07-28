@@ -99,6 +99,7 @@ void FrameEngine::calculateSteps(float dt, float targetDt) {
     estimatedStepCount = steps;
 }
 
+#ifndef GEODE_IS_MOBILE
 static void runFastLockDeltaUpdates(float realDt,
                                     std::function<void(float)> update) {
     auto bot = GrapeEngine::get();
@@ -198,6 +199,7 @@ static void runSlowLockDeltaUpdates(float realDt,
         update(delta);
     }
 }
+#endif
 
 void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
                             bool frozen) {
@@ -251,14 +253,6 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
         }
     }
 
-    bool calculateSsb = false;
-    if (isPlayLayer) {
-        calculateSsb = !((PlayLayer*)pl)->m_isPaused &&
-                       !((PlayLayer*)pl)->m_hasCompletedLevel &&
-                       pl->m_started && !pl->m_isPlatformer &&
-                       m_ssbFix->inner() && Renderer::get()->isRecording();
-    }
-
     bool useAccLockDelta =
         m_lockDelta->inner() &&
         (m_lockDeltaMode->inner() == LockDeltaMode::Accuracy ||
@@ -278,6 +272,11 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
         }
         totalStepCount = physicsSteps;
 #else
+        const bool calculateSsb =
+            !((PlayLayer*)pl)->m_isPaused &&
+            !((PlayLayer*)pl)->m_hasCompletedLevel && pl->m_started &&
+            !pl->m_isPlatformer && m_ssbFix->inner() &&
+            Renderer::get()->isRecording();
         if (this->useFastLockDelta()) {
             runFastLockDeltaUpdates(realDt, update);
         } else {
