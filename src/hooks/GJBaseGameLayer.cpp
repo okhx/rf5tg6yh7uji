@@ -196,6 +196,17 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
         m_fields->m_lastGround2.loadIntoGround(m_groundLayer2);
     }
 
+#ifdef GEODE_IS_MOBILE
+    int mobileDeltaMod() {
+        if (GrapeEngine::get()->timeline().isPaused()) {
+            return 1;
+        }
+        return std::max(1, static_cast<int>(std::ceil(
+                               GrapeEngine::get()->timeline().getTps() *
+                               CCDirector::get()->getDeltaTime())));
+    }
+#endif
+
     void update(float dt) override {
         auto& updater = GrapeEngine::get()->timeline();
         if (updater.m_onlyRefresh || !GrapeEngine::get()->isEnabled()) {
@@ -215,11 +226,17 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
         }
 
 #ifdef GEODE_IS_MOBILE
-        GJBaseGameLayer::update(dt);
-        if (updater.estimatedStepCount > 0) {
-            this->storeActualState();
+        if (PlayLayer::get() && m_started && !m_isEditor) {
+            const int updates = mobileDeltaMod();
+            for (int i = 0; i < updates; i++) {
+                updater.estimatedStepCount = 0;
+                GJBaseGameLayer::update(dt);
+                if (updater.estimatedStepCount > 0) {
+                    this->storeActualState();
+                }
+            }
+            return;
         }
-        return;
 #endif
 
         if (updater.m_extrapolateFrames->inner() &&
@@ -285,7 +302,17 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
 #ifdef GEODE_IS_MOBILE
         const double wantedDt =
             updater.getPhysicsDt() * std::min(m_gameState.m_timeWarp, 1.0f);
-        const double extraDelta = dt + m_extraDelta;
+        if (updater.isPaused()) {
+            updater.estimatedStepCount = 1;
+            m_extraDelta = 0.0f;
+            return wantedDt;
+        }
+        double extraDelta = m_extraDelta;
+        if (m_resumeTimer < 1) {
+            extraDelta += dt / mobileDeltaMod();
+        } else {
+            m_resumeTimer--;
+        }
         const int steps = static_cast<int>(extraDelta / wantedDt);
 
         updater.estimatedStepCount = steps;

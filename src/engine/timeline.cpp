@@ -261,16 +261,8 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
     auto startTime = std::chrono::high_resolution_clock::now();
     if ((m_lockDelta->inner() || useAccLockDelta) && isPlayLayer) {
 #ifdef GEODE_IS_MOBILE
-        const float scaledDt = realDt * m_speedhack->inner();
-        const int updates = std::max(
-            1, static_cast<int>(std::ceil(m_tps->inner() * scaledDt)));
-        int physicsSteps = 0;
-        for (int i = 0; i < updates; i++) {
-            estimatedStepCount = 0;
-            update(scaledDt / updates);
-            physicsSteps += estimatedStepCount;
-        }
-        totalStepCount = physicsSteps;
+        m_shouldRender = true;
+        update(realDt * m_speedhack->inner());
 #else
         const bool calculateSsb =
             !((PlayLayer*)pl)->m_isPaused &&
@@ -511,6 +503,12 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float) {
     }
 
     if (!playLayer->m_playerDied) {
+        const uint32_t logicalSteps =
+            static_cast<uint32_t>(std::max(0, estimatedStepCount));
+        if (logicalSteps == 0) {
+            return;
+        }
+
         if (m_backwardsStepping->inner() &&
             !Renderer::get()->isRecording()) {
             auto* checkpoint = playLayer->createCheckpoint();
@@ -520,11 +518,6 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float) {
             }
         }
 
-        const uint32_t logicalSteps =
-            static_cast<uint32_t>(std::max(0, estimatedStepCount));
-        if (logicalSteps == 0) {
-            return;
-        }
         incrementFrame(logicalSteps);
         bot->hitboxes().saveToTrail(playLayer);
     }
