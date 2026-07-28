@@ -214,6 +214,14 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
                 std::min(updater.estimatedStepCount, 1);
         }
 
+#ifdef GEODE_IS_MOBILE
+        GJBaseGameLayer::update(dt);
+        if (updater.estimatedStepCount > 0) {
+            this->storeActualState();
+        }
+        return;
+#endif
+
         if (updater.m_extrapolateFrames->inner() &&
             updater.getFrame() > updater.m_frameOnLastAttempt) {
             if (this->shouldExtrapolate()) {
