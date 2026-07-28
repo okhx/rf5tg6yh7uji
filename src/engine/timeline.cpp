@@ -266,11 +266,24 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
 
     auto startTime = std::chrono::high_resolution_clock::now();
     if ((m_lockDelta->inner() || useAccLockDelta) && isPlayLayer) {
+#ifdef GEODE_IS_MOBILE
+        const float scaledDt = realDt * m_speedhack->inner();
+        const int updates = std::max(
+            1, static_cast<int>(std::ceil(m_tps->inner() * scaledDt)));
+        int physicsSteps = 0;
+        for (int i = 0; i < updates; i++) {
+            estimatedStepCount = 0;
+            update(scaledDt);
+            physicsSteps += estimatedStepCount;
+        }
+        totalStepCount = physicsSteps;
+#else
         if (this->useFastLockDelta()) {
             runFastLockDeltaUpdates(realDt, update);
         } else {
             runSlowLockDeltaUpdates(realDt, update, calculateSsb);
         }
+#endif
     } else {
         m_shouldRender = true;
         if (m_respawnTimer > 0) {
@@ -491,7 +504,7 @@ void FrameEngine::findBestFrameCandidate() {
 
 }
 
-void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
+void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float) {
     auto* bot = GrapeEngine::get();
     if (!playLayer || !bot->isEnabled() || m_onlyRefresh ||
         playLayer->m_resumeTimer > 0) {
@@ -508,13 +521,10 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
             }
         }
 
-        uint32_t logicalSteps = 1;
-        if (!m_paused->inner()) {
-            const double steps = m_tps->inner() * visualDt;
-            if (std::isfinite(steps) && steps > 1.0) {
-                logicalSteps = static_cast<uint32_t>(std::clamp(
-                    std::lround(steps), 1l, 1000l));
-            }
+        const uint32_t logicalSteps =
+            static_cast<uint32_t>(std::max(0, estimatedStepCount));
+        if (logicalSteps == 0) {
+            return;
         }
         incrementFrame(logicalSteps);
         bot->hitboxes().saveToTrail(playLayer);

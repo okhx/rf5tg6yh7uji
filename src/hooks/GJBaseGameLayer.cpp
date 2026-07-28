@@ -275,10 +275,23 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             return 0.0f;
         }
 
+#ifdef GEODE_IS_MOBILE
+        const double wantedDt =
+            updater.getPhysicsDt() * std::min(m_gameState.m_timeWarp, 1.0f);
+        const int deltaMod =
+            std::max(1, static_cast<int>(std::ceil(updater.getTps() * dt)));
+        const double extraDelta = dt / deltaMod + m_extraDelta;
+        const int steps = static_cast<int>(extraDelta / wantedDt);
+
+        updater.estimatedStepCount = steps;
+        m_extraDelta = extraDelta - wantedDt * steps;
+        return wantedDt * steps;
+#else
         float wantedDt =
             updater.getPhysicsDt() * fminf(m_gameState.m_timeWarp, 1.0f);
 
         return wantedDt;
+#endif
     }
 
     void addInputToReplay(PlayerButtonCommand cmd) {
