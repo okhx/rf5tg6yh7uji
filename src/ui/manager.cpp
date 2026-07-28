@@ -986,7 +986,7 @@ void UIManager::draw() {
 
     cfg.uiScale = m_state.m_uiScale->inner() * getWindowDpi();
     cfg.fitWindowToContent = GrapeSettings::get()->fitMenuToContent;
-    static constexpr float tabHeights[] = {390, 500, 280, 410, 500, 500, 530, 530};
+    static constexpr float tabHeights[] = {445, 500, 280, 410, 500, 500, 530, 530};
     cfg.fittedWindowHeight = tabHeights[static_cast<int>(m_state.m_currentTab)];
 
     if (!m_state.m_visible->inner()) {

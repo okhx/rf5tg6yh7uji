@@ -59,7 +59,6 @@ struct SavedPlayerCheckpoint {
     double unk_584;
     int m_collidingWithSlopeId;
     bool m_slopeFlipGravityRelated;
-    cocos2d::CCArray* m_particleSystems;
     float m_slopeAngleRadians;
     gd::unordered_map<int, GJPointDouble> m_rotateObjectsRelated{};
     gd::unordered_map<int, GameObject*> m_maybeRotatedObjectsMap{};

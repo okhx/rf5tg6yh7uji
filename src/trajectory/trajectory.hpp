@@ -243,9 +243,7 @@ class Trajectory {
     Signature computeSignature(GJBaseGameLayer* pl);
     bool iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
                  float* colors, int& stepCount, PredictionConfig config);
-#ifdef GEODE_IS_MOBILE
     void drawHitbox(GJBaseGameLayer* pl, PlayerObject* player);
-#endif
 
     TrajectoryPlayerData runPrediction(GJBaseGameLayer* pl,
                                        PlayerObject* player,

@@ -55,7 +55,6 @@ void SavedPlayerCheckpoint::apply(PlayerObject* p) {
     p->unk_584 = unk_584;
     p->m_collidingWithSlopeId = m_collidingWithSlopeId;
     p->m_slopeFlipGravityRelated = m_slopeFlipGravityRelated;
-    p->m_particleSystems = m_particleSystems;
     p->m_slopeAngleRadians = m_slopeAngleRadians;
     p->m_rotateObjectsRelated = m_rotateObjectsRelated;
     p->m_potentialSlopeMap = m_maybeRotatedObjectsMap;
@@ -318,7 +317,6 @@ SavedPlayerCheckpoint SavedPlayerCheckpoint::create(PlayerObject* p) {
     c.unk_584 = p->unk_584;
     c.m_collidingWithSlopeId = p->m_collidingWithSlopeId;
     c.m_slopeFlipGravityRelated = p->m_slopeFlipGravityRelated;
-    c.m_particleSystems = p->m_particleSystems;
     c.m_slopeAngleRadians = p->m_slopeAngleRadians;
     c.m_rotateObjectsRelated = p->m_rotateObjectsRelated;
     c.m_maybeRotatedObjectsMap = p->m_potentialSlopeMap;

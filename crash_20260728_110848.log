@@ -1,0 +1,38 @@
+========================================
+  Grape Crash Log
+  Time: 2026-07-28 11:08:48
+========================================
+
+Reason: Unhandled SEH exception
+
+Exception: EXCEPTION_ACCESS_VIOLATION (0xc0000005)
+Address:   0x7ffa390169c4
+Access:    READ at 0x0
+
+Registers:
+  RAX=0  RBX=189a6f1e020  RCX=189bdeb9340  RDX=1
+  RSI=1  RDI=0  RSP=27b859f1f8  RBP=27b859f4e0
+  R8 =1894cf51800  R9 =1  R10=8000  R11=27b859f190
+  R12=28b0a  R13=0  R14=1894f313400  R15=0
+  RIP=7ffa390169c4
+
+Stack Trace:
+  #0  0x7ffa390169c4  libcocos2d.dll!cocos2d::CCArray::count + 0x4
+  #1  0x7ff6762364f0  GeometryDash.exe!?
+  #2  0x7ff676235b44  GeometryDash.exe!?
+  #3  0x7ff6762558b9  GeometryDash.exe!?
+  #4  0x7ff6762550f4  GeometryDash.exe!?
+  #5  0x7ffa390ada84  libcocos2d.dll!cocos2d::CCCallFunc::getScriptHandler + 0x604
+  #6  0x7ffa39016841  libcocos2d.dll!cocos2d::CCArray::~CCArray + 0xa1
+  #7  0x7ffa39012a2c  libcocos2d.dll!cocos2d::CCNode::~CCNode + 0x14c
+  #8  0x7ffa39061b0d  libcocos2d.dll!cocos2d::CCScene::~CCScene + 0x7d
+  #9  0x7ffa39062540  libcocos2d.dll!cocos2d::CCTransitionTurnOffTiles::~CCTransitionTurnOffTiles + 0x180
+  #10  0x7ffa390cf7c1  libcocos2d.dll!cocos2d::CCDirector::setNextScene + 0xb1
+  #11  0x7ffa390ce426  libcocos2d.dll!cocos2d::CCDirector::drawScene + 0x56
+  #12  0x18950a50a19  <unknown module>!?
+  #13  0x27b859fae0  <unknown module>!?
+  #14  0xf4148ca21fe9  <unknown module>!?
+
+========================================
+  End of crash log
+========================================

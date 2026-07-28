@@ -477,6 +477,13 @@ void mobileSignalHandler(int signal, siginfo_t* info, void* context) {
     if (g_handlingSignal) _exit(128 + signal);
     g_handlingSignal = 1;
 
+    writeLiteral(STDERR_FILENO, "\n=== Grape mobile crash ===\nSignal: ");
+    writeNumber(STDERR_FILENO, static_cast<unsigned int>(signal));
+    writeContext(STDERR_FILENO, context);
+    writeLiteral(STDERR_FILENO, "\nLast breadcrumb: ");
+    writeLiteral(STDERR_FILENO, g_lastBreadcrumb);
+    writeLiteral(STDERR_FILENO, "\n");
+
     const int fd = ::open(g_mobileCrashPath, O_WRONLY | O_CREAT | O_APPEND,
                           S_IRUSR | S_IWUSR);
     if (fd >= 0) {
@@ -518,7 +525,14 @@ void mobileTerminateHandler() {
 }
 
 void crash_log::install() {
+#ifdef GEODE_IS_IOS
+    auto directory =
+        geode::dirs::getSaveDir().parent_path() / "Grape" / "logs";
+    std::filesystem::create_directories(directory);
+    auto path = directory / "mobile-last-crash.log";
+#else
     auto path = grape::paths::directory("logs") / "mobile-last-crash.log";
+#endif
     auto pathString = path.string();
     std::strncpy(g_mobileCrashPath, pathString.c_str(),
                  sizeof(g_mobileCrashPath) - 1);
@@ -526,6 +540,7 @@ void crash_log::install() {
     std::ofstream session(path, std::ios::out | std::ios::app);
     session << "\nGrape mobile session started\n";
     session.flush();
+    geode::log::info("Grape crash log: {}", path);
 
     struct sigaction action = {};
     action.sa_sigaction = mobileSignalHandler;

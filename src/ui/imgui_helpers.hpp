@@ -37,6 +37,7 @@ struct AutocompleteState {
 
 struct ColorState {
     std::array<float, 4> colors{};
+    std::string hex;
 };
 
 using Font = ImFont*;
@@ -121,7 +122,8 @@ inline WidgetState input_text_autocomplete(
     if (ImGui::IsItemActive() && !autocomplete.suggestions.empty())
         ImGui::OpenPopup((std::string(label) + "##suggestions").c_str());
     const std::string popup = std::string(label) + "##suggestions";
-    if (ImGui::BeginPopup(popup.c_str())) {
+    if (ImGui::BeginPopup(popup.c_str(),
+                          ImGuiWindowFlags_NoFocusOnAppearing)) {
         for (const auto& suggestion : autocomplete.suggestions) {
             if (ImGui::Selectable(suggestion.c_str())) {
                 value = suggestion;
@@ -156,13 +158,7 @@ inline WidgetState dropdown(std::string_view label, DropdownState& stateData,
 inline WidgetState color(std::string_view label, ColorState& value,
                          std::function<void()> = {}) {
     const std::string id(label);
-    bool changed = ImGui::ColorEdit4(
-        id.c_str(), value.colors.data(),
-        ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_DisplayHex);
-    WidgetState result = state(changed);
-
-    ImGui::SameLine();
-    if (ImGui::SmallButton(("Copy##" + id).c_str())) {
+    const auto syncHex = [&] {
         char hex[10];
         std::snprintf(
             hex, sizeof(hex), "#%02X%02X%02X%02X",
@@ -170,29 +166,82 @@ inline WidgetState color(std::string_view label, ColorState& value,
             static_cast<int>(std::clamp(value.colors[1], 0.f, 1.f) * 255.f),
             static_cast<int>(std::clamp(value.colors[2], 0.f, 1.f) * 255.f),
             static_cast<int>(std::clamp(value.colors[3], 0.f, 1.f) * 255.f));
-        ImGui::SetClipboardText(hex);
-    }
-    ImGui::SameLine();
-    if (ImGui::SmallButton(("Paste##" + id).c_str())) {
-        std::string_view hex =
-            ImGui::GetClipboardText() ? ImGui::GetClipboardText() : "";
+        value.hex = hex;
+    };
+    const auto applyHex = [&] {
+        std::string_view hex = value.hex;
         if (hex.starts_with('#')) hex.remove_prefix(1);
         uint32_t color = 0;
         const auto parsed = std::from_chars(
             hex.data(), hex.data() + hex.size(), color, 16);
-        if ((hex.size() == 6 || hex.size() == 8) &&
-            parsed.ec == std::errc{} && parsed.ptr == hex.data() + hex.size()) {
-            if (hex.size() == 6) color = color << 8 | 0xff;
-            value.colors = {
-                ((color >> 24) & 0xff) / 255.f,
-                ((color >> 16) & 0xff) / 255.f,
-                ((color >> 8) & 0xff) / 255.f,
-                (color & 0xff) / 255.f,
-            };
-            result.changed = result.pressed = true;
-        }
+        if ((hex.size() != 6 && hex.size() != 8) ||
+            parsed.ec != std::errc{} || parsed.ptr != hex.data() + hex.size())
+            return false;
+        if (hex.size() == 6) color = color << 8 | 0xff;
+        value.colors = {
+            ((color >> 24) & 0xff) / 255.f,
+            ((color >> 16) & 0xff) / 255.f,
+            ((color >> 8) & 0xff) / 255.f,
+            (color & 0xff) / 255.f,
+        };
+        return true;
+    };
+
+    const ImVec4 preview{value.colors[0], value.colors[1], value.colors[2],
+                         value.colors[3]};
+    const bool pressed = ImGui::ColorButton(
+        ("##color_button" + id).c_str(), preview,
+        ImGuiColorEditFlags_AlphaPreviewHalf);
+    const bool hovered = ImGui::IsItemHovered();
+    const bool held = ImGui::IsItemActive();
+    if (pressed) {
+        syncHex();
+        ImGui::OpenPopup(("##color_popup" + id).c_str());
     }
-    return result;
+    ImGui::SameLine();
+    const auto suffix = id.find("##");
+    ImGui::TextUnformatted(id.data(), id.data() +
+        (suffix == std::string::npos ? id.size() : suffix));
+
+    bool changed = false;
+    if (ImGui::BeginPopup(("##color_popup" + id).c_str())) {
+        if (ImGui::ColorPicker4(
+                ("##color_picker" + id).c_str(), value.colors.data(),
+                ImGuiColorEditFlags_AlphaBar |
+                    ImGuiColorEditFlags_AlphaPreviewHalf |
+                    ImGuiColorEditFlags_NoInputs)) {
+            changed = true;
+            syncHex();
+        }
+
+        if (ImGui::BeginTable(("##color_hex_row" + id).c_str(), 3)) {
+            ImGui::TableSetupColumn(
+                "Hex", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn(
+                "Copy", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn(
+                "Paste", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableNextColumn();
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            if (ImGui::InputTextWithHint(
+                    ("##color_hex" + id).c_str(), "#RRGGBBAA", &value.hex))
+                changed |= applyHex();
+            ImGui::TableNextColumn();
+            if (ImGui::SmallButton(("Copy##color_" + id).c_str())) {
+                syncHex();
+                ImGui::SetClipboardText(value.hex.c_str());
+            }
+            ImGui::TableNextColumn();
+            if (ImGui::SmallButton(("Paste##color_" + id).c_str())) {
+                value.hex =
+                    ImGui::GetClipboardText() ? ImGui::GetClipboardText() : "";
+                changed |= applyHex();
+            }
+            ImGui::EndTable();
+        }
+        ImGui::EndPopup();
+    }
+    return {pressed || changed, hovered, held, changed};
 }
 
 inline void text(std::string_view value, ImFont* font = nullptr) {

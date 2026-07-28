@@ -24,21 +24,6 @@ static cocos2d::ccColor4F toCocosColor(const float colors[4]) {
     return {colors[0], colors[1], colors[2], colors[3]};
 }
 
-#ifndef GEODE_IS_MOBILE
-static cocos2d::ccColor4F toCocosColorNegative(const float colors[4]) {
-    return {1.0f - colors[0], 1.0f - colors[1], 1.0f - colors[2], colors[3]};
-}
-#endif
-
-static cocos2d::ccColor4F trajectoryColor(const float colors[4], bool p1) {
-#ifdef GEODE_IS_MOBILE
-    (void)p1;
-    return toCocosColor(colors);
-#else
-    return p1 ? toCocosColor(colors) : toCocosColorNegative(colors);
-#endif
-}
-
 static bool isHoldingJump(PlayerObject* player) {
     if (!player) return false;
     const auto it =
@@ -46,7 +31,6 @@ static bool isHoldingJump(PlayerObject* player) {
     return it != player->m_holdingButtons.end() && it->second;
 }
 
-#ifdef GEODE_IS_MOBILE
 static cocos2d::CCRect usingWidth(const cocos2d::CCRect& rect, float width) {
     return {rect.origin.x + width, rect.origin.y + width,
             rect.size.width - width * 2.f,
@@ -73,7 +57,6 @@ static void drawRotatedRect(CCDrawNode* node, CCRect& rect, float angle,
     node->drawPolygon(vertices.data(), vertices.size(), {0, 0, 0, 0}, width,
                       color);
 }
-#endif
 
 static uint64_t packPlayerFlags(PlayerObject* p) {
     uint64_t flags = 0;
@@ -211,9 +194,7 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
 
     if ((m_deadP1 && (mode & TrajectoryMode::Player1) != 0) ||
         (m_deadP2 && (mode & TrajectoryMode::Player2) != 0)) {
-#ifdef GEODE_IS_MOBILE
         if (stepCount > 1) drawHitbox(pl, player);
-#endif
         return true;
     }
 
@@ -252,8 +233,7 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
 
     const float width = m_state->m_width->inner() / pl->m_gameState.m_cameraZoom;
     m_node->drawSegment(
-        prevPos, player->getPosition(), width,
-        trajectoryColor(colors, player == m_fakePlayer1));
+        prevPos, player->getPosition(), width, toCocosColor(colors));
 
     ++stepCount;
     return false;
@@ -321,7 +301,7 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
         PlayerObject* plr = activePlayers[i];
         const CCPoint pos = plr->getPosition();
         m_node->drawSegment(pos, plr->getPosition(), width,
-                            trajectoryColor(colors, plr == m_fakePlayer1));
+                            toCocosColor(colors));
     }
 
     bool breakP1 = false;
@@ -437,20 +417,16 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     m_deadP1 = false;
     m_deadP2 = false;
 
-#ifdef GEODE_IS_MOBILE
     const bool holding = realPlayer->m_isDart
                              ? isHoldingJump(realPlayer)
                              : (p1 ? m_p1Holding : m_p2Holding);
     const bool current =
         (holding && (mode & CLICK_MASK) == TrajectoryMode::Hold) ||
         (!holding && (mode & CLICK_MASK) == TrajectoryMode::Release);
-    std::array<float, 4> mobileColors =
+    std::array<float, 4> trajectoryColors =
         current ? std::array<float, 4>{0.f, 1.f, 0.f, 1.f}
                 : std::array<float, 4>{0.f, 1.f, 1.f, 1.f};
-    float* colors = mobileColors.data();
-#else
-    float* colors = ts.categories[mode | platformerMask].colors.data();
-#endif
+    float* colors = trajectoryColors.data();
     auto predicted = runPrediction(pl, player, otherPlayer, mode, colors,
                                    clickBothPlayers, config);
 
@@ -576,7 +552,6 @@ applyLayoutColors:
     }
 }
 
-#ifdef GEODE_IS_MOBILE
 void Trajectory::drawHitbox(GJBaseGameLayer* pl, PlayerObject* player) {
     const float width =
         m_state->m_width->inner() / pl->m_gameState.m_cameraZoom;
@@ -593,7 +568,6 @@ void Trajectory::drawHitbox(GJBaseGameLayer* pl, PlayerObject* player) {
     drawRect(m_node, rect, color(Type::Player), width);
     drawRect(m_node, inner, color(Type::PlayerInner), width);
 }
-#endif
 
 bool Trajectory::playerHasActivated(PlayerObject* player,
                                     EnhancedGameObject* object) {
