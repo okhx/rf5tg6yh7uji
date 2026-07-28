@@ -267,7 +267,7 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
         int physicsSteps = 0;
         for (int i = 0; i < updates; i++) {
             estimatedStepCount = 0;
-            update(scaledDt);
+            update(scaledDt / updates);
             physicsSteps += estimatedStepCount;
         }
         totalStepCount = physicsSteps;
