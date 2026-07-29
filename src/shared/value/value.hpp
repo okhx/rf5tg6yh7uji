@@ -73,47 +73,41 @@ class BindingManager {
             {
                 auto kb = RawKeybind{
                     70, 0, "ui.visible", KeybindType::Toggle, true, "1"};
-                this->registerKeybind(
-                    m_values["ui.visible"]->createKeybind(kb));
+                (void)this->addKeybindForTag("ui.visible", kb);
             }
 
             {
                 auto kb = RawKeybind{
                     67,   0,  "updater.frame_advance", KeybindType::Toggle,
                     true, "1"};
-                this->registerKeybind(
-                    m_values["updater.frame_advance"]->createKeybind(kb));
+                (void)this->addKeybindForTag("updater.frame_advance", kb);
             }
 
             {
                 auto kb = RawKeybind{
                     66,   0,  "updater.advance_back", KeybindType::Toggle,
                     true, "1"};
-                this->registerKeybind(
-                    m_values["updater.advance_back"]->createKeybind(kb));
+                (void)this->addKeybindForTag("updater.advance_back", kb);
             }
 
             {
                 auto kb = RawKeybind{
                     86,   0,  "updater.advance_one", KeybindType::Toggle,
                     true, "1"};
-                this->registerKeybind(
-                    m_values["updater.advance_one"]->createKeybind(kb));
+                (void)this->addKeybindForTag("updater.advance_one", kb);
             }
 
             {
                 auto kb = RawKeybind{
                     84,   0,  "trajectory.enabled", KeybindType::Toggle,
                     true, "1"};
-                this->registerKeybind(
-                    m_values["trajectory.enabled"]->createKeybind(kb));
+                (void)this->addKeybindForTag("trajectory.enabled", kb);
             }
 
             {
                 auto kb = RawKeybind{
                     18, 1, "ui.visible", KeybindType::Toggle, true, "1"};
-                this->registerKeybind(
-                    m_values["ui.visible"]->createKeybind(kb));
+                (void)this->addKeybindForTag("ui.visible", kb);
             }
 
             return;
@@ -202,8 +196,9 @@ class BindingManager {
     }
 
     bool addKeybindForTag(const std::string& tag, RawKeybind& raw) {
-        if (!m_values.contains(tag)) return false;
-        auto kb = m_values[tag]->createKeybind(raw);
+        auto value = m_values.find(tag);
+        if (value == m_values.end() || !value->second) return false;
+        auto kb = value->second->createKeybind(raw);
         registerKeybind(kb);
         return true;
     }
