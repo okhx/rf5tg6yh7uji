@@ -12,6 +12,13 @@ using namespace geode::prelude;
 #include <Geode/modify/CCScheduler.hpp>
 
 struct GrapeCCScheduler : Modify<GrapeCCScheduler, CCScheduler> {
+#ifdef GEODE_IS_ANDROID
+    static void onModify(auto& self) {
+        (void)self.setHookPriorityPre("cocos2d::CCScheduler::update",
+                                      Priority::VeryLate);
+    }
+#endif
+
     void update(float dt) override {
 #ifdef GEODE_IS_MOBILE
         TouchOverlay::get()->update(dt);

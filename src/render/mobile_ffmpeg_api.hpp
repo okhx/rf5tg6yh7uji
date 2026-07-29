@@ -4,7 +4,7 @@
 #include <Geode/loader/Event.hpp>
 #include <cstdint>
 #include <filesystem>
-#include <functional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -30,94 +30,68 @@ struct RenderSettings {
 }
 
 namespace ffmpeg::events::impl {
-class Dummy {};
+constexpr size_t VTABLE_VERSION = 1;
 
-class CreateRecorderEvent
-    : public geode::Event<CreateRecorderEvent, bool(CreateRecorderEvent*)> {
-    void* m_ptr = nullptr;
-   public:
-    void setPtr(void* ptr) { m_ptr = ptr; }
-    void* getPtr() const { return m_ptr; }
+struct VTable {
+    void* (*createRecorder)() = nullptr;
+    void (*deleteRecorder)(void*) = nullptr;
+    geode::Result<> (*initRecorder)(void*, ffmpeg::RenderSettings const&) =
+        nullptr;
+    void (*stopRecorder)(void*) = nullptr;
+    geode::Result<> (*writeFrame)(void*, std::span<uint8_t const>) = nullptr;
+    std::vector<std::string> (*getAvailableCodecs)() = nullptr;
+    geode::Result<> (*mixVideoAudio)(std::filesystem::path const&,
+                                    std::filesystem::path const&,
+                                    std::filesystem::path const&) = nullptr;
+    geode::Result<> (*mixVideoRaw)(std::filesystem::path const&,
+                                  std::span<float>,
+                                  std::filesystem::path const&) = nullptr;
 };
 
-class DeleteRecorderEvent
-    : public geode::Event<DeleteRecorderEvent, bool(DeleteRecorderEvent*)> {
-    void* m_ptr;
-   public:
-    explicit DeleteRecorderEvent(void* ptr) : m_ptr(ptr) {}
-    void* getPtr() const { return m_ptr; }
+struct FetchVTableEvent
+    : geode::Event<FetchVTableEvent, bool(VTable&, size_t)> {
+    using Event::Event;
 };
 
-class InitRecorderEvent
-    : public geode::Event<InitRecorderEvent, bool(InitRecorderEvent*)> {
-    ffmpeg::RenderSettings const* m_settings;
-    void* m_ptr;
-    geode::Result<> m_result = geode::Err("FFmpeg API event was not handled");
-   public:
-    InitRecorderEvent(void* ptr, ffmpeg::RenderSettings const* settings)
-      : m_settings(settings), m_ptr(ptr) {}
-    void setResult(geode::Result<>&& result) { m_result = std::move(result); }
-    geode::Result<> getResult() { return m_result; }
-    void* getPtr() const { return m_ptr; }
-    ffmpeg::RenderSettings const& getRenderSettings() const {
-        return *m_settings;
+inline VTable& getVTable() {
+    static VTable vtable;
+    static bool initialized = false;
+    if (!initialized) {
+        initialized = FetchVTableEvent().send(vtable, VTABLE_VERSION);
     }
-};
-
-class StopRecorderEvent
-    : public geode::Event<StopRecorderEvent, bool(StopRecorderEvent*)> {
-    void* m_ptr;
-   public:
-    explicit StopRecorderEvent(void* ptr) : m_ptr(ptr) {}
-    void* getPtr() const { return m_ptr; }
-};
-
-class GetWriteFrameFunctionEvent
-    : public geode::Event<GetWriteFrameFunctionEvent,
-                          bool(GetWriteFrameFunctionEvent*)> {
-   public:
-    using WriteFrame = geode::Result<>(Dummy::*)(std::vector<uint8_t> const&);
-   private:
-    WriteFrame m_function = nullptr;
-   public:
-    void setFunction(WriteFrame function) { m_function = function; }
-    WriteFrame getFunction() const { return m_function; }
-};
+    return vtable;
+}
 }
 
 class MobileFFmpegRecorder {
-    ffmpeg::events::impl::Dummy* m_ptr = nullptr;
+    void* m_ptr = nullptr;
    public:
     MobileFFmpegRecorder() {
-        ffmpeg::events::impl::CreateRecorderEvent event;
-        event.send(&event);
-        m_ptr = static_cast<ffmpeg::events::impl::Dummy*>(event.getPtr());
+        auto& vtable = ffmpeg::events::impl::getVTable();
+        if (vtable.createRecorder) m_ptr = vtable.createRecorder();
     }
     ~MobileFFmpegRecorder() {
         if (m_ptr) {
-            ffmpeg::events::impl::DeleteRecorderEvent event(m_ptr);
-            event.send(&event);
+            auto& vtable = ffmpeg::events::impl::getVTable();
+            if (vtable.deleteRecorder) vtable.deleteRecorder(m_ptr);
         }
     }
     bool valid() const { return m_ptr != nullptr; }
     geode::Result<> init(ffmpeg::RenderSettings const& settings) {
-        ffmpeg::events::impl::InitRecorderEvent event(m_ptr, &settings);
-        event.send(&event);
-        return event.getResult();
+        auto& vtable = ffmpeg::events::impl::getVTable();
+        if (!vtable.initRecorder) return geode::Err("FFmpeg API unavailable");
+        return vtable.initRecorder(m_ptr, settings);
     }
     geode::Result<> writeFrame(std::vector<uint8_t> const& frame) {
-        static auto function = [] {
-            ffmpeg::events::impl::GetWriteFrameFunctionEvent event;
-            event.send(&event);
-            return event.getFunction();
-        }();
-        if (!function || !m_ptr) return geode::Err("FFmpeg API writer unavailable");
-        return std::invoke(function, m_ptr, frame);
+        auto& vtable = ffmpeg::events::impl::getVTable();
+        if (!vtable.writeFrame || !m_ptr)
+            return geode::Err("FFmpeg API writer unavailable");
+        return vtable.writeFrame(m_ptr, frame);
     }
     void stop() {
         if (m_ptr) {
-            ffmpeg::events::impl::StopRecorderEvent event(m_ptr);
-            event.send(&event);
+            auto& vtable = ffmpeg::events::impl::getVTable();
+            if (vtable.stopRecorder) vtable.stopRecorder(m_ptr);
         }
     }
 };
