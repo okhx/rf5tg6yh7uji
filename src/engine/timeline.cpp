@@ -99,7 +99,6 @@ void FrameEngine::calculateSteps(float dt, float targetDt) {
     estimatedStepCount = steps;
 }
 
-#ifndef GEODE_IS_MOBILE
 static void runFastLockDeltaUpdates(float realDt,
                                     std::function<void(float)> update) {
     auto bot = GrapeEngine::get();
@@ -199,7 +198,6 @@ static void runSlowLockDeltaUpdates(float realDt,
         update(delta);
     }
 }
-#endif
 
 void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
                             bool frozen) {
@@ -253,6 +251,14 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
         }
     }
 
+    bool calculateSsb = false;
+    if (isPlayLayer) {
+        calculateSsb = !((PlayLayer*)pl)->m_isPaused &&
+                       !((PlayLayer*)pl)->m_hasCompletedLevel &&
+                       pl->m_started && !pl->m_isPlatformer &&
+                       m_ssbFix->inner() && Renderer::get()->isRecording();
+    }
+
     bool useAccLockDelta =
         m_lockDelta->inner() &&
         (m_lockDeltaMode->inner() == LockDeltaMode::Accuracy ||
@@ -260,21 +266,11 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
 
     auto startTime = std::chrono::high_resolution_clock::now();
     if ((m_lockDelta->inner() || useAccLockDelta) && isPlayLayer) {
-#ifdef GEODE_IS_MOBILE
-        m_shouldRender = true;
-        update(realDt * m_speedhack->inner());
-#else
-        const bool calculateSsb =
-            !((PlayLayer*)pl)->m_isPaused &&
-            !((PlayLayer*)pl)->m_hasCompletedLevel && pl->m_started &&
-            !pl->m_isPlatformer && m_ssbFix->inner() &&
-            Renderer::get()->isRecording();
         if (this->useFastLockDelta()) {
             runFastLockDeltaUpdates(realDt, update);
         } else {
             runSlowLockDeltaUpdates(realDt, update, calculateSsb);
         }
-#endif
     } else {
         m_shouldRender = true;
         if (m_respawnTimer > 0) {
@@ -495,7 +491,7 @@ void FrameEngine::findBestFrameCandidate() {
 
 }
 
-void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float) {
+void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
     auto* bot = GrapeEngine::get();
     if (!playLayer || !bot->isEnabled() || m_onlyRefresh ||
         playLayer->m_resumeTimer > 0) {
@@ -503,12 +499,6 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float) {
     }
 
     if (!playLayer->m_playerDied) {
-        const uint32_t logicalSteps =
-            static_cast<uint32_t>(std::max(0, estimatedStepCount));
-        if (logicalSteps == 0) {
-            return;
-        }
-
         if (m_backwardsStepping->inner() &&
             !Renderer::get()->isRecording()) {
             auto* checkpoint = playLayer->createCheckpoint();
@@ -518,6 +508,14 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float) {
             }
         }
 
+        uint32_t logicalSteps = 1;
+        if (!m_paused->inner()) {
+            const double steps = m_tps->inner() * visualDt;
+            if (std::isfinite(steps) && steps > 1.0) {
+                logicalSteps = static_cast<uint32_t>(std::clamp(
+                    std::lround(steps), 1l, 1000l));
+            }
+        }
         incrementFrame(logicalSteps);
         bot->hitboxes().saveToTrail(playLayer);
     }

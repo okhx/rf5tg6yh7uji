@@ -196,17 +196,6 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
         m_fields->m_lastGround2.loadIntoGround(m_groundLayer2);
     }
 
-#ifdef GEODE_IS_MOBILE
-    int mobileDeltaMod() {
-        if (GrapeEngine::get()->timeline().isPaused()) {
-            return 1;
-        }
-        return std::max(1, static_cast<int>(std::ceil(
-                               GrapeEngine::get()->timeline().getTps() *
-                               CCDirector::get()->getDeltaTime())));
-    }
-#endif
-
     void update(float dt) override {
         auto& updater = GrapeEngine::get()->timeline();
         if (updater.m_onlyRefresh || !GrapeEngine::get()->isEnabled()) {
@@ -224,20 +213,6 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             updater.estimatedStepCount =
                 std::min(updater.estimatedStepCount, 1);
         }
-
-#ifdef GEODE_IS_MOBILE
-        if (PlayLayer::get() && m_started && !m_isEditor) {
-            const int updates = mobileDeltaMod();
-            for (int i = 0; i < updates; i++) {
-                updater.estimatedStepCount = 0;
-                GJBaseGameLayer::update(dt);
-                if (updater.estimatedStepCount > 0) {
-                    this->storeActualState();
-                }
-            }
-            return;
-        }
-#endif
 
         if (updater.m_extrapolateFrames->inner() &&
             updater.getFrame() > updater.m_frameOnLastAttempt) {
@@ -290,8 +265,9 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             return GJBaseGameLayer::getModifiedDelta(dt);
         }
 
+        float modDelta = GJBaseGameLayer::getModifiedDelta(dt);
         if (LevelEditorLayer::get()) {
-            return GJBaseGameLayer::getModifiedDelta(dt);
+            return modDelta;
         }
 
         auto& updater = GrapeEngine::get()->timeline();
@@ -299,32 +275,10 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             return 0.0f;
         }
 
-#ifdef GEODE_IS_MOBILE
-        const double wantedDt =
-            updater.getPhysicsDt() * std::min(m_gameState.m_timeWarp, 1.0f);
-        if (updater.isPaused()) {
-            updater.estimatedStepCount = 1;
-            m_extraDelta = 0.0f;
-            return wantedDt;
-        }
-        double extraDelta = m_extraDelta;
-        if (m_resumeTimer < 1) {
-            extraDelta += dt / mobileDeltaMod();
-        } else {
-            m_resumeTimer--;
-        }
-        const int steps = static_cast<int>(extraDelta / wantedDt);
-
-        updater.estimatedStepCount = steps;
-        m_extraDelta = extraDelta - wantedDt * steps;
-        return wantedDt * steps;
-#else
-        GJBaseGameLayer::getModifiedDelta(dt);
         float wantedDt =
             updater.getPhysicsDt() * fminf(m_gameState.m_timeWarp, 1.0f);
 
         return wantedDt;
-#endif
     }
 
     void addInputToReplay(PlayerButtonCommand cmd) {
