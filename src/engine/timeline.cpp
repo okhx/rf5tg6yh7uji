@@ -266,6 +266,12 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
 
     auto startTime = std::chrono::high_resolution_clock::now();
     if ((m_lockDelta->inner() || useAccLockDelta) && isPlayLayer) {
+#ifdef GEODE_IS_MOBILE
+        if (bot->isPlaying() && !Renderer::get()->isRecording()) {
+            m_shouldRender = true;
+            update(realDt * m_speedhack->inner());
+        } else
+#endif
         if (this->useFastLockDelta()) {
             runFastLockDeltaUpdates(realDt, update);
         } else {
