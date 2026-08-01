@@ -65,7 +65,7 @@ class PracticeFix {
 
     void reseedAdvancedRandom(uint64_t attemptSeed);
 
-    void updatePlatformerInputs(std::vector<PlayerButtonCommand>& inputs);
+    void updatePlatformerInputs(gd::vector<PlayerButtonCommand>& inputs);
     void registerBrokenObject(GameObject* obj) {
         m_brokenObjects.push_back(obj);
     }

@@ -231,7 +231,7 @@ void PracticeFix::clearPlatformer(bool assumeLoaded) {
 }
 
 void PracticeFix::updatePlatformerInputs(
-    std::vector<PlayerButtonCommand>& inputs) {
+    gd::vector<PlayerButtonCommand>& inputs) {
     for (const auto& input : inputs) {
         bool& left = input.m_isPlayer2 ? m_p2Left : m_p1Left;
         bool& right = input.m_isPlayer2 ? m_p2Right : m_p1Right;
