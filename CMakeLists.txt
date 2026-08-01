@@ -86,7 +86,6 @@ add_library(${PROJECT_NAME} SHARED
 
 if (NOT ANDROID)
     target_sources(${PROJECT_NAME} PRIVATE
-        src/hooks/VideoOptionsLayer.cpp
         src/ui/manager.cpp
         src/ui/hook.cpp
         src/ui/theme.cpp
@@ -116,6 +115,7 @@ endif()
 
 if (WIN32)
     target_sources(${PROJECT_NAME} PRIVATE
+        src/hooks/VideoOptionsLayer.cpp
         ${IMGUI_VENDOR_DIR}/backends/imgui_impl_win32.cpp
         src/util/midhook.cpp
     )

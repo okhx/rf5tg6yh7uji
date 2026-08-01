@@ -18,7 +18,7 @@ class MobileMenu final : public geode::Popup {
     ButtonSprite* m_playSprite = nullptr;
     ButtonSprite* m_renderSprite = nullptr;
     geode::async::TaskHolder<geode::utils::file::PickResult> m_macroPick;
-#ifdef GEODE_IS_IOS
+#ifdef GEODE_IS_MOBILE
     size_t m_renderResolutionIndex = 0;
 #endif
     std::string m_status;

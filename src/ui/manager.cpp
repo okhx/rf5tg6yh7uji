@@ -1097,10 +1097,10 @@ void UIManager::draw() {
 
     ImTextureID tex = (logoTex != 0 && logoTex != (GLuint)-1) ? (ImTextureID)(intptr_t)logoTex : (ImTextureID)(intptr_t)0;
 #ifdef GRAPE_PRIVATE_PC
-    const bool skeetMenu = grape::pc::useSkeetMenu();
+    bool skeetMenu = grape::pc::useSkeetMenu();
     if (skeetMenu) grape::pc::pushSkeetStyle(m_state.m_opacity->inner());
 #else
-    const bool skeetMenu = false;
+    bool skeetMenu = false;
 #endif
     slui::Config::get().skeetMode = skeetMenu;
     slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv, [this, bot, popupShaderFn, skeetMenu]() {
@@ -1117,6 +1117,7 @@ void UIManager::draw() {
         const auto tabButton = [this, skeetMenu](
                                    const char* label, const char* icon,
                                    UIState::UITab tab) {
+            (void)icon;
             const bool active = m_state.m_currentTab == tab;
 #ifdef GRAPE_PRIVATE_PC
             if (skeetMenu) {
