@@ -98,7 +98,7 @@ struct SavedPlayerCheckpoint {
     double m_accelerationOrSpeed;
     double m_snapDistance;
     bool m_ringJumpRelated;
-    gd::unordered_set<int> m_ringRelatedSet;
+    gd::unordered_set<int> m_ringRelatedSet{};
     GameObject* m_objectSnappedTo;
     CheckpointObject* m_pendingCheckpoint;
     int m_onFlyCheckpointTries;
@@ -179,8 +179,8 @@ struct SavedPlayerCheckpoint {
     bool m_isLocked;
     bool m_controlsDisabled;
     cocos2d::CCPoint m_lastGroundedPos;
-    gd::vector<cocos2d::CCObject*> m_touchingRings;
-    gd::unordered_set<int> m_touchedRings;
+    gd::vector<cocos2d::CCObject*> m_touchingRings{};
+    gd::unordered_set<int> m_touchedRings{};
     GameObject* m_lastActivatedPortal;
     bool m_hasEverJumped;
     bool m_ringOrStreakRelated;
@@ -196,7 +196,7 @@ struct SavedPlayerCheckpoint {
     bool m_swapColors;
     bool m_gamevar0062;
     int m_followRelated;
-    gd::vector<float> m_playerFollowFloats;
+    gd::vector<float> m_playerFollowFloats{};
     float m_unk838;
     int m_stateOnGround;
     unsigned char m_stateUnk;
@@ -239,11 +239,11 @@ struct SavedPlayerCheckpoint {
     int m_stateForce;
     cocos2d::CCPoint m_stateForceVector;
     bool m_affectedByForces;
-    gd::map<int, bool> m_jumpPadRelated;
+    gd::map<int, bool> m_jumpPadRelated{};
     float m_somethingPlayerSpeedTime;
     float m_playerSpeedAC;
     bool m_fixRobotJump;
-    gd::map<int, bool> m_holdingButtons;
+    gd::map<int, bool> m_holdingButtons{};
     bool m_inputsLocked;
     bool m_gv0123;
     int m_iconRequestID;
