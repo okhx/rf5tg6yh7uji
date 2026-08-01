@@ -144,10 +144,18 @@ if (WIN32)
         target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:/Gw>
             $<$<CONFIG:Release>:/Gy>
+            $<$<CONFIG:Release>:/GS>
+            $<$<CONFIG:Release>:/guard:cf>
+            $<$<CONFIG:Release>:/sdl>
+            $<$<CONFIG:Release>:/Brepro>
         )
         target_link_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:/OPT:REF>
             $<$<CONFIG:Release>:/OPT:ICF>
+            $<$<CONFIG:Release>:/DYNAMICBASE>
+            $<$<CONFIG:Release>:/HIGHENTROPYVA>
+            $<$<CONFIG:Release>:/NXCOMPAT>
+            $<$<CONFIG:Release>:/GUARD:CF>
         )
     endif()
 endif()

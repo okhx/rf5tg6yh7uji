@@ -44,6 +44,10 @@ configure=(
     "-DGRAPE_LICENSE_URL=$GRAPE_LICENSE_URL"
 )
 
+if [[ -n "${GRAPE_VMPROTECT_SDK:-}" ]]; then
+    configure+=("-DGRAPE_VMPROTECT_SDK=$GRAPE_VMPROTECT_SDK")
+fi
+
 if command -v ninja >/dev/null; then
     configure+=(-G Ninja)
 fi

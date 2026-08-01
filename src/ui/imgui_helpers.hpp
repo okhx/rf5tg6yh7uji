@@ -338,6 +338,7 @@ inline void text(std::string_view value, ImFont* font = nullptr) {
 inline void same_line() { ImGui::SameLine(); }
 inline void spacer(double size = 0.0) { ImGui::Dummy(ImVec2(0.0f, size)); }
 inline void divider(bool visible = true) {
+    (void)visible;
     auto& config = Config::get();
     if (!config.skeetMode) {
         ImGui::Separator();
