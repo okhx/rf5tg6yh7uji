@@ -40,6 +40,7 @@ class FrameEngine {
     bool m_haltActions = false;
     bool m_onlyRefresh = false;
     void* m_actionMgr = 0;
+    double m_timewarpTime = 0.0;
 
     ConfigValuePtr<bool> m_stepOnce =
         ConfigValue<bool>::create("updater.advance_one", &_stepOnce);
@@ -144,6 +145,7 @@ class FrameEngine {
 
     cocos2d::CCLabelBMFont* m_frameLabel = nullptr;
 
+    float getSSB();
     float getTimeWarp();
 
     void calculateSteps(float dt, float targetDt);

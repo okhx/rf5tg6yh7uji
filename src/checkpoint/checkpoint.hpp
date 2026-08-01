@@ -98,7 +98,7 @@ struct SavedPlayerCheckpoint {
     double m_accelerationOrSpeed;
     double m_snapDistance;
     bool m_ringJumpRelated;
-    gd::unordered_set<int> m_ringRelatedSet{};
+    gd::unordered_set<int> m_ringRelatedSet;
     GameObject* m_objectSnappedTo;
     CheckpointObject* m_pendingCheckpoint;
     int m_onFlyCheckpointTries;
@@ -179,8 +179,8 @@ struct SavedPlayerCheckpoint {
     bool m_isLocked;
     bool m_controlsDisabled;
     cocos2d::CCPoint m_lastGroundedPos;
-    gd::vector<cocos2d::CCObject*> m_touchingRings{};
-    gd::unordered_set<int> m_touchedRings{};
+    gd::vector<cocos2d::CCObject*> m_touchingRings;
+    gd::unordered_set<int> m_touchedRings;
     GameObject* m_lastActivatedPortal;
     bool m_hasEverJumped;
     bool m_ringOrStreakRelated;
@@ -196,7 +196,7 @@ struct SavedPlayerCheckpoint {
     bool m_swapColors;
     bool m_gamevar0062;
     int m_followRelated;
-    gd::vector<float> m_playerFollowFloats{};
+    gd::vector<float> m_playerFollowFloats;
     float m_unk838;
     int m_stateOnGround;
     unsigned char m_stateUnk;
@@ -247,6 +247,7 @@ struct SavedPlayerCheckpoint {
     bool m_inputsLocked;
     bool m_gv0123;
     int m_iconRequestID;
+    // cocos2d::CCArray* m_unk958;
     int m_unkUnused;
     bool m_isOutOfBounds;
     float m_fallStartY;
@@ -263,6 +264,7 @@ struct SavedCheckpoint {
     SavedPlayerCheckpoint m_player2;
     CheckpointObject* m_checkpoint;
 
+    // for platformer checkpoints
     size_t m_stackSize;
 
     uint64_t m_attemptStartFrame;
@@ -270,9 +272,12 @@ struct SavedCheckpoint {
     size_t m_replayInputIndex;
     uint64_t m_seedState;
     uint64_t m_shakeRandomState;
+    uint64_t m_teleportRandomState;
 
     double m_tps;
+    double m_timewarpTime;
 
+    // Additional GJEffectManager state
     gd::unordered_map<int, int> m_persistentItemMap{};
     std::array<float, 2000> m_varianceValues;
 
@@ -280,6 +285,7 @@ struct SavedCheckpoint {
     int m_calcNonEffectObjectsSize;
 
     std::vector<GameObject*> m_brokenObjects;
+    std::vector<uint64_t> m_advRandStates;
 };
 
-#endif
+#endif  // CHECKPOINT_HPP

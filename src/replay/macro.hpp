@@ -38,6 +38,7 @@ class MacroEngine {
     uint64_t m_startingSeed = 0;
     uint64_t m_startingSeedThisAttempt = 0;
     uint64_t m_shakeRandomState = 0;
+    uint64_t m_teleportRandomState = 0;
 #ifndef GEODE_IS_WINDOWS
     uint64_t m_portableRandomState = 0;
 #endif
@@ -93,8 +94,7 @@ class MacroEngine {
     geode::Result<size_t> convertAndPlay(std::filesystem::path path);
     static geode::utils::file::FilePickOptions converterFileOptions();
 
-    enum class MergeMode { P1FromOther, P2FromOther, SwapPlayers };
-    void merge(std::filesystem::path path, MergeMode mode = MergeMode::P2FromOther);
+    void merge(std::filesystem::path path);
 
     std::filesystem::path getCurrentPath();
     void backupExisting(std::filesystem::path path);

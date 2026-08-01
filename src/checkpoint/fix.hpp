@@ -1,3 +1,6 @@
+//
+// Created by peony on 29.10.2024.
+//
 
 #ifndef FIX_HPP
 #define FIX_HPP
@@ -9,6 +12,7 @@
 #include <vector>
 
 #include "Geode/binding/CheckpointGameObject.hpp"
+#include "Geode/utils/function.hpp"
 #include "checkpoint.hpp"
 #include "config/config.hpp"
 #include "shared/value/value.hpp"
@@ -16,6 +20,11 @@
 class PracticeFix {
    private:
    public:
+    struct SavedAdvRand {
+        uint64_t* m_randomState;
+        int m_uniqueID;
+    };
+
     ConfigValuePtr<uint32_t> m_maxStoredFrames = ConfigValue<uint32_t>::create(
         "practice_fix.max_stored_frames", &GrapeSettings::get()->stepsToSave);
 
@@ -30,6 +39,10 @@ class PracticeFix {
     std::deque<std::pair<CheckpointObject*, CheckpointGameObject*>>
         m_platformerCheckpoints;
 
+    std::vector<SavedAdvRand> m_advancedRandom;
+
+    // CheckpointObject* m_platformerCheckpoint = nullptr;
+    // CheckpointGameObject* m_platformerCheckpointGame = nullptr;
 
     std::vector<GameObject*> m_brokenObjects;
 
@@ -50,19 +63,9 @@ class PracticeFix {
     void removeAll();
     void clearPlatformer(bool assumeLoaded = false);
 
-    template <class Container>
-    void updatePlatformerInputs(const Container& inputs) {
-        for (const auto& input : inputs) {
-            bool& left = input.m_isPlayer2 ? m_p2Left : m_p1Left;
-            bool& right = input.m_isPlayer2 ? m_p2Right : m_p1Right;
+    void reseedAdvancedRandom(uint64_t attemptSeed);
 
-            if (input.m_button == PlayerButton::Left) {
-                left = input.m_isPush;
-            } else if (input.m_button == PlayerButton::Right) {
-                right = input.m_isPush;
-            }
-        }
-    }
+    void updatePlatformerInputs(std::vector<PlayerButtonCommand>& inputs);
     void registerBrokenObject(GameObject* obj) {
         m_brokenObjects.push_back(obj);
     }
@@ -76,4 +79,4 @@ class PracticeFix {
     bool m_shouldLoadPlatformer = false;
 };
 
-#endif
+#endif  // FIX_HPP

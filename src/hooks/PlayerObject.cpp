@@ -58,7 +58,6 @@ struct GrapePlayerObject : Modify<GrapePlayerObject, PlayerObject> {
         }
     }
 
-#ifndef GEODE_IS_IOS
     bool levelFlipping() {
         if (LevelEditorLayer::get()) {
             return false;
@@ -66,7 +65,6 @@ struct GrapePlayerObject : Modify<GrapePlayerObject, PlayerObject> {
 
         return PlayerObject::levelFlipping();
     }
-#endif
 
     void incrementJumps() {
         auto bot = GrapeEngine::get();
@@ -113,7 +111,7 @@ struct GrapePlayerObject : Modify<GrapePlayerObject, PlayerObject> {
     }
 
     void removePendingCheckpoint() {
-        return;
+        return;  // don't, we don't use pending checkpoints anywhere
     }
 
     void tryPlaceCheckpoint() {

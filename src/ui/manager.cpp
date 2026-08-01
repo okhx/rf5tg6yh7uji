@@ -36,6 +36,7 @@ constexpr int VK_OEM_7 = 0xDE;
 
 #include <Geode/Geode.hpp>
 #include <algorithm>
+#include <cctype>
 #include <slc/formats/v3/atom.hpp>
 #include <slc/formats/v3/replay.hpp>
 #include <variant>
@@ -59,6 +60,11 @@ constexpr int VK_OEM_7 = 0xDE;
 #include "imgui.h"
 #include "util/storage.hpp"
 #include "imgui_helpers.hpp"
+
+#ifdef GRAPE_PRIVATE_PC
+#include "license.hpp"
+#include "skeet_menu.hpp"
+#endif
 
 #ifdef SILICATE_PROTECT
 #include "VMProtect/VMProtectSDK.h"
@@ -390,8 +396,48 @@ static bool loadImGuiTheme(const std::filesystem::path& path) {
     return in.good() || in.eof();
 }
 
+static std::pair<bool, bool> drawSkeetActionRow(
+    const char* id, const char* left, const char* right) {
+    bool leftPressed = false;
+    bool rightPressed = false;
+    if (ImGui::BeginTable(id, 2, ImGuiTableFlags_SizingStretchSame)) {
+        ImGui::TableNextColumn();
+        leftPressed = slui::raw_button(left, ImVec2(-FLT_MIN, 0));
+        ImGui::TableNextColumn();
+        rightPressed = slui::raw_button(right, ImVec2(-FLT_MIN, 0));
+        ImGui::EndTable();
+    }
+    return {leftPressed, rightPressed};
+}
+
 static void drawImGuiThemeEditor(ImFont* headingFont) {
-    static char name[128] = "custom";
+    if (slui::Config::get().skeetMode) {
+        auto* settings = GrapeSettings::get();
+        static slui::ColorState accent;
+        static slui::ColorState gradientLeft;
+        static slui::ColorState gradientMiddle;
+        static slui::ColorState gradientRight;
+        accent.colors = settings->skeetAccent;
+        gradientLeft.colors = settings->skeetGradientLeft;
+        gradientMiddle.colors = settings->skeetGradientMiddle;
+        gradientRight.colors = settings->skeetGradientRight;
+
+        slui::text("Skeet Theme", headingFont);
+        slui::divider(false);
+        slui::text("Colors", headingFont);
+        slui::color("Accent", accent);
+        slui::color("Gradient Left", gradientLeft);
+        slui::color("Gradient Middle", gradientMiddle);
+        slui::color("Gradient Right", gradientRight);
+
+        settings->skeetAccent = accent.colors;
+        settings->skeetGradientLeft = gradientLeft.colors;
+        settings->skeetGradientMiddle = gradientMiddle.colors;
+        settings->skeetGradientRight = gradientRight.colors;
+        return;
+    }
+
+    static std::string name = "custom";
     slui::text("Theme", headingFont);
     ImGui::Separator();
     std::string safeName(name);
@@ -400,7 +446,8 @@ static void drawImGuiThemeEditor(ImFont* headingFont) {
                c == '\"' || c == '<' || c == '>' || c == '|';
     }), safeName.end());
     const auto path = grape::paths::directory("themes") / (safeName + ".theme");
-    if (ImGui::BeginTable("ThemeSaveLoad", 4, ImGuiTableFlags_None)) {
+    if (ImGui::BeginTable(
+                   "ThemeSaveLoad", 4, ImGuiTableFlags_None)) {
         ImGui::TableSetupColumn("Input", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("Save", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Load", ImGuiTableColumnFlags_WidthFixed);
@@ -408,13 +455,13 @@ static void drawImGuiThemeEditor(ImFont* headingFont) {
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-FLT_MIN);
-        ImGui::InputTextWithHint("##ThemeName", "Theme name", name, sizeof(name));
+        ImGui::InputTextWithHint("##ThemeName", "Theme name", &name);
         ImGui::TableNextColumn();
-        if (ImGui::Button("Save")) saveImGuiTheme(path);
+        if (slui::raw_button("Save")) saveImGuiTheme(path);
         ImGui::TableNextColumn();
-        if (ImGui::Button("Load")) loadImGuiTheme(path);
+        if (slui::raw_button("Load")) loadImGuiTheme(path);
         ImGui::TableNextColumn();
-        if (ImGui::Button("Folder"))
+        if (slui::raw_button("Folder"))
             geode::utils::file::openFolder(grape::paths::directory("themes"));
         ImGui::EndTable();
     }
@@ -537,34 +584,36 @@ void UIManager::setup() {
         geode::utils::string::pathToString(
             Mod::get()->getResourcesDir() / "font_bold.ttf").c_str(), 32.0f);
 
+#ifdef GRAPE_PRIVATE_PC
+    grape::pc::setupSkeetFonts();
+    slui::Config::get().skeetHeaderFont = grape::pc::skeetHeaderFont();
+    ImGui::GetIO().Fonts->Build();
+#endif
+
     {
         namespace fs = std::filesystem;
         auto fontsDir = grape::paths::directory("fonts");
         fs::create_directories(fontsDir);
 
         m_state.m_customFontNames.clear();
-        m_state.m_customFonts.clear();
+        m_state.m_customFontFiles.clear();
 
-        auto* io = &ImGui::GetIO();
         for (const auto& entry : fs::directory_iterator(fontsDir)) {
             auto ext = entry.path().extension().string();
+            std::transform(ext.begin(), ext.end(), ext.begin(),
+                           [](unsigned char c) { return std::tolower(c); });
             if (ext != ".ttf" && ext != ".otf") continue;
 
-            std::string name = entry.path().stem().string();
-            std::string path = entry.path().string();
-
-            ImFont* font = io->Fonts->AddFontFromFileTTF(path.c_str(), 20.0f);
-            if (font) {
-                m_state.m_customFontNames.push_back(name);
-                m_state.m_customFonts.push_back(font);
-            }
-        }
-
-        if (!m_state.m_customFontNames.empty()) {
-            io->Fonts->Build();
+            m_state.m_customFontNames.push_back(entry.path().stem().string());
+            m_state.m_customFontFiles.push_back(
+                entry.path().filename().string());
         }
 
         m_state.m_labelFontsState.options = {"Big", "Regular"};
+        m_state.m_labelFontsState.options.insert(
+            m_state.m_labelFontsState.options.end(),
+            m_state.m_customFontNames.begin(),
+            m_state.m_customFontNames.end());
     }
 
     m_state.m_rainbow->notifyChange();
@@ -899,7 +948,7 @@ void UIManager::drawKeybindContextMenu() {
         slui::text("Keybinds", m_bold);
         verticalSpacer(4.0f);
         slui::text(ctx.tag);
-        slui::divider(false);
+        ImGui::Separator();
 
         auto existing = bm->getKeybindsForTag(ctx.tag);
         if (existing.empty()) {
@@ -921,7 +970,7 @@ void UIManager::drawKeybindContextMenu() {
             verticalSpacer(4.0f);
         }
 
-        slui::divider(false);
+        ImGui::Separator();
         slui::text("Add Keybind", m_medium);
         verticalSpacer(6.0f);
 
@@ -938,7 +987,7 @@ void UIManager::drawKeybindContextMenu() {
         }
 
         verticalSpacer(8.0f);
-        slui::divider(false);
+        ImGui::Separator();
         verticalSpacer(4.0f);
 
         bool canAdd = ctx.capturedKey != 0 && bm->hasValue(ctx.tag);
@@ -979,6 +1028,16 @@ void UIManager::draw() {
 
     auto bot = GrapeEngine::get();
     auto& cfg = slui::Config::get();
+
+#ifdef GRAPE_PRIVATE_PC
+    auto& license = grape::pc::License::get();
+    if (!license.authorized()) {
+        m_state.m_visible->inner() = true;
+        CCEGLView::get()->showCursor(true);
+        license.draw();
+        return;
+    }
+#endif
 
     ImGuiHookCtx::get().m_time += cocos2d::CCDirector::get()->getDeltaTime();
     m_state.m_useShader->inner() = false;
@@ -1037,42 +1096,73 @@ void UIManager::draw() {
     }
 
     ImTextureID tex = (logoTex != 0 && logoTex != (GLuint)-1) ? (ImTextureID)(intptr_t)logoTex : (ImTextureID)(intptr_t)0;
-    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv, [this, bot, popupShaderFn]() {
-        {
+#ifdef GRAPE_PRIVATE_PC
+    const bool skeetMenu = grape::pc::useSkeetMenu();
+    if (skeetMenu) grape::pc::pushSkeetStyle(m_state.m_opacity->inner());
+#else
+    const bool skeetMenu = false;
+#endif
+    slui::Config::get().skeetMode = skeetMenu;
+    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv, [this, bot, popupShaderFn, skeetMenu]() {
+        if (!skeetMenu) {
             ImGui::GetWindowDrawList()->AddRectFilled(
                 ImGui::GetWindowPos(),
                 ImGui::GetWindowPos() + ImGui::GetWindowSize(),
-                ImGui::GetColorU32(
-                    ImVec4(0.1f, 0.1f, 0.1f, m_state.m_opacity->inner())),
+                ImGui::GetColorU32(ImVec4(
+                    0.1f, 0.1f, 0.1f, m_state.m_opacity->inner())),
                 0.0f,
                 ImDrawFlags_RoundCornersAll);
         }
 
-        const auto tabButton = [this](const char* label, UIState::UITab tab) {
+        const auto tabButton = [this, skeetMenu](
+                                   const char* label, const char* icon,
+                                   UIState::UITab tab) {
             const bool active = m_state.m_currentTab == tab;
+#ifdef GRAPE_PRIVATE_PC
+            if (skeetMenu) {
+                if (grape::pc::skeetTab(label, icon, active, 75.0f))
+                    m_state.m_currentTab = tab;
+                return;
+            }
+#endif
             if (active) {
                 ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_TabActive));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_TabActive));
             }
-            const bool pressed = ImGui::Button(label);
+            const bool pressed = slui::raw_button(label);
             if (active) ImGui::PopStyleColor(2);
             if (pressed) m_state.m_currentTab = tab;
-            ImGui::SameLine();
+            if (!skeetMenu) ImGui::SameLine();
         };
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
-        tabButton("Record", UIState::UITab::Record);
-        tabButton("Assist", UIState::UITab::Assist);
-        tabButton("Prediction", UIState::UITab::Prediction);
-        tabButton("Edit", UIState::UITab::Edit);
-        tabButton("Render", UIState::UITab::Render);
-        tabButton("Settings", UIState::UITab::Settings);
-        tabButton("Theme", UIState::UITab::Theme);
-        ImGui::NewLine();
+        if (skeetMenu) {
+            ImGui::BeginChild("##skeet-sidebar", ImVec2(75.0f, 542.0f), false,
+                              ImGuiWindowFlags_NoScrollbar);
+            ImGui::SetCursorPosY(10.0f);
+        }
+        tabButton("Record", "A", UIState::UITab::Record);
+        tabButton("Assist", "G", UIState::UITab::Assist);
+        tabButton("Prediction", "B", UIState::UITab::Prediction);
+        tabButton("Edit", "C", UIState::UITab::Edit);
+        tabButton("Render", "D", UIState::UITab::Render);
+        tabButton("Settings", "E", UIState::UITab::Settings);
+        tabButton("Theme", "F", UIState::UITab::Theme);
+        if (skeetMenu) {
+            ImGui::Dummy(ImVec2(1.0f, 1.0f));
+            ImGui::EndChild();
+            ImGui::SameLine(0.0f, 0.0f);
+            ImGui::BeginGroup();
+        } else {
+            ImGui::NewLine();
+        }
         ImGui::PopStyleVar();
-        ImGui::Separator();
+        if (!skeetMenu) ImGui::Separator();
 
-        ImGui::BeginChild("Content", ImVec2(0.0f, 0.0f), false,
+        ImGui::BeginChild(
+            "Content", skeetMenu ? ImVec2(572.0f, 542.0f)
+                                 : ImVec2(0.0f, 0.0f),
+            false,
                           ImGuiWindowFlags_AlwaysVerticalScrollbar);
         {
             if (m_state.m_currentTab != UIState::UITab::Edit)
@@ -1103,44 +1193,53 @@ void UIManager::draw() {
                                        bot->timeline().getDisplayFrame(),
                                        rs.m_actionAtom.length()));
 
-                if (ImGui::BeginTable("RecordMode", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
+                const bool recording = bot->isRecording();
+                const bool playing = bot->isPlaying();
+                bool toggleRecording = false;
+                bool togglePlaying = false;
+                if (skeetMenu) {
+                    const auto actions = drawSkeetActionRow(
+                        "RecordMode",
+                        recording ? "Stop Recording" : "Start Recording",
+                        playing ? "Stop Playing" : "Start Playing");
+                    toggleRecording = actions.first;
+                    togglePlaying = actions.second;
+                } else if (ImGui::BeginTable(
+                               "RecordMode", 2,
+                               ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
-                    const bool recording = bot->isRecording();
                     if (recording) ImGui::PushStyleColor(
                         ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-                    if (ImGui::Button(recording ? "Stop Recording" : "Start Recording",
-                                      ImVec2(-FLT_MIN, 0.0f))) {
-                        bot->m_mode = recording ? GrapeEngine::Mode::Stopped
-                                                : GrapeEngine::Mode::Recording;
-                        if (PlayLayer::get() &&
-                            bot->isRecording() &&
-                            rs.getInputIndex() < rs.m_actionAtom.length()) {
-                            rs.createBackup();
-                            rs.m_actionAtom.clipActions(
-                                bot->timeline().getFrame());
-                        }
-                    }
+                    toggleRecording = slui::raw_button(
+                        recording ? "Stop Recording" : "Start Recording",
+                        ImVec2(-FLT_MIN, 0.0f));
                     if (recording) ImGui::PopStyleColor();
 
                     ImGui::TableNextColumn();
-                    const bool playing = bot->isPlaying();
                     if (playing) ImGui::PushStyleColor(
                         ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-                    if (ImGui::Button(playing ? "Stop Playing" : "Start Playing",
-                                      ImVec2(-FLT_MIN, 0.0f))) {
-                        bot->m_mode = playing ? GrapeEngine::Mode::Stopped
-                                              : GrapeEngine::Mode::Playing;
-                    }
+                    togglePlaying = slui::raw_button(
+                        playing ? "Stop Playing" : "Start Playing",
+                        ImVec2(-FLT_MIN, 0.0f));
                     if (playing) ImGui::PopStyleColor();
                     ImGui::EndTable();
                 }
+                if (toggleRecording) {
+                    bot->m_mode = recording ? GrapeEngine::Mode::Stopped
+                                            : GrapeEngine::Mode::Recording;
+                    if (PlayLayer::get() && bot->isRecording() &&
+                        rs.getInputIndex() < rs.m_actionAtom.length()) {
+                        rs.createBackup();
+                        rs.m_actionAtom.clipActions(bot->timeline().getFrame());
+                    }
+                }
+                if (togglePlaying)
+                    bot->m_mode = playing ? GrapeEngine::Mode::Stopped
+                                          : GrapeEngine::Mode::Playing;
 
                 slui::divider();
 
-                if (ImGui::BeginTable("RecordRate", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
-                    ImGui::TableNextColumn();
+                const auto drawTps = [&] {
                     if (slui::drag("TPS", bot->timeline().m_tps->inner(), 0.0,
                                    std::numeric_limits<double>::max(), 1.0f,
                                    "{:g}")
@@ -1148,8 +1247,8 @@ void UIManager::draw() {
                         bot->timeline().m_tps->notifyChange();
                     }
                     keybindRightClick("updater.tps");
-
-                    ImGui::TableNextColumn();
+                };
+                const auto drawSpeed = [&] {
                     if (slui::drag("Speed", bot->timeline().m_speedhack->inner(),
                                    0.0, std::numeric_limits<double>::max(),
                                    0.01f, "{:.2G}x")
@@ -1157,31 +1256,43 @@ void UIManager::draw() {
                         bot->timeline().m_speedhack->notifyChange();
                     }
                     keybindRightClick("updater.speedhack");
-                    ImGui::EndTable();
-                }
-
-                if (ImGui::BeginTable("RecordPlaybackOptions", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
-                    ImGui::TableNextColumn();
+                };
+                if (skeetMenu) {
+                    drawTps();
+                    drawSpeed();
                     slui::checkbox("Audio Speedhack",
                                    bot->timeline().m_speedhackAudio->inner());
                     keybindRightClick("updater.speedhack_audio");
-                    ImGui::TableNextColumn();
-                    slui::checkbox("Block/Ignore Inputs During Playback",
+                    slui::checkbox("Block Inputs",
                                    bot->macro().m_ignoreInputs->inner());
                     keybindRightClick("replay.ignore_inputs");
-                    ImGui::EndTable();
+                } else {
+                    if (ImGui::BeginTable("RecordRate", 2,
+                                          ImGuiTableFlags_SizingStretchSame)) {
+                        ImGui::TableNextColumn();
+                        drawTps();
+                        ImGui::TableNextColumn();
+                        drawSpeed();
+                        ImGui::EndTable();
+                    }
+                    if (ImGui::BeginTable(
+                            "RecordPlaybackOptions", 2,
+                            ImGuiTableFlags_SizingStretchSame)) {
+                        ImGui::TableNextColumn();
+                        slui::checkbox("Audio Speedhack",
+                            bot->timeline().m_speedhackAudio->inner());
+                        keybindRightClick("updater.speedhack_audio");
+                        ImGui::TableNextColumn();
+                        slui::checkbox("Block/Ignore Inputs During Playback",
+                            bot->macro().m_ignoreInputs->inner());
+                        keybindRightClick("replay.ignore_inputs");
+                        ImGui::EndTable();
+                    }
                 }
 
                 slui::divider();
 
-                if (ImGui::BeginTable("RecordSaveLoad", 3, ImGuiTableFlags_None)) {
-                    ImGui::TableSetupColumn("Input", ImGuiTableColumnFlags_WidthStretch);
-                    ImGui::TableSetupColumn("Save", ImGuiTableColumnFlags_WidthFixed);
-                    ImGui::TableSetupColumn("Load", ImGuiTableColumnFlags_WidthFixed);
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::SetNextItemWidth(-FLT_MIN);
+                const auto replayNameInput = [&] {
                     if (slui::input_text_autocomplete(
                             "##ReplayName", "Replay", rs.m_replayName,
                             m_replayAutocomplete, popupShaderFn)
@@ -1189,55 +1300,53 @@ void UIManager::draw() {
                         m_replayAutocomplete.suggestions = filterCandidates(
                             m_state.m_replayNames, rs.m_replayName);
                     }
+                };
+                bool saveReplay = false;
+                bool loadReplay = false;
+                if (skeetMenu) {
+                    slui::next_input_full_width();
+                    replayNameInput();
+                    const auto actions = drawSkeetActionRow(
+                        "RecordSaveLoad", "Save", "Load");
+                    saveReplay = actions.first;
+                    loadReplay = actions.second;
+                } else if (ImGui::BeginTable(
+                               "RecordSaveLoad", 3,
+                               ImGuiTableFlags_None)) {
+                    ImGui::TableSetupColumn(
+                        "Input", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableSetupColumn(
+                        "Save", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn(
+                        "Load", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableNextRow();
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Save")) {
-                        auto path = rs.getCurrentPath();
-                        rs.backupExisting(path);
-                        rs.save(path);
-
-                        m_state.m_replayNames.clear();
-                        for (const auto& entry :
-                             std::filesystem::directory_iterator(
-                                 grape::paths::directory("replays"))) {
-                            if (entry.is_regular_file() &&
-                                (entry.path().extension() == ".grape" ||
-                                 entry.path().extension() == ".slc")) {
-                                m_state.m_replayNames.push_back(
-                                    entry.path().stem().string());
-                            }
-                        }
-                    }
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    replayNameInput();
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Load")) {
-                        rs.load(rs.getCurrentPath());
-                    }
+                    saveReplay = slui::raw_button("Save");
+                    ImGui::TableNextColumn();
+                    loadReplay = slui::raw_button("Load");
                     ImGui::EndTable();
                 }
+                if (saveReplay) {
+                    auto path = rs.getCurrentPath();
+                    rs.backupExisting(path);
+                    rs.save(path);
 
-                if (ImGui::Button("Convert & Play")) {
-                    m_macroPick.spawn(
-                        geode::utils::file::pick(
-                            geode::utils::file::PickMode::OpenFile,
-                            MacroEngine::converterFileOptions()),
-                        [this](geode::utils::file::PickResult result) {
-                            if (result.isErr()) {
-                                m_converterStatus = "File picker failed";
-                                return;
-                            }
-                            auto path = std::move(result).unwrap();
-                            if (!path) return;
-                            auto converted =
-                                GrapeEngine::get()->macro().convertAndPlay(*path);
-                            m_converterStatus = converted.isOk()
-                                ? fmt::format("Converted [{} inputs]",
-                                              converted.unwrap())
-                                : converted.unwrapErr();
-                        });
+                    m_state.m_replayNames.clear();
+                    for (const auto& entry :
+                         std::filesystem::directory_iterator(
+                             grape::paths::directory("replays"))) {
+                        if (entry.is_regular_file() &&
+                            (entry.path().extension() == ".grape" ||
+                             entry.path().extension() == ".slc")) {
+                            m_state.m_replayNames.push_back(
+                                entry.path().stem().string());
+                        }
+                    }
                 }
-                if (!m_converterStatus.empty()) {
-                    ImGui::SameLine();
-                    ImGui::TextUnformatted(m_converterStatus.c_str());
-                }
+                if (loadReplay) rs.load(rs.getCurrentPath());
 
                 if (m_state.m_lastReplayName != rs.m_replayName) {
                     m_state.m_lastReplayName = rs.m_replayName;
@@ -1263,7 +1372,8 @@ void UIManager::draw() {
                                     GrapeEngine::get()->timeline().m_paused->inner());
                     keybindRightClick("updater.frame_advance");
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Advance", ImVec2(-FLT_MIN, 0.0f))) {
+                    if (slui::raw_button(
+                            "Advance", ImVec2(-FLT_MIN, 0.0f))) {
                         bot->timeline().stepOnce();
                     }
                     keybindRightClick("updater.advance_one");
@@ -1275,7 +1385,8 @@ void UIManager::draw() {
                     ImGui::TableNextColumn();
                     slui::checkbox("Seed Override", rs.m_overrideSeed);
                     ImGui::TableNextColumn();
-                    slui::drag("Seed", rs.m_overriddenSeed, uint64_t{0},
+                    slui::drag(skeetMenu ? "##Seed" : "Seed",
+                               rs.m_overriddenSeed, uint64_t{0},
                                std::numeric_limits<uint64_t>::max());
                     ImGui::EndTable();
                 }
@@ -1303,23 +1414,9 @@ void UIManager::draw() {
 
                 slui::divider(false);
 
-                slui::text("Macro Merge", m_medium);
-                if (slui::input_text_autocomplete(
-                        "Merge Replay", "Replay to merge",
-                        m_state.m_mergeReplayName,
-                        m_state.m_mergeAutocomplete, popupShaderFn)
-                        .changed) {
-                    m_state.m_mergeAutocomplete.suggestions = filterCandidates(
-                        m_state.m_replayNames, m_state.m_mergeReplayName);
-                }
-
-                slui::dropdown("Merge Mode##MergeDropdown",
-                                m_state.m_mergeModeState,
-                                m_state.m_mergeModeState.selectedIndex,
-                                [&]() {
-                                    renderBlurBg(12.0f, 1.5f,
-                                                 m_state.m_useShader->inner());
-                                });
+                slui::text("Smart Merge", m_medium);
+                slui::input_text("##MergeReplay", "Replay to merge",
+                                 m_state.m_mergeReplayName);
 
                 if (slui::button("Merge").pressed) {
                     auto mergePath =
@@ -1328,14 +1425,7 @@ void UIManager::draw() {
                     if (!std::filesystem::exists(mergePath)) {
                         mergePath.replace_extension(".slc");
                     }
-                    using MergeMode = MacroEngine::MergeMode;
-                    MergeMode mode;
-                    switch (m_state.m_mergeModeState.selectedIndex) {
-                        case 0:  mode = MergeMode::P1FromOther; break;
-                        case 1:  mode = MergeMode::P2FromOther; break;
-                        default: mode = MergeMode::SwapPlayers; break;
-                    }
-                    GrapeEngine::get()->macro().merge(mergePath, mode);
+                    GrapeEngine::get()->macro().merge(mergePath);
                 }
 
                 slui::divider();
@@ -1435,8 +1525,17 @@ void UIManager::draw() {
 
                 slui::text("Noclip", m_medium);
 
-                if (ImGui::BeginTable("NoclipRow", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
+                if (skeetMenu) {
+                    slui::checkbox("Enabled##Noclip",
+                                   GrapeEngine::get()->timeline().m_noclip->inner());
+                    keybindRightClick("updater.noclip");
+                    slui::dropdown("Player##Noclip", m_state.m_noclipState,
+                                   *reinterpret_cast<int*>(
+                                       &GrapeEngine::get()->timeline().m_noclipType),
+                                   popupShaderFn);
+                } else if (ImGui::BeginTable(
+                               "NoclipRow", 2,
+                               ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Enabled##Noclip",
                                    GrapeEngine::get()->timeline().m_noclip->inner());
@@ -1446,10 +1545,10 @@ void UIManager::draw() {
                                    *reinterpret_cast<int*>(
                                        &GrapeEngine::get()->timeline().m_noclipType),
                                    popupShaderFn);
-                    GrapeSettings::get()->noclipPlayer = static_cast<int>(
-                        GrapeEngine::get()->timeline().m_noclipType);
                     ImGui::EndTable();
                 }
+                GrapeSettings::get()->noclipPlayer = static_cast<int>(
+                    GrapeEngine::get()->timeline().m_noclipType);
 
                 slui::divider();
 
@@ -1473,6 +1572,17 @@ void UIManager::draw() {
                                 maxSteps == 0 ? "Unlimited" : "{:d} steps");
                     if (maxSteps < 0) maxSteps = 0;
                 }
+
+                auto& trajectorySettings = GrapeSettings::get()->trajectory;
+                slui::checkbox("Straight Wave##Trajectory",
+                               trajectorySettings.straightEnabled);
+                m_state.m_straightTrajectoryColorState.colors =
+                    trajectorySettings.straightColor;
+                slui::color("Straight Color##Trajectory",
+                            m_state.m_straightTrajectoryColorState,
+                            popupShaderFn);
+                trajectorySettings.straightColor =
+                    m_state.m_straightTrajectoryColorState.colors;
 
                 slui::dropdown(
                     "Trajectory##Selector", m_state.m_trajectoryState,
@@ -1531,8 +1641,18 @@ void UIManager::draw() {
 
                 slui::text("Autoclicker", m_medium);
 
-                if (ImGui::BeginTable("AutoclickerRow", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
+                if (skeetMenu) {
+                    slui::checkbox("Enabled##Autoclicker",
+                                   GrapeEngine::get()->autoclicker().m_enabled->inner());
+                    keybindRightClick("autoclicker.enabled");
+                    slui::dropdown(
+                        "Player##Autoclicker", m_state.m_autoclickerState,
+                        *reinterpret_cast<int*>(
+                            &GrapeEngine::get()->autoclicker().m_player),
+                        popupShaderFn);
+                } else if (ImGui::BeginTable(
+                               "AutoclickerRow", 2,
+                               ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Enabled##Autoclicker",
                                    GrapeEngine::get()->autoclicker().m_enabled->inner());
@@ -1626,64 +1746,54 @@ void UIManager::draw() {
                     }
                 }
 
-                float btnRows = 3.0f;
-                float tableHeight = (ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y) * btnRows + ImGui::GetStyle().ItemSpacing.y * 2.0f;
-                float boxHeight = ImGui::GetContentRegionAvail().y - tableHeight;
-                if (boxHeight < 100.0f * slui::Config::get().uiScale)
-                    boxHeight = 100.0f * slui::Config::get().uiScale;
-                const float boxWidth = (ImGui::GetContentRegionAvail().x -
-                                        ImGui::GetStyle().ItemSpacing.x) * 0.5f;
-                ImGui::BeginChild("InputList", ImVec2(boxWidth, boxHeight), true);
-                for (int i = 0; i < static_cast<int>(inputs.size()); ++i) {
-                    const auto& input = inputs[i];
-                    using ActionType = slc::v3::Action::ActionType;
-                    const char* action = input.m_type == ActionType::Left
-                        ? "Left" : input.m_type == ActionType::Right
-                        ? "Right" : "Jump";
-                    std::string label = fmt::format("{} {} at {}##Input{}",
-                        action, input.m_holding ? "Click" : "Release",
-                        input.m_frame, i);
-                    if (ImGui::Selectable(label.c_str(), m_state.m_editIndex == i))
-                        m_state.m_editIndex = i;
-                    if (i == inputIndex) ImGui::SetItemDefaultFocus();
-                }
-                ImGui::EndChild();
-                ImGui::SameLine();
-                ImGui::BeginChild("InputEditor", ImVec2(0.0f, boxHeight), true);
-                if (!inputs.empty()) {
-                    int i = m_state.m_editIndex;
-                    auto& input = inputs[i];
-                    if (slui::drag("Frame##SelectedInput", input.m_frame, uint64_t{0},
-                                   std::numeric_limits<uint64_t>::max()).changed) {
-                        input.recalculateDelta(i == 0 ? 0 : inputs[i - 1].m_frame);
-                        if (i + 1 < static_cast<int>(inputs.size()))
-                            inputs[i + 1].recalculateDelta(input.m_frame);
-                        GrapeEngine::get()->timeline().m_tps->notifyChange();
+                const float editorHeight = skeetMenu
+                    ? 420.0f
+                    : ImGui::GetContentRegionAvail().y;
+                const float buttonHeight =
+                    (ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y) *
+                    3.0f;
+                const auto drawEditor = [&] {
+                    const float top = ImGui::GetCursorPosY();
+                    if (!inputs.empty()) {
+                        const int i = m_state.m_editIndex;
+                        auto& input = inputs[i];
+                        if (slui::drag("Frame##SelectedInput", input.m_frame,
+                                uint64_t{0},
+                                std::numeric_limits<uint64_t>::max()).changed) {
+                            input.recalculateDelta(
+                                i == 0 ? 0 : inputs[i - 1].m_frame);
+                            if (i + 1 < static_cast<int>(inputs.size()))
+                                inputs[i + 1].recalculateDelta(input.m_frame);
+                            GrapeEngine::get()->timeline().m_tps->notifyChange();
+                        }
+                        if (slui::checkbox("Holding / Click", input.m_holding).pressed)
+                            GrapeEngine::get()->timeline().m_tps->notifyChange();
+                        if (slui::checkbox("Player 2", input.m_player2).pressed)
+                            GrapeEngine::get()->timeline().m_tps->notifyChange();
+                        using ActionType = slc::v3::Action::ActionType;
+                        bool left = input.m_type == ActionType::Left;
+                        if (slui::checkbox("Left", left).pressed) {
+                            input.m_type = left ? ActionType::Left
+                                                : ActionType::Jump;
+                            GrapeEngine::get()->timeline().m_tps->notifyChange();
+                        }
+                        bool right = input.m_type == ActionType::Right;
+                        if (slui::checkbox("Right", right).pressed) {
+                            input.m_type = right ? ActionType::Right
+                                                 : ActionType::Jump;
+                            GrapeEngine::get()->timeline().m_tps->notifyChange();
+                        }
                     }
-                    if (slui::checkbox("Holding / Click", input.m_holding).pressed)
-                        GrapeEngine::get()->timeline().m_tps->notifyChange();
-                    if (slui::checkbox("Player 2", input.m_player2).pressed)
-                        GrapeEngine::get()->timeline().m_tps->notifyChange();
-                    using ActionType = slc::v3::Action::ActionType;
-                    bool left = input.m_type == ActionType::Left;
-                    if (slui::checkbox("Left", left).pressed) {
-                        input.m_type = left
-                            ? ActionType::Left : ActionType::Jump;
-                        GrapeEngine::get()->timeline().m_tps->notifyChange();
-                    }
-                    bool right = input.m_type == ActionType::Right;
-                    if (slui::checkbox("Right", right).pressed) {
-                        input.m_type = right
-                            ? ActionType::Right : ActionType::Jump;
-                        GrapeEngine::get()->timeline().m_tps->notifyChange();
-                    }
-                }
-                ImGui::EndChild();
-
-                if (ImGui::BeginTable("MacroButtons", 2, ImGuiTableFlags_SizingStretchSame)) {
+                    ImGui::SetCursorPosY(std::max(
+                        ImGui::GetCursorPosY(), top + editorHeight - buttonHeight));
+                    if (!ImGui::BeginTable(
+                            "MacroButtons", 2,
+                            ImGuiTableFlags_SizingStretchSame))
+                        return;
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Add Input", ImVec2(-FLT_MIN, 0.0f))) {
+                    if (slui::raw_button(
+                            "Add Input", ImVec2(-FLT_MIN, 0.0f))) {
                         if (inputs.empty()) {
                             inputs.emplace_back(0, 0,
                                 slc::v3::Action::ActionType::Jump, true, false);
@@ -1704,7 +1814,9 @@ void UIManager::draw() {
                         }
                     }
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Delete Input", ImVec2(-FLT_MIN, 0.0f)) && !inputs.empty()) {
+                    if (slui::raw_button(
+                            "Delete Input", ImVec2(-FLT_MIN, 0.0f)) &&
+                        !inputs.empty()) {
                         int i = m_state.m_editIndex;
                         inputs.erase(inputs.begin() + i);
                         if (i < static_cast<int>(inputs.size()))
@@ -1716,13 +1828,15 @@ void UIManager::draw() {
 
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Remove P1 Inputs", ImVec2(-FLT_MIN, 0.0f))) {
+                    if (slui::raw_button(
+                            "Remove P1 Inputs", ImVec2(-FLT_MIN, 0.0f))) {
                         inputs.erase(std::remove_if(inputs.begin(), inputs.end(), [](auto& i) { return !i.m_player2; }), inputs.end());
                         for (size_t j = 0; j < inputs.size(); ++j) inputs[j].recalculateDelta(j == 0 ? 0 : inputs[j - 1].m_frame);
                         m_state.m_editIndex = 0;
                     }
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Remove P2 Inputs", ImVec2(-FLT_MIN, 0.0f))) {
+                    if (slui::raw_button(
+                            "Remove P2 Inputs", ImVec2(-FLT_MIN, 0.0f))) {
                         inputs.erase(std::remove_if(inputs.begin(), inputs.end(), [](auto& i) { return i.m_player2; }), inputs.end());
                         for (size_t j = 0; j < inputs.size(); ++j) inputs[j].recalculateDelta(j == 0 ? 0 : inputs[j - 1].m_frame);
                         m_state.m_editIndex = 0;
@@ -1730,14 +1844,55 @@ void UIManager::draw() {
 
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Flip Hold & Release", ImVec2(-FLT_MIN, 0.0f))) {
+                    if (slui::raw_button(
+                            "Flip Hold & Release", ImVec2(-FLT_MIN, 0.0f))) {
                         for (auto& i : inputs) i.m_holding = !i.m_holding;
                     }
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Flip P1 & P2", ImVec2(-FLT_MIN, 0.0f))) {
+                    if (slui::raw_button(
+                            "Flip P1 & P2", ImVec2(-FLT_MIN, 0.0f))) {
                         for (auto& i : inputs) i.m_player2 = !i.m_player2;
                     }
 
+                    ImGui::EndTable();
+                };
+                const auto drawInputs = [&] {
+                    ImGui::BeginChild(
+                        "InputList", ImVec2(0.0f, editorHeight), true);
+                    for (int i = 0; i < static_cast<int>(inputs.size()); ++i) {
+                        const auto& input = inputs[i];
+                        using ActionType = slc::v3::Action::ActionType;
+                        const char* action = input.m_type == ActionType::Left
+                            ? "Left" : input.m_type == ActionType::Right
+                            ? "Right" : "";
+                        const std::string label = action[0]
+                            ? fmt::format("{} {} at {}##Input{}", action,
+                                  input.m_holding ? "Click" : "Release",
+                                  input.m_frame, i)
+                            : fmt::format("{} at {}##Input{}",
+                                  input.m_holding ? "Click" : "Release",
+                                  input.m_frame, i);
+                        if (ImGui::Selectable(
+                                label.c_str(), m_state.m_editIndex == i))
+                            m_state.m_editIndex = i;
+                        if (i == inputIndex) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndChild();
+                };
+
+                if (skeetMenu) {
+                    slui::hide_section_box();
+                    drawEditor();
+                    slui::divider();
+                    slui::hide_section_box();
+                    drawInputs();
+                } else if (ImGui::BeginTable(
+                               "MacroEditorLayout", 2,
+                               ImGuiTableFlags_SizingStretchSame)) {
+                    ImGui::TableNextColumn();
+                    drawEditor();
+                    ImGui::TableNextColumn();
+                    drawInputs();
                     ImGui::EndTable();
                 }
             });
@@ -1878,37 +2033,53 @@ void UIManager::draw() {
 
                 slui::text("Presets", m_medium);
 
-                if (ImGui::BeginTable("RenderPresets", 3, ImGuiTableFlags_None)) {
-                    ImGui::TableSetupColumn("Input", ImGuiTableColumnFlags_WidthStretch);
-                    ImGui::TableSetupColumn("Load", ImGuiTableColumnFlags_WidthFixed);
-                    ImGui::TableSetupColumn("Save", ImGuiTableColumnFlags_WidthFixed);
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::SetNextItemWidth(-FLT_MIN);
+                const auto presetNameInput = [&] {
                     slui::input_text_autocomplete(
                         "##PresetName", "Preset Name", m_state.m_presetName,
                         m_state.m_presetAutocomplete, [&]() {
                             renderBlurBg(12.0f, 1.5f, m_state.m_useShader->inner());
                         });
+                };
+                bool loadPreset = false;
+                bool savePreset = false;
+                if (skeetMenu) {
+                    slui::next_input_full_width();
+                    presetNameInput();
+                    const auto actions = drawSkeetActionRow(
+                        "RenderPresets", "Load##Preset", "Save##Preset");
+                    loadPreset = actions.first;
+                    savePreset = actions.second;
+                } else if (ImGui::BeginTable(
+                               "RenderPresets", 3, ImGuiTableFlags_None)) {
+                    ImGui::TableSetupColumn(
+                        "Input", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableSetupColumn(
+                        "Load", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn(
+                        "Save", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableNextRow();
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Load##Preset")) {
-                        auto path = grape::paths::directory("presets") /
-                                    (m_state.m_presetName + ".json");
-                        if (std::filesystem::exists(path)) {
-                            renderer->loadSettings(path);
-                        } else {
-                            geode::log::error("Preset file does not exist: {}",
-                                              path.string());
-                        }
-                    }
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    presetNameInput();
                     ImGui::TableNextColumn();
-                    if (ImGui::Button("Save##Preset")) {
-                        auto path = grape::paths::directory("presets") /
-                                    (m_state.m_presetName + ".json");
-                        renderer->saveSettings(path);
-                    }
+                    loadPreset = slui::raw_button("Load##Preset");
+                    ImGui::TableNextColumn();
+                    savePreset = slui::raw_button("Save##Preset");
                     ImGui::EndTable();
                 }
+                auto presetPath =
+                    grape::paths::directory("presets") /
+                    (m_state.m_presetName + ".json");
+                if (loadPreset) {
+                    if (std::filesystem::exists(presetPath)) {
+                        renderer->loadSettings(presetPath);
+                    } else {
+                        geode::log::error(
+                            "Preset file does not exist: {}",
+                            presetPath.string());
+                    }
+                }
+                if (savePreset) renderer->saveSettings(presetPath);
 
                 slui::divider();
 
@@ -1942,10 +2113,8 @@ void UIManager::draw() {
                 slui::drag("After End Time",
                             renderer->m_settings.m_afterEndTime, 0.0f, 10000.0f,
                             1.0f, "{:.2f}s");
-                if (m_state.m_showExperimentalFeatures) {
-                    slui::checkbox("SSB Fix",
-                                    GrapeEngine::get()->timeline().m_ssbFix->inner());
-                }
+                slui::checkbox("SSB Fix",
+                                GrapeEngine::get()->timeline().m_ssbFix->inner());
 
                 slui::drag("Music Volume", renderer->m_settings.m_musicVolume,
                             0.0, 1.0, 0.01, "{:.2f}");
@@ -1965,6 +2134,18 @@ void UIManager::draw() {
                 slui::divider(false);
 
                 slui::text("Interface", m_medium);
+
+#ifdef GRAPE_PRIVATE_PC
+                int menuStyle = grape::pc::useSkeetMenu() ? 1 : 0;
+                static slui::DropdownState menuStyleState{
+                    {"Default", "Skeet.cc"}, 0};
+                menuStyleState.selectedIndex = menuStyle;
+                if (slui::dropdown(
+                        "Menu Style", menuStyleState, menuStyle).changed) {
+                    grape::pc::setSkeetMenu(menuStyle == 1);
+                    m_state.m_visible->inner() = false;
+                }
+#endif
 
                 if (slui::button("Open Grape Folder").pressed) {
                     geode::utils::file::openFolder(
@@ -2012,7 +2193,7 @@ void UIManager::draw() {
                 }
 
                 if (rs.m_autosaveAtInterval->inner()) {
-                    if (slui::drag("Auto-Backup Interval",
+                    if (slui::drag("Interval",
                                     rs.m_autosaveInterval->inner(), 1.0, 3600.0,
                                     1.0, "{:.0f}s")
                             .changed) {
@@ -2039,8 +2220,19 @@ void UIManager::draw() {
                                   .m_labels[m_state.m_labelState.selectedIndex]
                                   .m_config;
 
-                m_state.m_labelFontsState.selectedIndex =
-                    (label.m_font == Label::LabelFont::BigFont) ? 0 : 1;
+                if (label.m_customFont.empty()) {
+                    m_state.m_labelFontsState.selectedIndex =
+                        (label.m_font == Label::LabelFont::BigFont) ? 0 : 1;
+                } else {
+                    auto found = std::find(
+                        m_state.m_customFontFiles.begin(),
+                        m_state.m_customFontFiles.end(), label.m_customFont);
+                    m_state.m_labelFontsState.selectedIndex = found ==
+                            m_state.m_customFontFiles.end()
+                        ? 1
+                        : static_cast<int>(found -
+                              m_state.m_customFontFiles.begin()) + 2;
+                }
 
                 if (slui::checkbox("Enabled##Label", label.m_enabled)
                         .pressed) {
@@ -2068,9 +2260,16 @@ void UIManager::draw() {
                                     })
                         .changed) {
                     int idx = m_state.m_labelFontsState.selectedIndex;
-                    label.m_font = (idx == 0)
-                        ? Label::LabelFont::BigFont
-                        : Label::LabelFont::ChatFont;
+                    if (idx < 2) {
+                        label.m_customFont.clear();
+                        label.m_font = (idx == 0)
+                            ? Label::LabelFont::BigFont
+                            : Label::LabelFont::ChatFont;
+                    } else if (idx - 2 < static_cast<int>(
+                                   m_state.m_customFontFiles.size())) {
+                        label.m_customFont =
+                            m_state.m_customFontFiles[idx - 2];
+                    }
                     bot->labels().m_requiresRefresh = true;
                 }
 
@@ -2089,15 +2288,20 @@ void UIManager::draw() {
 
                 slui::text("Updater", m_medium);
 
-                slui::checkbox("Lock Delta",
-                                bot->timeline().m_lockDelta->inner());
-                keybindRightClick("updater.lock_delta");
-
-                slui::dropdown("Lock Delta Mode", m_state.m_lockDeltaState,
-                                bot->timeline().m_lockDeltaMode->inner(), [&]() {
-                                    renderBlurBg(12.0f, 1.5f,
-                                                 m_state.m_useShader->inner());
-                                });
+                if (ImGui::BeginTable("LockDelta", 2,
+                                      ImGuiTableFlags_SizingStretchSame)) {
+                    ImGui::TableNextColumn();
+                    slui::checkbox("Lock Delta",
+                                    bot->timeline().m_lockDelta->inner());
+                    keybindRightClick("updater.lock_delta");
+                    ImGui::TableNextColumn();
+                    slui::dropdown("##LockDeltaMode", m_state.m_lockDeltaState,
+                        bot->timeline().m_lockDeltaMode->inner(), [&]() {
+                            renderBlurBg(12.0f, 1.5f,
+                                         m_state.m_useShader->inner());
+                        });
+                    ImGui::EndTable();
+                }
 
                 slui::checkbox("Real Time",
                                 bot->timeline().m_realTime->inner());
@@ -2125,18 +2329,11 @@ void UIManager::draw() {
 
                 slui::text("Miscellaneous", m_medium);
 
-                slui::checkbox(
-                    "Use Alternate Input Hook",
-                    bot->macro().m_useAlternateHook->inner());
-                keybindRightClick("replay.use_alternate_hook");
-
                 if (slui::button("Disable Bot").pressed) {
                     GrapeEngine::get()->m_enabled->inner() = false;
                     GrapeEngine::get()->m_enabled->notifyChange();
                 }
 
-                slui::checkbox("Experimental Features",
-                                m_state.m_showExperimentalFeatures);
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Theme, [&]() {
@@ -2144,14 +2341,17 @@ void UIManager::draw() {
             });
         }
         ImGui::EndChild();
+        if (skeetMenu) ImGui::EndGroup();
 
-        ImGui::GetWindowDrawList()->AddRect(
-            ImGui::GetWindowPos(),
-            ImGui::GetWindowPos() + ImGui::GetWindowSize(),
-            ImGui::GetColorU32(ImVec4(1.0, 1.0, 1.0, 0.1f)),
-            0.0f,
-            ImDrawFlags_RoundCornersAll,
-            1.0f * slui::Config::get().uiScale);
+        if (!skeetMenu) {
+            ImGui::GetWindowDrawList()->AddRect(
+                ImGui::GetWindowPos(),
+                ImGui::GetWindowPos() + ImGui::GetWindowSize(),
+                ImGui::GetColorU32(ImVec4(1.0, 1.0, 1.0, 0.1f)),
+                0.0f,
+                ImDrawFlags_RoundCornersAll,
+                1.0f * slui::Config::get().uiScale);
+        }
 
         slui::off_the_screen();  
         slui::text(
@@ -2181,6 +2381,11 @@ void UIManager::draw() {
     });
 
     drawKeybindContextMenu();
+
+#ifdef GRAPE_PRIVATE_PC
+    if (skeetMenu) grape::pc::popSkeetStyle();
+#endif
+    slui::Config::get().skeetMode = false;
 
 #ifdef SILICATE_PROTECT
     VMProtectEnd();

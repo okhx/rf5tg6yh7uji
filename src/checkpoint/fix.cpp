@@ -1,8 +1,12 @@
+//
+// Created by peony on 29.10.2024.
+//
 
 #include "fix.hpp"
 
 #include <Geode/Geode.hpp>
 #include <algorithm>
+#include <vector>
 
 #include "checkpoint/checkpoint.hpp"
 
@@ -18,6 +22,13 @@ using namespace geode::prelude;
 #include "engine/timeline.hpp"
 #include "replay/macro.hpp"
 
+// taken from https://stackoverflow.com/a/60971856
+template <std::ranges::range R>
+static constexpr auto to_vector(R&& r) {
+    using elem_t = std::decay_t<std::ranges::range_value_t<R>>;
+    return std::vector<elem_t>{r.begin(), r.end()};
+}
+
 SavedCheckpoint PracticeFix::createCheckpoint(CheckpointObject* obj,
                                               uint64_t attemptStartFrame) {
     if (auto pl = PlayLayer::get(); pl) {
@@ -31,13 +42,20 @@ SavedCheckpoint PracticeFix::createCheckpoint(CheckpointObject* obj,
             .m_replayInputIndex = GrapeEngine::get()->macro().m_inputIndex,
             .m_seedState = GrapeEngine::get()->macro().getCurrentRandomState(),
             .m_shakeRandomState = GrapeEngine::get()->macro().m_shakeRandomState,
+            .m_teleportRandomState =
+                GrapeEngine::get()->macro().m_teleportRandomState,
             .m_tps = GrapeEngine::get()->timeline().m_tps->inner(),
+            .m_timewarpTime = GrapeEngine::get()->timeline().m_timewarpTime,
             .m_persistentItemMap =
                 pl->m_effectManager->m_persistentItemCountMap,
             .m_varianceValues = pl->m_varianceValues,
             .m_calcNonEffectObjects = pl->m_calcNonEffectObjects,
             .m_calcNonEffectObjectsSize = pl->m_calcNonEffectObjectsSize,
             .m_brokenObjects = this->m_brokenObjects,
+            .m_advRandStates = to_vector(
+                m_advancedRandom | std::views::transform([](SavedAdvRand& s) {
+                    return *s.m_randomState;
+                })),
         };
 
         return checkpoint;
@@ -58,6 +76,8 @@ void PracticeFix::applyCheckpoint(SavedCheckpoint& cp) {
         pl->m_calcNonEffectObjectsSize = cp.m_calcNonEffectObjectsSize;
 
         while (cp.m_stackSize < m_platformerCheckpoints.size()) {
+            // if platformer checkpoint is in stack earlier then don't actually
+            // reset
             bool isEarlier = std::any_of(
                 m_platformerCheckpoints.begin(),
                 m_platformerCheckpoints.end() - 1, [this](const auto& pair) {
@@ -77,12 +97,14 @@ void PracticeFix::applyCheckpoint(SavedCheckpoint& cp) {
         auto bot = GrapeEngine::get();
         auto& updater = bot->timeline();
         updater.m_frameOnLastAttempt = cp.m_attemptStartFrame;
+        updater.m_timewarpTime = cp.m_timewarpTime;
         updater.setFrame(cp.m_frame - cp.m_attemptStartFrame);
         bot->macro().m_inputIndex = std::min(
             cp.m_replayInputIndex,
             bot->macro().m_actionAtom.m_actions.size());
         bot->macro().getCurrentRandomState() = cp.m_seedState;
         bot->macro().m_shakeRandomState = cp.m_shakeRandomState;
+        bot->macro().m_teleportRandomState = cp.m_teleportRandomState;
         if (cp.m_tps != bot->timeline().m_tps->inner()) {
             bot->timeline().m_tps->inner() = cp.m_tps;
             bot->timeline().m_tps->notifyChange();
@@ -95,6 +117,13 @@ void PracticeFix::applyCheckpoint(SavedCheckpoint& cp) {
                 obj->m_isDisabled2 = true;
                 obj->setOpacity(0.0f);
             }
+        }
+
+        const auto count = std::min(cp.m_advRandStates.size(),
+                                    m_advancedRandom.size());
+        for (size_t i = 0; i < count; ++i) {
+            auto state = cp.m_advRandStates[i];
+            *this->m_advancedRandom[i].m_randomState = state;
         }
     }
 }
@@ -173,8 +202,16 @@ void PracticeFix::applyLatest() {
     applyCheckpoint(checkpoint);
 }
 
+void PracticeFix::reseedAdvancedRandom(uint64_t attemptSeed) {
+    for (auto& s : m_advancedRandom) {
+        *s.m_randomState =
+            attemptSeed ^ (static_cast<uint64_t>(s.m_uniqueID) * 2137);
+    }
+}
+
 void PracticeFix::removeAll() {
     m_brokenObjects.clear();
+    m_advancedRandom.clear();
     m_savedCheckpoints.clear();
 }
 
@@ -185,26 +222,43 @@ void PracticeFix::clearPlatformer(bool assumeLoaded) {
                 false;
             m_platformerCheckpoints.back().second->resetCheckpoint();
 
+            // release
+            // m_platformerCheckpoints.top().first->release();
         }
 
         m_platformerCheckpoints.pop_back();
     }
 }
 
+void PracticeFix::updatePlatformerInputs(
+    std::vector<PlayerButtonCommand>& inputs) {
+    for (const auto& input : inputs) {
+        bool& left = input.m_isPlayer2 ? m_p2Left : m_p1Left;
+        bool& right = input.m_isPlayer2 ? m_p2Right : m_p1Right;
+
+        if (input.m_button == PlayerButton::Left) {
+            left = input.m_isPush;
+        } else if (input.m_button == PlayerButton::Right) {
+            right = input.m_isPush;
+        }
+    }
+}
+
 [[maybe_unused]] static std::optional<slc::Action> findLastInputUnused(
     const std::vector<slc::Action>& inputs, uint32_t frame, PlayerButton btn,
     bool p2) {
-    const auto& last = std::find_if(
-        inputs.rbegin(), inputs.rend(),
-        [frame, btn, p2](const slc::Action& input) {
-            if (input.m_frame < frame &&
-                static_cast<int>(input.m_type) == static_cast<int>(btn) &&
-                input.m_player2 == p2) {
-                return true;
-            }
+    const auto& last =
+        std::find_if(inputs.rbegin(), inputs.rend(),
+                     [frame, btn, p2](const slc::Action& input) {
+                         if (input.m_frame < frame &&
+                             static_cast<int>(input.m_type) ==
+                                 static_cast<int>(btn) &&
+                             input.m_player2 == p2) {
+                             return true;
+                         }
 
-            return false;
-        });
+                         return false;
+                     });
 
     if (last == inputs.rend()) {
         return std::nullopt;

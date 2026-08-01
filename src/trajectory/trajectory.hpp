@@ -37,6 +37,8 @@ struct TrajectoryPlayerData {
     bool holding;
 
     int score;
+    float minY;
+    float maxY;
 };
 
 struct TrajectoryState {

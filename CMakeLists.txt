@@ -12,6 +12,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 project(grape VERSION 1.0.0)
 
+if (WIN32 AND NOT GRAPE_PRIVATE_PC)
+    message(FATAL_ERROR "Windows sources are private. Configure from the pc directory.")
+endif()
+
 if (GEODE_TARGET_PLATFORM STREQUAL "iOS")
     enable_language(OBJCXX)
 endif()
@@ -34,6 +38,7 @@ add_library(${PROJECT_NAME} SHARED
     src/engine/clock.cpp
 
     src/assist/autoclicker.cpp
+    src/assist/cps.cpp
     src/assist/hitboxes.cpp
 
     src/hooks/CCActionManager.cpp
@@ -48,6 +53,7 @@ add_library(${PROJECT_NAME} SHARED
     src/hooks/PauseLayer.cpp
     src/hooks/PlayLayer.cpp
     src/hooks/PlayerObject.cpp
+    src/hooks/RandTriggerGameObject.cpp
     src/hooks/ShaderLayer.cpp
     src/ui/mobile_menu.cpp
 
@@ -113,6 +119,37 @@ if (WIN32)
         ${IMGUI_VENDOR_DIR}/backends/imgui_impl_win32.cpp
         src/util/midhook.cpp
     )
+    if (GRAPE_PRIVATE_PC)
+        if (NOT GRAPE_LICENSE_URL)
+            message(FATAL_ERROR "Set GRAPE_LICENSE_URL to the invitation server")
+        endif()
+        if (NOT GRAPE_LICENSE_URL MATCHES "^https://")
+            message(FATAL_ERROR "GRAPE_LICENSE_URL must use HTTPS")
+        endif()
+        target_sources(${PROJECT_NAME} PRIVATE
+            ${GRAPE_PRIVATE_PC_DIR}/src/license.cpp
+            ${GRAPE_PRIVATE_PC_DIR}/src/skeet_menu.cpp
+            ${GRAPE_PRIVATE_PC_DIR}/src/skrt_ui.cpp
+        )
+        target_include_directories(${PROJECT_NAME} PRIVATE
+            ${GRAPE_PRIVATE_PC_DIR}/src
+        )
+        target_compile_definitions(${PROJECT_NAME} PRIVATE
+            GRAPE_PRIVATE_PC=1
+            GRAPE_LICENSE_URL="${GRAPE_LICENSE_URL}"
+        )
+        target_link_libraries(${PROJECT_NAME} bcrypt advapi32)
+        set_property(TARGET ${PROJECT_NAME} PROPERTY
+            INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Release>:/Gw>
+            $<$<CONFIG:Release>:/Gy>
+        )
+        target_link_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Release>:/OPT:REF>
+            $<$<CONFIG:Release>:/OPT:ICF>
+        )
+    endif()
 endif()
 
 if (MSVC)

@@ -22,6 +22,10 @@ class GrapeSettings {
     float uiOpacity = 0.66f;
     bool fitMenuToContent = false;
     int theme = 0;
+    std::array<float, 4> skeetAccent = {0.576f, 0.773f, 0.224f, 1.0f};
+    std::array<float, 4> skeetGradientLeft = {0.216f, 0.694f, 0.855f, 1.0f};
+    std::array<float, 4> skeetGradientMiddle = {0.788f, 0.329f, 0.753f, 1.0f};
+    std::array<float, 4> skeetGradientRight = {0.8f, 0.89f, 0.212f, 1.0f};
 
     bool autosaveAtLevelEnd = true;
     bool autosaveAtInterval = true;
@@ -109,6 +113,8 @@ class GrapeSettings {
         double width = 0.5;
         double length = 1.0;
         int maxSteps = 0;
+        bool straightEnabled = false;
+        std::array<float, 4> straightColor = {0.54f, 0.81f, 0.94f, 1.0f};
 
         std::unordered_map<int, State> categories = {
             {Mode::Hold, {true}},
@@ -199,6 +205,10 @@ struct glz::meta<GrapeSettings> {
         "play_animations", &T::playAnimations,
         "pride_mode", &T::rainbowMode,
         "theme", &T::theme,
+        "skeet_accent", &T::skeetAccent,
+        "skeet_gradient_left", &T::skeetGradientLeft,
+        "skeet_gradient_middle", &T::skeetGradientMiddle,
+        "skeet_gradient_right", &T::skeetGradientRight,
         "tps", hide{&T::tps},
         "speed", hide{&T::speed},
         "real_time", &T::realTime,

@@ -45,7 +45,6 @@ struct UIState {
     std::vector<std::string> m_scriptNames;
 
     bool m_restartGameInfo = false;
-    bool m_showExperimentalFeatures = false;
 
     double m_fps = 240.0;
     double m_speed = 1.0;
@@ -62,13 +61,6 @@ struct UIState {
 
     std::string m_mergeReplayName = "";
     slui::AutocompleteState m_mergeAutocomplete;
-    slui::DropdownState m_mergeModeState = {
-        .options = {
-            "P1 from other (keep my P2)",
-            "P2 from other (keep my P1)",
-            "Swap & merge all",
-        },
-    };
 
     std::string m_presetName = "";
     slui::AutocompleteState m_presetAutocomplete;
@@ -133,6 +125,7 @@ struct UIState {
     };
 
     slui::ColorState m_trajectoryColorState;
+    slui::ColorState m_straightTrajectoryColorState;
 
     slui::DropdownState m_lockDeltaState = {
         .options = {"Performance", "Accuracy"},
@@ -202,7 +195,7 @@ struct UIState {
     slui::ColorState m_bgColorState;
 
     std::vector<std::string> m_customFontNames;
-    std::vector<ImFont*>     m_customFonts;
+    std::vector<std::string> m_customFontFiles;
 
     struct KeybindContextState {
         bool  open        = false;

@@ -1,4 +1,6 @@
 build*/
+output/
+pc/
 bindings/
 .geode/
 .DS_Store

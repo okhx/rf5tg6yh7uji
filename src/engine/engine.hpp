@@ -30,6 +30,7 @@ class TrajectoryManager;
 class Autoclicker;
 class Hitboxes;
 class LabelManager;
+class CPSCounter;
 
 class GrapeEngine {
    public:
@@ -69,6 +70,7 @@ class GrapeEngine {
     Autoclicker& autoclicker();
     Hitboxes& hitboxes();
     LabelManager& labels();
+    CPSCounter& cps();
 
     Mode m_mode = Stopped;
     ConfigValuePtr<bool> m_enabled = ConfigValue<bool>::create(

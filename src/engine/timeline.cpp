@@ -27,6 +27,21 @@
 
 using namespace geode::prelude;
 
+float FrameEngine::getSSB() {
+    static constexpr float speeds[] = {
+        251.1601f, 311.5801f, 387.4201f, 468.0002f, 576.0002f};
+    auto* layer = GJBaseGameLayer::get();
+    if (!layer || !layer->m_player1) return 1.0f;
+    const float speed = layer->m_player1->m_playerSpeed;
+    const int index = speed == .7f ? 0 : speed == .9f ? 1 :
+                      speed == 1.1f ? 2 : speed == 1.3f ? 3 : 4;
+    const float x = layer->m_player1->getPositionX();
+    const float step = speeds[index] / std::max(getTps(), 1.0);
+    const float factor = ((x + step) - x) / step;
+    return factor > 0.0f && !layer->m_levelEndAnimationStarted
+        ? factor : 1.0f;
+}
+
 float FrameEngine::getTimeWarp() {
     if (auto pl = PlayLayer::get(); pl) {
         return pl->m_gameState.m_timeWarp;
@@ -267,7 +282,11 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
     auto startTime = std::chrono::high_resolution_clock::now();
     if ((m_lockDelta->inner() || useAccLockDelta) && isPlayLayer) {
 #ifdef GEODE_IS_MOBILE
+#ifdef GEODE_IS_ANDROID
+        if (!Renderer::get()->isRecording()) {
+#else
         if (bot->isPlaying() && !Renderer::get()->isRecording()) {
+#endif
             m_shouldRender = true;
             update(realDt * m_speedhack->inner());
         } else

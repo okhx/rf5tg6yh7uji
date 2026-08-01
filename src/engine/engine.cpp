@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "assist/autoclicker.hpp"
+#include "assist/cps.hpp"
 #include "assist/hitboxes.hpp"
 #include "checkpoint/fix.hpp"
 #include "label/label.hpp"
@@ -19,6 +20,9 @@
 #include "ui/manager.hpp"
 #endif
 #include "timeline.hpp"
+#ifdef GRAPE_PRIVATE_PC
+#include "license.hpp"
+#endif
 #ifdef GEODE_IS_MOBILE
 #include "ui/touch_overlay.hpp"
 #endif
@@ -46,6 +50,7 @@ class GrapeEngine::Impl {
     Hitboxes m_hitboxes;
 
     LabelManager m_labels;
+    CPSCounter m_cps;
 
     friend class GrapeEngine;
 };
@@ -64,6 +69,7 @@ ENGINE_COMPONENT(TrajectoryManager, trajectory)
 ENGINE_COMPONENT(Autoclicker, autoclicker)
 ENGINE_COMPONENT(Hitboxes, hitboxes)
 ENGINE_COMPONENT(LabelManager, labels)
+ENGINE_COMPONENT(CPSCounter, cps)
 
 GrapeEngine::GrapeEngine() : m_impl(std::make_unique<Impl>()) {}
 GrapeEngine::~GrapeEngine() = default;
@@ -244,4 +250,10 @@ void GrapeEngine::initialize() {
     m_enabled->notifyChange();
 }
 
-bool GrapeEngine::isEnabled() { return m_enabled->inner(); }
+bool GrapeEngine::isEnabled() {
+#ifdef GRAPE_PRIVATE_PC
+    return m_enabled->inner() && grape::pc::License::get().authorized();
+#else
+    return m_enabled->inner();
+#endif
+}

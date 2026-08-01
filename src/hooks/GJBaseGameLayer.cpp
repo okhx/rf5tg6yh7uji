@@ -13,6 +13,7 @@
 #endif
 #include <vector>
 
+#include "assist/cps.hpp"
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
 #include "checkpoint/fix.hpp"
@@ -177,6 +178,15 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
         this->updateCamera(dt60);
         this->updateVisibility(dt);
 
+        if (this->m_player1->m_isDart) {
+            this->m_player1->m_waveTrail->setPosition(
+                this->m_player1->m_position);
+        }
+        if (this->m_player2->m_isDart) {
+            this->m_player2->m_waveTrail->setPosition(
+                this->m_player2->m_position);
+        }
+
         this->CCLayer::update(dt);
     }
 
@@ -297,6 +307,10 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             bot->timeline().getFrame(),
             static_cast<slc::Action::ActionType>(cmd.m_button), cmd.m_isPush,
             bot->macro().playerFlipped(cmd.m_isPlayer2));
+
+        if (cmd.m_button == PlayerButton::Jump && cmd.m_isPush) {
+            bot->cps().pushAction(cmd.m_isPlayer2);
+        }
     }
 
     void performMaintainGravity() {
@@ -379,8 +393,7 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
 
     void handleButton(bool pressed, int button, bool player1) {
         auto bot = GrapeEngine::get();
-        if (!bot->macro().m_useAlternateHook->inner() ||
-            !bot->isRecording()) {
+        if (!bot->isRecording()) {
             return GJBaseGameLayer::handleButton(pressed, button, player1);
         }
 
@@ -438,6 +451,10 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             return false;
         }
 
+        if (button == 1 && action.m_holding) {
+            bot->cps().pushAction(action.m_player2);
+        }
+
         this->queueButton(button, action.m_holding,
                           bot->macro().playerFlipped(action.m_player2),
                           0);
@@ -491,9 +508,6 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             }
 
             this->requeueInverted();
-            if (!bot->macro().m_useAlternateHook->inner()) {
-                this->saveQueuedButtons();
-            }
         } else if (!LevelEditorLayer::get() || bot->isPlaying()) {
             uint32_t frame = bot->timeline().getFrame();
 
@@ -694,6 +708,12 @@ static void shakeRandomOverride(SafetyHookContext& ctx) {
     ctx.rax = (uintptr_t)state;
 }
 
+static void teleportRandomOverride(SafetyHookContext& ctx) {
+    uint64_t& state = GrapeEngine::get()->macro().m_teleportRandomState;
+    state = (int)((214013 * state + 2531011) >> 16) & 0x7FFF;
+    ctx.rax = (uintptr_t)state;
+}
+
 static void overrideCheckpointPlacement(SafetyHookContext& ctx) {
     ctx.rip += 5;
     PlayLayer::get()->queueCheckpoint();
@@ -708,6 +728,8 @@ $execute {
                   shakeRandomOverride);
     util::midhook(geode::base::get() + 0x23E1E9, "shakeRandomOverride",
                   shakeRandomOverride);
+    util::midhook(geode::base::get() + 0x20FED3, "teleportRandomOverride",
+                  teleportRandomOverride);
     util::midhook(geode::base::get() + 0x3A3657, "checkpointPlacement",
                   overrideCheckpointPlacement);
 }

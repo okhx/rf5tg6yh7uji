@@ -2,6 +2,7 @@
 #include <filesystem>
 
 #include "assist/autoclicker.hpp"
+#include "assist/cps.hpp"
 #include "assist/hitboxes.hpp"
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
@@ -421,6 +422,7 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
         bot->timeline().resetFrame();
 
         bot->hitboxes().clearTrail();
+        bot->cps().clearActions();
 
         this->updateRandomSeedOnReset();
 
@@ -819,6 +821,8 @@ static void resetLevelSeedMidhook(SafetyHookContext&) {
         GrapeEngine::get()->macro().m_startingSeedThisAttempt;
     GrapeEngine::get()->macro().m_shakeRandomState =
         GrapeEngine::get()->macro().m_startingSeedThisAttempt & 0x7FFF;
+    GrapeEngine::get()->practiceFix().reseedAdvancedRandom(
+        GrapeEngine::get()->macro().m_startingSeedThisAttempt);
 }
 
 $execute {

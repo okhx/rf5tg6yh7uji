@@ -673,7 +673,7 @@ geode::Result<size_t> MacroEngine::convertAndPlay(
     return geode::Ok(m_actionAtom.length());
 }
 
-void MacroEngine::merge(std::filesystem::path path, MergeMode mode) {
+void MacroEngine::merge(std::filesystem::path path) {
     if (!std::filesystem::exists(path)) {
         geode::log::error("Merge failed: file does not exist at {}", path);
         return;
@@ -718,43 +718,25 @@ void MacroEngine::merge(std::filesystem::path path, MergeMode mode) {
         }
     }
 
-    bool keepCurrentP1 = true;
-    bool keepCurrentP2 = true;
-    bool keepOtherP1   = true;
-    bool keepOtherP2   = true;
-    bool swapOther     = false;
+    const auto hasPlayer = [](const auto& actions, bool player2) {
+        return std::ranges::any_of(actions, [player2](const auto& action) {
+            return action.isPlayer() && action.m_player2 == player2;
+        });
+    };
+    const bool currentP1 = hasPlayer(m_actionAtom.m_actions, false);
+    const bool currentP2 = hasPlayer(m_actionAtom.m_actions, true);
+    const bool otherP1 = hasPlayer(otherAtom.m_actions, false);
+    const bool otherP2 = hasPlayer(otherAtom.m_actions, true);
+    const bool targetP2 = currentP1 && !currentP2;
+    const bool targetP1 = currentP2 && !currentP1;
 
-    switch (mode) {
-        case MergeMode::P1FromOther:
-            keepCurrentP1 = false;
-            keepOtherP2   = false;
-            break;
-        case MergeMode::P2FromOther:
-            keepCurrentP2 = false;
-            keepOtherP1   = false;
-            break;
-        case MergeMode::SwapPlayers:
-            swapOther = true;
-            break;
-    }
-
-    std::vector<slc::Action> merged;
-
-    for (auto& action : m_actionAtom.m_actions) {
-        bool isP2 = action.m_player2;
-        if (isP2 && !keepCurrentP2) continue;
-        if (!isP2 && !keepCurrentP1) continue;
-        merged.push_back(action);
-    }
+    std::vector<slc::Action> merged = m_actionAtom.m_actions;
 
     for (auto action : otherAtom.m_actions) {
-        bool isP2 = action.m_player2;
-        if (!swapOther) {
-            if (isP2 && !keepOtherP2) continue;
-            if (!isP2 && !keepOtherP1) continue;
-        } else {
-            action.m_player2 = !isP2;
-        }
+        if (action.isPlayer() && targetP2 && otherP1 && !otherP2)
+            action.m_player2 = true;
+        if (action.isPlayer() && targetP1 && otherP2 && !otherP1)
+            action.m_player2 = false;
         merged.push_back(action);
     }
 

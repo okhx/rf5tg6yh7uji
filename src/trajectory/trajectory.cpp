@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <limits>
 
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
@@ -80,6 +81,10 @@ static size_t hashTrajectoryCategories() {
         for (const float c : state.colors) e = e * 31 + std::hash<float>{}(c);
         h ^= e + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
     }
+    const auto& settings = GrapeSettings::get()->trajectory;
+    h ^= std::hash<bool>{}(settings.straightEnabled);
+    for (float color : settings.straightColor)
+        h ^= std::hash<float>{}(color) + 0x9e3779b9 + (h << 6) + (h >> 2);
     return h;
 }
 
@@ -317,6 +322,8 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
 #endif
 
     int predCount = 0;
+    float minY = player->getObjectRect().getMinY();
+    float maxY = player->getObjectRect().getMaxY();
     for (int i = 0; i < iterations; ++i) {
         if (bot->isPlaying()) {
 #ifdef GEODE_IS_MOBILE
@@ -346,6 +353,9 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
         if (!breakP1) {
             breakP1 =
                 iterate(pl, player, mode | playerMask, colors, stepP1, config);
+            const auto rect = player->getObjectRect();
+            minY = std::min(minY, rect.getMinY());
+            maxY = std::max(maxY, rect.getMaxY());
             ++predCount;
         }
         if (dualBoth && !breakP2) {
@@ -362,6 +372,8 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
         .p1          = (mode & TrajectoryMode::Player1) != 0,
         .holding     = (mode & TrajectoryMode::Hold) != 0,
         .score       = predCount,
+        .minY        = minY,
+        .maxY        = maxY,
     };
 }
 
@@ -478,19 +490,43 @@ void Trajectory::update(GJBaseGameLayer* pl) {
         if (pl->m_player2) m_fakePlayer2->setVisible(false);
 
         const bool notTwoPlayer = !pl->m_levelSettings->m_twoPlayerMode;
+        const auto predictPlayer = [&](bool p1, bool both) {
+            float minY = std::numeric_limits<float>::max();
+            float maxY = std::numeric_limits<float>::lowest();
+            const auto predict = [&](int mode) {
+                const auto result = simulate(pl, p1, mode, both);
+                if (result.score > 0) {
+                    minY = std::min(minY, result.minY);
+                    maxY = std::max(maxY, result.maxY);
+                }
+            };
 
-        if (pl->m_player1) {
-            simulate(pl, true, TrajectoryMode::Hold,    notTwoPlayer);
-            simulate(pl, true, TrajectoryMode::Swift,   notTwoPlayer);
-            simulate(pl, true, TrajectoryMode::Release, notTwoPlayer);
-
+            predict(TrajectoryMode::Hold);
+            predict(TrajectoryMode::Swift);
+            predict(TrajectoryMode::Release);
             if (pl->m_isPlatformer) {
-                for (int dir : {0, (int)TrajectoryMode::Left, (int)TrajectoryMode::Right}) {
-                    simulate(pl, true, TrajectoryMode::Hold    | dir, notTwoPlayer);
-                    simulate(pl, true, TrajectoryMode::Swift   | dir, notTwoPlayer);
-                    simulate(pl, true, TrajectoryMode::Release | dir, notTwoPlayer);
+                for (int direction : {0, static_cast<int>(TrajectoryMode::Left),
+                                      static_cast<int>(TrajectoryMode::Right)}) {
+                    predict(TrajectoryMode::Hold | direction);
+                    predict(TrajectoryMode::Swift | direction);
+                    predict(TrajectoryMode::Release | direction);
                 }
             }
+
+            auto* player = p1 ? pl->m_player1 : pl->m_player2;
+            auto& settings = GrapeSettings::get()->trajectory;
+            if (player && player->m_isDart && settings.straightEnabled &&
+                minY <= maxY) {
+                const float x = player->getPositionX();
+                const float width = m_state->m_width->inner() /
+                                    pl->m_gameState.m_cameraZoom;
+                m_node->drawSegment({x, minY}, {x, maxY}, width,
+                    toCocosColor(settings.straightColor.data()));
+            }
+        };
+
+        if (pl->m_player1) {
+            predictPlayer(true, notTwoPlayer);
 
             m_fakePlayer1->setVisible(false);
             if (pl->m_player2) m_fakePlayer2->setVisible(false);
@@ -498,17 +534,7 @@ void Trajectory::update(GJBaseGameLayer* pl) {
 
         if (pl->m_player2 && pl->m_gameState.m_isDualMode &&
             pl->m_levelSettings->m_twoPlayerMode) {
-            simulate(pl, false, TrajectoryMode::Hold,    false);
-            simulate(pl, false, TrajectoryMode::Swift,   false);
-            simulate(pl, false, TrajectoryMode::Release, false);
-
-            if (pl->m_isPlatformer) {
-                for (int dir : {0, (int)TrajectoryMode::Left, (int)TrajectoryMode::Right}) {
-                    simulate(pl, false, TrajectoryMode::Hold    | dir, false);
-                    simulate(pl, false, TrajectoryMode::Swift   | dir, false);
-                    simulate(pl, false, TrajectoryMode::Release | dir, false);
-                }
-            }
+            predictPlayer(false, false);
         }
 
         m_calculated    = true;

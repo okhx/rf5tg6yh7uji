@@ -3,19 +3,12 @@
 
 #include <glaze/glaze.hpp>
 
+#include "assist/cps.hpp"
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
 #include "replay/macro.hpp"
 
 using namespace geode::prelude;
-
-static std::string resolveFontFile(const Label::LabelConfig& cfg) {
-    switch (cfg.m_font) {
-        case Label::LabelFont::BigFont:  return "bigFont.fnt";
-        case Label::LabelFont::ChatFont: return "chatFont.fnt";
-    }
-    return "chatFont.fnt";
-}
 
 #define GET_PLAYER_VAR(display, var, precision)                             \
     {                                                                       \
@@ -32,43 +25,74 @@ static std::string resolveFontFile(const Label::LabelConfig& cfg) {
         }                                                                   \
     }
 
+static std::string getStringifiedOrbName(RingObject* ring) {
+    switch (ring->m_objectID) {
+        case 36:
+            return "Yellow";
+        case 84:
+            return "Blue";
+        case 141:
+            return "Pink";
+        case 1022:
+            return "Green";
+        case 1330:
+            return "Black";
+        case 1333:
+            return "Red";
+        case 1594:
+            return "Toggle";
+        case 1704:
+            return "Green Dash";
+        case 1751:
+            return "Pink Dash";
+        case 3004:
+            return "Spider";
+        case 3027:
+            return "Teleport";
+        default:
+            return "Unknown";
+    }
+}
+
 LabelManager::LabelManager() {
     addLabel("frame", "Tick",
-             []() {
+             [](Label&) {
                  auto& updater = GrapeEngine::get()->timeline();
-                 return fmt::format(
-                     "Tick: {}", static_cast<uint64_t>(updater.getFrame()) * 2);
+                 return fmt::format("Tick: {}", updater.getFrame());
              },
              {});
 
-    addLabel("internal_frame", "Internal Physics Tick",
-             []() {
+    addLabel("internal_frame", "Internal Game Tick",
+             [](Label&) {
                  return fmt::format(
-                     "Internal Tick: {}",
+                     "Game tick: {}",
                      PlayLayer::get()->m_gameState.m_currentProgress);
              },
              {});
 
-    addLabel(
-        "tps", "TPS",
-        []() { return fmt::format("TPS: {}", GrapeEngine::get()->timeline().getTps()); },
-        {});
+    addLabel("tps", "TPS",
+             [](Label&) {
+                 return fmt::format("TPS: {}", GrapeEngine::get()->timeline().getTps());
+             },
+             {});
 
     addLabel("player_x", "Player X",
-             []() { GET_PLAYER_VAR("X", position.x, 6) }, {});
+             [](Label&) { GET_PLAYER_VAR("X", position.x, 6) }, {});
     addLabel("player_y", "Player Y",
-             []() { GET_PLAYER_VAR("Y", position.y, 6) }, {});
-    addLabel("player_xvel", "Player X Velocity",
-             []() { GET_PLAYER_VAR("X Velocity", platformerXVelocity, 6) }, {});
+             [](Label&) { GET_PLAYER_VAR("Y", position.y, 6) }, {});
+    addLabel(
+        "player_xvel", "Player X Velocity",
+        [](Label&) { GET_PLAYER_VAR("X Velocity", platformerXVelocity, 6) },
+        {});
     addLabel("player_yvel", "Player Y Velocity",
-             []() { GET_PLAYER_VAR("Y Velocity", yVelocity, 3) }, {});
+             [](Label&) { GET_PLAYER_VAR("Y Velocity", yVelocity, 3) }, {});
     addLabel("player_rot", "Player Rotation",
-             []() { GET_PLAYER_VAR("Rotation", fRotationX, 3) }, {});
+             [](Label&) { GET_PLAYER_VAR("Rotation", fRotationX, 3) }, {});
     addLabel("player_speed", "Player Speed",
-             []() { GET_PLAYER_VAR("Speed", playerSpeed, 2) }, {});
+             [](Label&) { GET_PLAYER_VAR("Speed", playerSpeed, 2) }, {});
 
     addLabel("player_grav", "Player Gravity",
-             []() {
+             [](Label&) {
                  auto pl = PlayLayer::get();
                  auto player = pl->m_player1;
                  auto player2 = pl->m_player2;
@@ -86,7 +110,7 @@ LabelManager::LabelManager() {
              {});
 
     addLabel("player_alive", "Player Dead/Alive",
-             []() {
+             [](Label&) {
                  auto pl = PlayLayer::get();
                  auto player = pl->m_player1;
                  auto player2 = pl->m_player2;
@@ -102,28 +126,28 @@ LabelManager::LabelManager() {
              {});
 
     addLabel("bot_state", "Bot State",
-             []() {
+             [](Label&) {
                  return fmt::format("Bot State: {}", GrapeEngine::get()->isPlaying()
                                                          ? "Playing"
                                                          : "Recording");
              },
              {});
     addLabel("random_state", "Random Seed State",
-             []() {
+             [](Label&) {
                  return fmt::format(
                      "Random State: {}",
                      GrapeEngine::get()->macro().getCurrentRandomState());
              },
              {});
     addLabel("shake_state", "Random Shake State",
-             []() {
+             [](Label&) {
                  return fmt::format(
                      "Shake Random State: {}",
                      GrapeEngine::get()->macro().getCurrentShakeState());
              },
              {});
     addLabel("action_index", "Action Index",
-             []() {
+             [](Label&) {
                  return fmt::format(
                      "Action Index: {}/{}",
                      GrapeEngine::get()->macro().getInputIndex(),
@@ -131,7 +155,7 @@ LabelManager::LabelManager() {
              },
              {});
     addLabel("intentional_death", "Intentional Death",
-             []() {
+             [](Label&) {
                  if (GrapeEngine::get()->isRecording()) {
                      return fmt::format("Intentional Death: {}",
                                         GrapeEngine::get()->timeline().m_canDie->inner()
@@ -141,26 +165,60 @@ LabelManager::LabelManager() {
 
                  return fmt::format("Intentional Death: {}",
                                     GrapeEngine::get()->timeline().m_expectsDeath
-                                        ? "Expects Death"
+                                        ? "Expects death"
                                         : "Nothing");
              },
              {});
-    addLabel("ssb_dt", "Scroll Speed Bug DT",
-             []() {
-                 float tfx = PlayLayer::get()->timeForPos(
-                     PlayLayer::get()->m_player1->m_position, 0,
-                     PlayLayer::get()->m_gameState.m_currentChannel, true, 0);
+    addLabel("ssb_factor", "Scroll Speed Bug Factor",
+             [](Label&) {
                  return fmt::format(
-                     "SSB DT: {:.10f}",
-                     GrapeEngine::get()->timeline().m_lockDeltaMode->inner() ==
-                             FrameEngine::LockDeltaMode::Accuracy
-                         ? tfx - GrapeEngine::get()->timeline().m_lastTfp
-                         : GrapeEngine::get()->timeline().getPhysicsDt());
+                     "SSB Factor: {}",
+                     GrapeEngine::get()->timeline().getSSB());
+             },
+             {});
+    addLabel("touching_orbs", "Orb Priority",
+             [](Label&) {
+                 PlayerObject* player = PlayLayer::get()->m_player1;
+                 CCArray* touchingRings = player->m_touchingRings;
+
+                 std::string ringText = "Orb Priority: ";
+                 ringText.reserve(64);
+                 std::vector<std::pair<std::string, int>> orbs;
+                 for (uint32_t i = 0; i < touchingRings->count(); ++i) {
+                     RingObject* ring = static_cast<RingObject*>(
+                         touchingRings->objectAtIndex(i));
+                     if (ring->hasBeenActivatedByPlayer(player)) continue;
+
+                     std::string name = getStringifiedOrbName(ring);
+                     if (ring->m_objectID == 1594)
+                         name += fmt::format("({})", ring->m_targetGroupID);
+                     if (ring->m_isMultiActivate) name += "*";
+
+                     auto found = std::find_if(
+                         orbs.begin(), orbs.end(), [&](const auto& entry) {
+                             return entry.first == name;
+                         });
+                     if (found == orbs.end()) orbs.emplace_back(name, 1);
+                     else ++found->second;
+                 }
+
+                 if (orbs.empty()) {
+                     ringText += "None";
+                 } else {
+                     for (size_t i = 0; i < orbs.size(); ++i) {
+                         if (i) ringText += ", ";
+                         ringText += orbs[i].first;
+                         if (orbs[i].second > 1)
+                             ringText += fmt::format(" x{}", orbs[i].second);
+                     }
+                 }
+
+                 return ringText;
              },
              {});
 
     addLabel("max_upr", "Dynamic UPR",
-             []() {
+             [](Label&) {
                  if (GrapeEngine::get()->timeline().m_realTime->inner()) {
                      return std::string("Dynamic UPR: Uncapped");
                  }
@@ -171,6 +229,79 @@ LabelManager::LabelManager() {
                  } else {
                      return fmt::format("Static UPR: {}",
                                         GrapeEngine::get()->timeline().m_stepLimit);
+                 }
+             },
+             {});
+
+    addLabel("cps", "CPS",
+             [](Label& l) {
+                 int cps1 = GrapeEngine::get()->cps().queryCPS(1);
+                 int cps2 = GrapeEngine::get()->cps().queryCPS(2);
+
+                 auto pl = GJBaseGameLayer::get();
+                 if (cps1 > 16 || cps2 > 16) {
+                     l.setColor(ccc3(255, 128, 128));
+                 } else {
+                     l.setColor(ccc3(255, 255, 255));
+                 }
+
+                 if (pl->m_gameState.m_isDualMode &&
+                     pl->m_levelSettings->m_twoPlayerMode) {
+                     return fmt::format("CPS: {} / {}", cps1, cps2);
+                 } else {
+                     return fmt::format("CPS: {}", cps1);
+                 }
+             },
+             {});
+
+    addLabel("max_cps", "Max CPS",
+             [](Label& l) {
+                 int cps1 = GrapeEngine::get()->cps().queryMaxCPS(1);
+                 int cps2 = GrapeEngine::get()->cps().queryMaxCPS(2);
+
+                 auto pl = GJBaseGameLayer::get();
+                 if (cps1 > 16 || cps2 > 16) {
+                     l.setColor(ccc3(255, 128, 128));
+                 } else {
+                     l.setColor(ccc3(255, 255, 255));
+                 }
+
+                 if (pl->m_levelSettings->m_twoPlayerMode) {
+                     return fmt::format("Max CPS: {} / {}", cps1, cps2);
+                 } else {
+                     return fmt::format("Max CPS: {}", cps1);
+                 }
+             },
+             {});
+
+    addLabel("last_input", "Ticks Since Last Input",
+             [](Label&) {
+                 uint64_t tick = GrapeEngine::get()->timeline().getFrame();
+                 auto& rs = GrapeEngine::get()->macro();
+
+                 if (GrapeEngine::get()->isRecording()) {
+                     if (!rs.m_actionAtom.m_actions.empty()) {
+                         auto& action = rs.m_actionAtom.m_actions.back();
+                         return fmt::format("Ticks Since Last Input: {}",
+                                            tick - action.m_frame);
+                     } else {
+                         return fmt::format("No Inputs In Replay");
+                     }
+                 } else {
+                     size_t length = rs.m_actionAtom.length();
+                     if (length != 0) {
+                         if (rs.m_inputIndex == 0) {
+                             return fmt::format("Waiting For First Input");
+                         }
+
+                         auto& action =
+                             rs.m_actionAtom.m_actions[rs.m_inputIndex - 1];
+
+                         return fmt::format("Ticks Since Last Input: {}",
+                                            tick - action.m_frame);
+                     } else {
+                         return fmt::format("No Inputs In Replay");
+                     }
                  }
              },
              {});
@@ -190,6 +321,7 @@ void LabelManager::update(bool forceDisable) {
     m_requiresRefresh = false;
 }
 
+// clang-format off
 template <>
 struct glz::meta<Label::LabelConfig> {
     using T = Label::LabelConfig;
@@ -197,15 +329,17 @@ struct glz::meta<Label::LabelConfig> {
         "enabled", &T::m_enabled,
         "anchor", &T::m_anchor,
         "font", &T::m_font,
+        "custom_font", &T::m_customFont,
         "opacity", &T::m_opacity,
         "scale", &T::m_scale
     );
 };
+// clang-format on
 
 void LabelManager::readFromConfig() {
     std::unordered_map<std::string, Label::LabelConfig> labels;
 
-    auto labelConfigPath = grape::paths::file("labels.json");
+    auto labelConfigPath = Mod::get()->getConfigDir() / "labels.json";
     if (std::filesystem::exists(labelConfigPath)) {
         auto ec = glz::read_file_json(labels, labelConfigPath.string(),
                                       std::string{});
@@ -230,7 +364,7 @@ void LabelManager::writeToConfig() {
         labels[label.getId()] = label.m_config;
     }
 
-    auto labelConfigPath = grape::paths::file("labels.json");
+    auto labelConfigPath = Mod::get()->getConfigDir() / "labels.json";
 
     auto ec = glz::write_file_json<glz::opts{.prettify = true}>(
         labels, labelConfigPath.string(), std::string{});
@@ -239,31 +373,48 @@ void LabelManager::writeToConfig() {
     }
 }
 
-CCLabelBMFont* Label::get() {
+CCNode* Label::get() {
     auto pl = PlayLayer::get();
-    CCLabelBMFont* label = nullptr;
+    if (!pl) return nullptr;
 
     std::string cocosLabelID =
         fmt::format("{}/label.{}", Mod::get()->getID(), m_id);
-    if (pl) {
-        if (auto l = pl->getChildByID(cocosLabelID); l) {
-            return dynamic_cast<CCLabelBMFont*>(l);
+    std::string desiredFont = m_config.m_customFont;
+    if (desiredFont.empty()) {
+        switch (m_config.m_font) {
+            case LabelFont::BigFont:
+                desiredFont = "bigFont.fnt";
+                break;
+            case LabelFont::ChatFont:
+                desiredFont = "chatFont.fnt";
+                break;
         }
-
-        m_font = resolveFontFile(m_config);
-
-        label = CCLabelBMFont::create(m_display().c_str(), m_font.c_str());
-
-        label->setID(cocosLabelID);
-        label->setScale(m_config.m_scale);
-        
-        PlayLayer::get()->addChild(label, 1000);
     }
+
+    if (auto* existing = pl->getChildByID(cocosLabelID)) {
+        if (desiredFont == m_loadedFont) return existing;
+        existing->removeFromParentAndCleanup(true);
+    }
+
+    CCNode* label = nullptr;
+    if (m_config.m_customFont.empty()) {
+        label = CCLabelBMFont::create("Loading...", desiredFont.c_str());
+    } else {
+        auto path = grape::paths::directory("fonts") / desiredFont;
+        label = CCLabelTTF::create(
+            "Loading...", path.string().c_str(), 20.0f);
+    }
+    if (!label) return nullptr;
+
+    m_loadedFont = desiredFont;
+    label->setID(cocosLabelID);
+    label->setScale(m_config.m_scale);
+    pl->addChild(label, 100000);
 
     return label;
 }
 
-void Label::calculatePosition(float& currentHeight, CCLabelBMFont* label) {
+void Label::calculatePosition(float& currentHeight, CCNode* label) {
     if (!label) return;
 
     auto pl = PlayLayer::get();
@@ -299,29 +450,38 @@ void Label::calculatePosition(float& currentHeight, CCLabelBMFont* label) {
     label->setAnchorPoint(m_cocosAnchor);
 }
 
+void Label::setColor(ccColor3B color) {
+    auto* label = get();
+    if (auto* bm = typeinfo_cast<CCLabelBMFont*>(label)) bm->setColor(color);
+    if (auto* ttf = typeinfo_cast<CCLabelTTF*>(label)) ttf->setColor(color);
+}
+
 void Label::update(bool forceDisable, bool refresh, float& currentHeight) {
     auto pl = PlayLayer::get();
     if (pl) {
-        CCLabelBMFont* label = get();
+        CCNode* label = get();
         if (!label) return;
 
         if (!m_config.m_enabled) {
             refresh = false;
-            
+            // don't tick the label if it's not enabled
         }
 
         if (refresh) {
-            m_font = resolveFontFile(m_config);
-
-            label->setFntFile(m_font.c_str());
-            label->setOpacity(
-                static_cast<GLubyte>(m_config.m_opacity * 255.0f));
+            const auto opacity = static_cast<GLubyte>(
+                m_config.m_opacity * 255.0f);
+            if (auto* bm = typeinfo_cast<CCLabelBMFont*>(label))
+                bm->setOpacity(opacity);
+            if (auto* ttf = typeinfo_cast<CCLabelTTF*>(label))
+                ttf->setOpacity(opacity);
             label->setScale(m_config.m_scale);
             this->calculatePosition(currentHeight, label);
         }
 
         label->setVisible(m_config.m_enabled && !forceDisable);
-        label->setString(m_display().c_str());
+        const auto text = m_display(*this);
+        if (auto* protocol = dynamic_cast<CCLabelProtocol*>(label))
+            protocol->setString(text.c_str());
     }
 }
 

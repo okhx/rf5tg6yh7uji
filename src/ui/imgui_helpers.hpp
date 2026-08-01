@@ -17,6 +17,10 @@
 #include <type_traits>
 #include <vector>
 
+#ifdef GRAPE_PRIVATE_PC
+#include "skrt_ui.hpp"
+#endif
+
 namespace slui {
 
 struct WidgetState {
@@ -47,6 +51,9 @@ struct Config {
     float widgetWidth = 180.0f;
     float animationSpeed = 1.0f;
     bool playAnimations = true;
+    bool skeetMode = false;
+    ImFont* skeetHeaderFont = nullptr;
+    bool skeetGridStarted = false;
     bool fitWindowToContent = false;
     float fittedWindowHeight = 460.0f;
 
@@ -72,23 +79,56 @@ inline WidgetState state(bool changed) {
     return {changed, ImGui::IsItemHovered(), ImGui::IsItemActive(), changed};
 }
 
+inline std::string_view visible_label(std::string_view label) {
+    const auto marker = label.find("##");
+    return label.substr(0, marker);
+}
+
+inline bool raw_button(std::string_view label, ImVec2 requested = ImVec2()) {
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode) {
+        return grape::pc::skrt::button(label, requested);
+    }
+#endif
+    return ImGui::Button(std::string(label).c_str(), requested);
+}
+
 inline WidgetState button(std::string_view label) {
-    const bool value = ImGui::Button(std::string(label).c_str());
-    return state(value);
+    return state(raw_button(label));
 }
 
 inline WidgetState button_selector(std::string_view label, bool selected) {
+    if (Config::get().skeetMode) {
+        if (selected)
+            ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetStyleColorVec4(
+                ImGuiCol_CheckMark));
+        const bool value =
+            ImGui::Selectable(std::string(label).c_str(), selected);
+        if (selected) ImGui::PopStyleColor();
+        return state(value);
+    }
     const bool value = ImGui::Selectable(std::string(label).c_str(), selected);
     return state(value);
 }
 
 inline WidgetState checkbox(std::string_view label, bool& value) {
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode) {
+        return state(grape::pc::skrt::checkbox(label, value));
+    }
+#endif
     return state(ImGui::Checkbox(std::string(label).c_str(), &value));
 }
 
 template <class T, class U>
 WidgetState radio(T& value, U option, std::string_view label) {
     const bool selected = value == static_cast<T>(option);
+    if (Config::get().skeetMode) {
+        bool checked = selected;
+        const bool pressed = checkbox(label, checked).pressed;
+        if (pressed) value = static_cast<T>(option);
+        return state(pressed);
+    }
     const bool pressed = ImGui::RadioButton(std::string(label).c_str(), selected);
     if (pressed) value = static_cast<T>(option);
     return state(pressed);
@@ -105,14 +145,30 @@ WidgetState drag(std::string_view label, T& value, T min = T{}, T max = T{100},
     else if constexpr (std::is_same_v<T, uint64_t>) type = ImGuiDataType_U64;
     else if constexpr (std::is_same_v<T, int64_t>) type = ImGuiDataType_S64;
     else static_assert(sizeof(T) == 0, "Unsupported ImGui drag type");
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode)
+        return state(grape::pc::skrt::dragScalar(
+            label, type, &value, &min, &max, speed));
+#endif
     return state(ImGui::DragScalar(std::string(label).c_str(), type, &value,
                                    speed, &min, &max));
 }
 
 inline WidgetState input_text(std::string_view label, std::string_view hint,
                               std::string& value) {
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode)
+        return state(grape::pc::skrt::inputText(label, hint, value));
+#endif
     return state(ImGui::InputTextWithHint(std::string(label).c_str(),
                                          std::string(hint).c_str(), &value));
+}
+
+inline void next_input_full_width() {
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode)
+        grape::pc::skrt::nextInputFullWidth();
+#endif
 }
 
 inline WidgetState input_text_autocomplete(
@@ -142,7 +198,21 @@ inline WidgetState dropdown(std::string_view label, DropdownState& stateData,
             selected < static_cast<int>(stateData.options.size())
         ? stateData.options[selected].c_str() : "Select";
     bool changed = false;
-    if (ImGui::BeginCombo(std::string(label).c_str(), preview)) {
+    std::string id(label);
+    bool opened = false;
+    bool hovered = false;
+    bool held = false;
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode) {
+        opened = grape::pc::skrt::beginCombo(label, preview);
+        hovered = ImGui::IsItemHovered();
+        held = ImGui::IsItemActive();
+    } else
+#endif
+    {
+        opened = ImGui::BeginCombo(id.c_str(), preview);
+    }
+    if (opened) {
         for (int i = 0; i < static_cast<int>(stateData.options.size()); ++i) {
             if (ImGui::Selectable(stateData.options[i].c_str(), selected == i)) {
                 selected = i;
@@ -152,6 +222,8 @@ inline WidgetState dropdown(std::string_view label, DropdownState& stateData,
         }
         ImGui::EndCombo();
     }
+    if (Config::get().skeetMode)
+        return {changed, hovered, held, changed};
     return state(changed);
 }
 
@@ -189,20 +261,27 @@ inline WidgetState color(std::string_view label, ColorState& value,
 
     const ImVec4 preview{value.colors[0], value.colors[1], value.colors[2],
                          value.colors[3]};
-    const bool pressed = ImGui::ColorButton(
-        ("##color_button" + id).c_str(), preview,
-        ImGuiColorEditFlags_AlphaPreviewHalf);
+    bool pressed = false;
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode) {
+        pressed = grape::pc::skrt::colorButton(label, preview);
+    } else
+#endif
+    {
+        pressed = ImGui::ColorButton(
+            ("##color_button" + id).c_str(), preview,
+            ImGuiColorEditFlags_AlphaPreviewHalf);
+        ImGui::SameLine();
+        const auto suffix = id.find("##");
+        ImGui::TextUnformatted(id.data(), id.data() +
+            (suffix == std::string::npos ? id.size() : suffix));
+    }
     const bool hovered = ImGui::IsItemHovered();
     const bool held = ImGui::IsItemActive();
     if (pressed) {
         syncHex();
         ImGui::OpenPopup(("##color_popup" + id).c_str());
     }
-    ImGui::SameLine();
-    const auto suffix = id.find("##");
-    ImGui::TextUnformatted(id.data(), id.data() +
-        (suffix == std::string::npos ? id.size() : suffix));
-
     bool changed = false;
     if (ImGui::BeginPopup(("##color_popup" + id).c_str())) {
         if (ImGui::ColorPicker4(
@@ -245,12 +324,38 @@ inline WidgetState color(std::string_view label, ColorState& value,
 }
 
 inline void text(std::string_view value, ImFont* font = nullptr) {
-    ScopedFont scoped(font);
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode && font) {
+        if (grape::pc::skrt::setSectionTitle(value)) return;
+    }
+#endif
+    ScopedFont scoped(
+        Config::get().skeetMode && font
+            ? Config::get().skeetHeaderFont
+            : Config::get().skeetMode ? nullptr : font);
     ImGui::TextUnformatted(value.data(), value.data() + value.size());
 }
 inline void same_line() { ImGui::SameLine(); }
 inline void spacer(double size = 0.0) { ImGui::Dummy(ImVec2(0.0f, size)); }
-inline void divider(bool = true) { ImGui::Separator(); }
+inline void divider(bool visible = true) {
+    auto& config = Config::get();
+    if (!config.skeetMode) {
+        ImGui::Separator();
+        return;
+    }
+#ifdef GRAPE_PRIVATE_PC
+    if (!config.skeetGridStarted && !visible) {
+        config.skeetGridStarted = grape::pc::skrt::beginSections();
+    } else if (config.skeetGridStarted && visible) {
+        grape::pc::skrt::nextSection();
+    }
+#endif
+}
+inline void hide_section_box() {
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode) grape::pc::skrt::hideSectionBox();
+#endif
+}
 inline void off_the_screen() { ImGui::SetCursorPos(ImVec2(-10000.0f, -10000.0f)); }
 
 template <class F> void group(F&& fn, float width = 0.0f) {
@@ -266,12 +371,28 @@ template <class F> void fraction(double count, F&& fn, double = 0.0) {
     ImGui::PopItemWidth();
 }
 template <class T, class F> void tab(T current, T expected, F&& fn) {
-    if (current == expected) fn();
+    if (current != expected) return;
+    auto& config = Config::get();
+    if (config.skeetMode) config.skeetGridStarted = false;
+    fn();
+    if (config.skeetMode && config.skeetGridStarted) {
+#ifdef GRAPE_PRIVATE_PC
+        grape::pc::skrt::endSections();
+#endif
+        config.skeetGridStarted = false;
+    }
 }
 template <class F>
 void window(ImTextureID logoTex, ImVec2 logoSize, ImVec2 logoUv, F&& fn) {
     const float scale = Config::get().uiScale;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode) {
+        if (grape::pc::skrt::beginWindow()) fn();
+        grape::pc::skrt::endWindow();
+        return;
+    }
+#endif
     if (Config::get().fitWindowToContent) {
         ImGui::SetNextWindowSize(
             ImVec2(std::min(620.0f * scale, viewport->WorkSize.x * 0.92f),
@@ -285,7 +406,8 @@ void window(ImTextureID logoTex, ImVec2 logoSize, ImVec2 logoUv, F&& fn) {
                                             viewport->WorkSize);
     }
     if (ImGui::Begin("Main UI", nullptr,
-                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse)) {
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                     ImGuiWindowFlags_None)) {
         const float titleHeight = 28.0f * scale;
         const ImVec2 titlePos = ImGui::GetCursorScreenPos();
         ImGui::InvisibleButton("##titlebar", ImVec2(ImGui::GetContentRegionAvail().x,

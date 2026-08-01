@@ -4,7 +4,6 @@
 #include "engine/timeline.hpp"
 
 void Autoclicker::update(PlayLayer* pl) {
-    m_frequency = std::max(1, m_frequency);
     if (!pl) {
         m_p1Clicked = false;
         m_p2Clicked = false;
@@ -34,8 +33,7 @@ void Autoclicker::update(PlayLayer* pl) {
         return;
     }
 
-    if (m_lastFrame == UINT64_MAX ||
-        frame >= m_lastFrame + static_cast<uint64_t>(m_frequency)) {
+    if ((frame >= m_lastFrame + m_frequency) || m_lastFrame == UINT64_MAX) {
         m_lastFrame = frame;
         if (performPlayer1()) {
             if (!m_p1Clicked) {

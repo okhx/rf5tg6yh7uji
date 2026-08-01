@@ -7,7 +7,6 @@ using namespace geode::prelude;
 
 #include <Geode/modify/CCActionManager.hpp>
 
-#ifdef GEODE_IS_WINDOWS
 constexpr int ACTIONMGR_UPDATE_OFFSET = 0x38B90;
 static void* _CCActionManager_update_orig;
 
@@ -23,6 +22,7 @@ void CCActionManager_update(cocos2d::CCActionManager* mgr, float dt) {
         CCActionManager_update_orig(mgr, dt);
         return;
     }
+    // Don't trigger CCActionManager::update if running frozen updates
     if (GrapeEngine::get()->timeline().m_onlyRefresh) {
         return;
     }
@@ -37,4 +37,3 @@ $execute {
                            &CCActionManager_update, "CCActionManager::update",
                            tulip::hook::TulipConvention::Fastcall);
 }
-#endif

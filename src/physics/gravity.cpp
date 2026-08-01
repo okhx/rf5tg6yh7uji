@@ -120,6 +120,7 @@ void bumpPlayer(PlayerObject* player, float force, int p2, bool playBumpEffect,
         return;
     }
 
+    // Spider pad
     if (!object) {
         player->spiderTestJumpInternal(false);
         return;
@@ -137,4 +138,4 @@ void bumpPlayer(PlayerObject* player, float force, int p2, bool playBumpEffect,
 
     player->spiderTestJumpInternal(false);
 }
-}
+}  // namespace phys

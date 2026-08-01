@@ -349,6 +349,11 @@ class MobileFeaturePopup final : public geode::Popup {
         toggle("Show category", 4, state->enabled,
                [state](bool value) { state->enabled = value; });
         color("Category color", 5, &state->colors);
+        toggle("Straight wave", 6, settings->trajectory.straightEnabled,
+               [settings](bool value) {
+                   settings->trajectory.straightEnabled = value;
+               });
+        color("Straight color", 7, &settings->trajectory.straightColor);
     }
 
     void buildAutoclicker() {
@@ -1355,7 +1360,7 @@ void MobileMenu::buildRenderPage() {
     };
 
     leftLabel("Resolution", 18.f, rowY(0));
-#ifdef GEODE_IS_IOS
+#ifdef GEODE_IS_MOBILE
     m_renderResolutionIndex = iosRenderResolutionIndex(
         settings.m_width, settings.m_height);
     const auto applyResolution = [this, renderer] {

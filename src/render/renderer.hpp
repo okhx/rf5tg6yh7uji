@@ -25,7 +25,7 @@
 
 #include "dsp.hpp"
 
-#ifdef GEODE_IS_IOS
+#ifdef GEODE_IS_MOBILE
 struct IOSRenderResolution {
     const char* m_name;
     int m_width;
