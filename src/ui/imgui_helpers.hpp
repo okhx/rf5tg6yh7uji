@@ -174,8 +174,11 @@ inline void next_input_full_width() {
 inline WidgetState input_text_autocomplete(
     std::string_view label, std::string_view hint, std::string& value,
     AutocompleteState& autocomplete, std::function<void()> = {}) {
-    const bool changed = input_text(label, hint, value).changed;
-    if (ImGui::IsItemActive() && !autocomplete.suggestions.empty())
+    bool changed = input_text(label, hint, value).changed;
+    const bool hovered = ImGui::IsItemHovered();
+    const bool held = ImGui::IsItemActive();
+    if ((ImGui::IsItemActivated() || ImGui::IsItemClicked() || changed) &&
+        !autocomplete.suggestions.empty())
         ImGui::OpenPopup((std::string(label) + "##suggestions").c_str());
     const std::string popup = std::string(label) + "##suggestions";
     if (ImGui::BeginPopup(popup.c_str(),
@@ -183,12 +186,13 @@ inline WidgetState input_text_autocomplete(
         for (const auto& suggestion : autocomplete.suggestions) {
             if (ImGui::Selectable(suggestion.c_str())) {
                 value = suggestion;
+                changed = true;
                 ImGui::CloseCurrentPopup();
             }
         }
         ImGui::EndPopup();
     }
-    return state(changed);
+    return {changed, hovered, held, changed};
 }
 
 inline WidgetState dropdown(std::string_view label, DropdownState& stateData,

@@ -598,7 +598,7 @@ geode::utils::file::FilePickOptions MacroEngine::converterFileOptions() {
     };
 }
 
-geode::Result<size_t> MacroEngine::convertAndPlay(
+geode::Result<size_t> MacroEngine::loadSupported(
     std::filesystem::path path) {
     if (!std::filesystem::is_regular_file(path))
         return geode::Err("Macro file does not exist");
@@ -654,7 +654,18 @@ geode::Result<size_t> MacroEngine::convertAndPlay(
             return geode::Err("Could not activate converted macro");
     }
 
+    return geode::Ok(m_actionAtom.length());
+}
+
+geode::Result<size_t> MacroEngine::convertAndPlay(
+    std::filesystem::path path) {
+    auto loaded = loadSupported(path);
+    if (loaded.isErr()) return loaded;
+
     auto name = path.stem();
+    std::string extension = path.extension().string();
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
     if (extension == ".json" && name.extension() == ".gdr")
         name = name.stem();
     m_replayName = name.string();
@@ -670,7 +681,7 @@ geode::Result<size_t> MacroEngine::convertAndPlay(
         playLayer && !playLayer->m_hasCompletedLevel &&
         !playLayer->m_levelEndAnimationStarted)
         playLayer->resetLevel();
-    return geode::Ok(m_actionAtom.length());
+    return loaded;
 }
 
 void MacroEngine::merge(std::filesystem::path path) {

@@ -2,6 +2,7 @@
 
 #include <Geode/UI.hpp>
 #include <Geode/binding/LevelEditorLayer.hpp>
+#include <Geode/ui/ScrollLayer.hpp>
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
@@ -121,11 +122,12 @@ class MobileFeaturePopup final : public geode::Popup {
 
    private:
     Feature m_feature;
+    ScrollLayer* m_scroll = nullptr;
     CCNode* m_content = nullptr;
     CCMenu* m_menu = nullptr;
     int m_category = 0;
 
-    float rowY(int row) const { return 175.f - row * 29.f; }
+    float rowY(int row) const { return 215.f - row * 29.f; }
 
     void label(std::string const& text, float x, float y, float scale = .34f,
                ccColor3B color = ccWHITE) {
@@ -231,6 +233,7 @@ class MobileFeaturePopup final : public geode::Popup {
             case Feature::Stepper: buildStepper(); break;
             case Feature::Rendering: buildRendering(); break;
         }
+        m_scroll->scrollToTop();
     }
 
     void buildHitboxes() {
@@ -504,9 +507,12 @@ class MobileFeaturePopup final : public geode::Popup {
             "Render Settings (PC Preset)"};
         setTitle(titles[static_cast<int>(feature)], "goldFont.fnt", .72f,
                  18.f);
-        m_content = CCNode::create();
-        m_content->setPosition({15.f, 20.f});
-        m_mainLayer->addChild(m_content);
+        m_scroll = ScrollLayer::create({370.f, 205.f});
+        if (!m_scroll) return false;
+        m_scroll->setPosition({15.f, 20.f});
+        m_scroll->m_contentLayer->setContentSize({370.f, 240.f});
+        m_content = m_scroll->m_contentLayer;
+        m_mainLayer->addChild(m_scroll);
         rebuild();
         return true;
     }

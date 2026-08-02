@@ -491,6 +491,9 @@ void Trajectory::update(GJBaseGameLayer* pl) {
 
         const bool notTwoPlayer = !pl->m_levelSettings->m_twoPlayerMode;
         const auto predictPlayer = [&](bool p1, bool both) {
+            auto* player = p1 ? pl->m_player1 : pl->m_player2;
+            const float originX = player->getPositionX();
+            float straightX = originX;
             float minY = std::numeric_limits<float>::max();
             float maxY = std::numeric_limits<float>::lowest();
             const auto predict = [&](int mode) {
@@ -498,6 +501,9 @@ void Trajectory::update(GJBaseGameLayer* pl) {
                 if (result.score > 0) {
                     minY = std::min(minY, result.minY);
                     maxY = std::max(maxY, result.maxY);
+                    if (std::abs(result.position.x - originX) >
+                        std::abs(straightX - originX))
+                        straightX = result.position.x;
                 }
             };
 
@@ -513,14 +519,12 @@ void Trajectory::update(GJBaseGameLayer* pl) {
                 }
             }
 
-            auto* player = p1 ? pl->m_player1 : pl->m_player2;
             auto& settings = GrapeSettings::get()->trajectory;
             if (player && player->m_isDart && settings.straightEnabled &&
                 minY <= maxY) {
-                const float x = player->getPositionX();
                 const float width = m_state->m_width->inner() /
                                     pl->m_gameState.m_cameraZoom;
-                m_node->drawSegment({x, minY}, {x, maxY}, width,
+                m_node->drawSegment({straightX, minY}, {straightX, maxY}, width,
                     toCocosColor(settings.straightColor.data()));
             }
         };

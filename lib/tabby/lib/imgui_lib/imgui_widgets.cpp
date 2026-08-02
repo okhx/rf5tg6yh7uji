@@ -5685,15 +5685,14 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf,
     // total_size = ImVec2(frame_size.x + (label_size.x > 0.0f ?
     // style.ItemInnerSpacing.x + label_size.x : 0.0f), frame_size.y);
 
-    ImVec2 size_half = ImVec2(size.x * 0.5f, size.y);
-
-    const ImVec2 frame_size =
-        ImVec2(size.x * 0.5f + ImGui::GetStyle().ItemSpacing.x / 2.0f, size.y);
     const ImVec2 total_size = size;
-
-    const ImRect frame_bb(window->DC.CursorPos + total_size - size_half +
-                              ImVec2(ImGui::GetStyle().ItemSpacing.x / 2.0f, 0),
-                          window->DC.CursorPos + total_size);
+    const bool split_label = label_size.x > 0.0f;
+    const ImVec2 frame_min = split_label
+        ? window->DC.CursorPos + ImVec2(
+              size.x * 0.5f + ImGui::GetStyle().ItemSpacing.x / 2.0f, 0.0f)
+        : window->DC.CursorPos;
+    const ImRect frame_bb(frame_min, window->DC.CursorPos + total_size);
+    const ImVec2 frame_size = frame_bb.GetSize();
     const ImRect total_bb(window->DC.CursorPos,
                           window->DC.CursorPos + total_size);
 

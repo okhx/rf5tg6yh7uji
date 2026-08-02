@@ -400,7 +400,8 @@ static std::pair<bool, bool> drawSkeetActionRow(
     const char* id, const char* left, const char* right) {
     bool leftPressed = false;
     bool rightPressed = false;
-    if (ImGui::BeginTable(id, 2, ImGuiTableFlags_SizingStretchSame)) {
+    if (ImGui::BeginTable(id, 2, ImGuiTableFlags_SizingStretchSame,
+                          ImVec2(220.0f, 0.0f))) {
         ImGui::TableNextColumn();
         leftPressed = slui::raw_button(left, ImVec2(-FLT_MIN, 0));
         ImGui::TableNextColumn();
@@ -422,7 +423,6 @@ static void drawImGuiThemeEditor(ImFont* headingFont) {
         gradientMiddle.colors = settings->skeetGradientMiddle;
         gradientRight.colors = settings->skeetGradientRight;
 
-        slui::text("Skeet Theme", headingFont);
         slui::divider(false);
         slui::text("Colors", headingFont);
         slui::color("Accent", accent);
@@ -1185,7 +1185,7 @@ void UIManager::draw() {
             }
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Record, [&]() {
-                slui::text("Record", m_bold);
+                if (!skeetMenu) slui::text("Record", m_bold);
 
                 slui::divider(false);
                 auto& rs = GrapeEngine::get()->macro();
@@ -1347,7 +1347,15 @@ void UIManager::draw() {
                         }
                     }
                 }
-                if (loadReplay) rs.load(rs.getCurrentPath());
+                if (loadReplay) {
+                    auto path = std::filesystem::path(rs.m_replayName);
+                    if (!path.has_extension()) path += ".grape";
+                    auto loaded = rs.loadSupported(
+                        grape::paths::directory("replays") / path.filename());
+                    if (loaded.isErr())
+                        geode::log::error("Failed to load replay: {}",
+                                          loaded.unwrapErr());
+                }
 
                 if (m_state.m_lastReplayName != rs.m_replayName) {
                     m_state.m_lastReplayName = rs.m_replayName;
@@ -1366,13 +1374,17 @@ void UIManager::draw() {
 
                 slui::divider();
 
-                if (ImGui::BeginTable("FrameAdvance", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
+                if (ImGui::BeginTable(
+                        "FrameAdvance", 2,
+                        ImGuiTableFlags_SizingStretchSame,
+                        skeetMenu ? ImVec2(220.0f, 0.0f) : ImVec2())) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Frame Advance",
                                     GrapeEngine::get()->timeline().m_paused->inner());
                     keybindRightClick("updater.frame_advance");
                     ImGui::TableNextColumn();
+                    if (skeetMenu)
+                        ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 2.0f);
                     if (slui::raw_button(
                             "Advance", ImVec2(-FLT_MIN, 0.0f))) {
                         bot->timeline().stepOnce();
@@ -1381,8 +1393,10 @@ void UIManager::draw() {
                     ImGui::EndTable();
                 }
 
-                if (ImGui::BeginTable("SeedOverride", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
+                if (ImGui::BeginTable(
+                        "SeedOverride", 2,
+                        ImGuiTableFlags_SizingStretchSame,
+                        skeetMenu ? ImVec2(220.0f, 0.0f) : ImVec2())) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Seed Override", rs.m_overrideSeed);
                     ImGui::TableNextColumn();
@@ -1394,8 +1408,19 @@ void UIManager::draw() {
 
                 slui::divider();
 
-                if (ImGui::BeginTable("DeathExtraRow", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
+                if (skeetMenu) {
+                    slui::checkbox(
+                        "Intentional Death",
+                        GrapeEngine::get()->timeline().m_canDie->inner());
+                    keybindRightClick("updater.intentional_death");
+                    slui::divider();
+                    slui::checkbox(
+                        "Frame Extrapolation",
+                        GrapeEngine::get()->timeline().m_extrapolateFrames->inner());
+                    keybindRightClick("updater.frame_extrapolation");
+                } else if (ImGui::BeginTable(
+                               "DeathExtraRow", 2,
+                               ImGuiTableFlags_SizingStretchSame)) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Intentional Death",
                                     GrapeEngine::get()->timeline().m_canDie->inner());
@@ -1411,7 +1436,7 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Assist, [&]() {
-                slui::text("Assist", m_bold);
+                if (!skeetMenu) slui::text("Assist", m_bold);
 
                 slui::divider(false);
 
@@ -1616,8 +1641,10 @@ void UIManager::draw() {
 
                 slui::text("Backstepping", m_medium);
 
-                if (ImGui::BeginTable("BackwardsSteppingRow", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
+                if (ImGui::BeginTable(
+                        "BackwardsSteppingRow", 2,
+                        ImGuiTableFlags_SizingStretchSame,
+                        skeetMenu ? ImVec2(220.0f, 0.0f) : ImVec2())) {
                         ImGui::TableNextColumn();
                         slui::checkbox(
                             "Backwards Stepping",
@@ -1695,7 +1722,7 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Prediction, [&]() {
-                slui::text("Prediction", m_bold);
+                if (!skeetMenu) slui::text("Prediction", m_bold);
 
                 slui::divider(false);
 
@@ -1725,7 +1752,7 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Edit, [&]() {
-                slui::text("Edit", m_bold);
+                if (!skeetMenu) slui::text("Edit", m_bold);
 
                 slui::divider(false);
 
@@ -1789,7 +1816,8 @@ void UIManager::draw() {
                         ImGui::GetCursorPosY(), top + editorHeight - buttonHeight));
                     if (!ImGui::BeginTable(
                             "MacroButtons", 2,
-                            ImGuiTableFlags_SizingStretchSame))
+                            ImGuiTableFlags_SizingStretchSame,
+                            skeetMenu ? ImVec2(220.0f, 0.0f) : ImVec2()))
                         return;
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
@@ -1899,7 +1927,7 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Render, [&]() {
-                slui::text("Render", m_bold);
+                if (!skeetMenu) slui::text("Render", m_bold);
 
                 slui::divider(false);
 
@@ -2130,7 +2158,7 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Settings, [&]() {
-                slui::text("Settings", m_bold);
+                if (!skeetMenu) slui::text("Settings", m_bold);
 
                 slui::divider(false);
 
@@ -2289,8 +2317,10 @@ void UIManager::draw() {
 
                 slui::text("Updater", m_medium);
 
-                if (ImGui::BeginTable("LockDelta", 2,
-                                      ImGuiTableFlags_SizingStretchSame)) {
+                if (ImGui::BeginTable(
+                        "LockDelta", 2,
+                        ImGuiTableFlags_SizingStretchSame,
+                        skeetMenu ? ImVec2(220.0f, 0.0f) : ImVec2())) {
                     ImGui::TableNextColumn();
                     slui::checkbox("Lock Delta",
                                     bot->timeline().m_lockDelta->inner());

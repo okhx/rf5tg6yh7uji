@@ -91,6 +91,7 @@ class MacroEngine {
 
     void load(std::filesystem::path path);
     void save(std::filesystem::path path, bool noOverwrite = false);
+    geode::Result<size_t> loadSupported(std::filesystem::path path);
     geode::Result<size_t> convertAndPlay(std::filesystem::path path);
     static geode::utils::file::FilePickOptions converterFileOptions();
 
