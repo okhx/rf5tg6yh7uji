@@ -3,6 +3,8 @@
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
 #include "checkpoint/fix.hpp"
+#include "label/label.hpp"
+#include "render/renderer.hpp"
 #include "trajectory/trajectory.hpp"
 
 using namespace geode::prelude;
@@ -81,6 +83,7 @@ struct GrapePlayerObject : Modify<GrapePlayerObject, PlayerObject> {
             phys::ringJump(this, ring);
         } else {
             PlayerObject::ringJump(ring, unk);
+            bot->labels().update(Renderer::get()->isRecording());
         }
     }
 

@@ -177,8 +177,8 @@ inline WidgetState input_text_autocomplete(
     bool changed = input_text(label, hint, value).changed;
     const bool hovered = ImGui::IsItemHovered();
     const bool held = ImGui::IsItemActive();
-    if ((ImGui::IsItemActivated() || ImGui::IsItemClicked() || changed) &&
-        !autocomplete.suggestions.empty())
+    if ((held || ImGui::IsItemActivated() || ImGui::IsItemClicked() ||
+         changed) && !autocomplete.suggestions.empty())
         ImGui::OpenPopup((std::string(label) + "##suggestions").c_str());
     const std::string popup = std::string(label) + "##suggestions";
     if (ImGui::BeginPopup(popup.c_str(),

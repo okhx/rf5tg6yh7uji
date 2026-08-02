@@ -22,6 +22,21 @@ using namespace geode::prelude;
 #include "engine/timeline.hpp"
 #include "replay/macro.hpp"
 
+#ifdef GEODE_IS_MOBILE
+struct GrapeUILayer : Modify<GrapeUILayer, UILayer> {
+    void onCheck(CCObject* sender) {
+        auto* pl = PlayLayer::get();
+        if (GrapeEngine::get()->isEnabled() && pl &&
+            (pl->m_player1->m_isDead ||
+             (pl->m_player2 && pl->m_player2->m_isDead))) {
+            pl->markCheckpoint();
+            return;
+        }
+        UILayer::onCheck(sender);
+    }
+};
+#endif
+
 // taken from https://stackoverflow.com/a/60971856
 template <std::ranges::range R>
 static constexpr auto to_vector(R&& r) {

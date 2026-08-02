@@ -1294,13 +1294,11 @@ void UIManager::draw() {
                 slui::divider();
 
                 const auto replayNameInput = [&] {
-                    if (slui::input_text_autocomplete(
-                            "##ReplayName", "Replay", rs.m_replayName,
-                            m_replayAutocomplete, popupShaderFn)
-                            .changed) {
-                        m_replayAutocomplete.suggestions = filterCandidates(
-                            m_state.m_replayNames, rs.m_replayName);
-                    }
+                    m_replayAutocomplete.suggestions = filterCandidates(
+                        m_state.m_replayNames, rs.m_replayName);
+                    slui::input_text_autocomplete(
+                        "##ReplayName", "Replay", rs.m_replayName,
+                        m_replayAutocomplete, popupShaderFn);
                 };
                 bool saveReplay = false;
                 bool loadReplay = false;
@@ -2063,6 +2061,9 @@ void UIManager::draw() {
                 slui::text("Presets", m_medium);
 
                 const auto presetNameInput = [&] {
+                    m_state.m_presetAutocomplete.suggestions =
+                        filterCandidates(m_state.m_presetNames,
+                                         m_state.m_presetName);
                     slui::input_text_autocomplete(
                         "##PresetName", "Preset Name", m_state.m_presetName,
                         m_state.m_presetAutocomplete, [&]() {

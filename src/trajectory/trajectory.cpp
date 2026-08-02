@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <limits>
 
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
@@ -494,13 +493,9 @@ void Trajectory::update(GJBaseGameLayer* pl) {
             auto* player = p1 ? pl->m_player1 : pl->m_player2;
             const float originX = player->getPositionX();
             float straightX = originX;
-            float minY = std::numeric_limits<float>::max();
-            float maxY = std::numeric_limits<float>::lowest();
             const auto predict = [&](int mode) {
                 const auto result = simulate(pl, p1, mode, both);
                 if (result.score > 0) {
-                    minY = std::min(minY, result.minY);
-                    maxY = std::max(maxY, result.maxY);
                     if (std::abs(result.position.x - originX) >
                         std::abs(straightX - originX))
                         straightX = result.position.x;
@@ -520,11 +515,11 @@ void Trajectory::update(GJBaseGameLayer* pl) {
             }
 
             auto& settings = GrapeSettings::get()->trajectory;
-            if (player && player->m_isDart && settings.straightEnabled &&
-                minY <= maxY) {
+            if (player && player->m_isDart && settings.straightEnabled) {
                 const float width = m_state->m_width->inner() /
                                     pl->m_gameState.m_cameraZoom;
-                m_node->drawSegment({straightX, minY}, {straightX, maxY}, width,
+                const auto origin = player->getPosition();
+                m_node->drawSegment(origin, {straightX, origin.y}, width,
                     toCocosColor(settings.straightColor.data()));
             }
         };

@@ -416,7 +416,7 @@ SavedPlayerCheckpoint SavedPlayerCheckpoint::create(PlayerObject* p) {
     c.m_isRobot = p->m_isRobot;
     c.m_isSpider = p->m_isSpider;
     c.m_isUpsideDown = p->m_isUpsideDown;
-    c.m_isDead = p->m_isDead;
+    c.m_isDead = false;
     c.m_isOnGround = p->m_isOnGround;
     c.m_isGoingLeft = p->m_isGoingLeft;
     c.m_isSideways = p->m_isSideways;
