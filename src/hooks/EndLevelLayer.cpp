@@ -1,14 +1,8 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/EndLevelLayer.hpp>
 
-#include "assist/hitboxes.hpp"
-#include "checkpoint/fix.hpp"
 #include "config/config.hpp"
-#include "engine/engine.hpp"
-#include "engine/timeline.hpp"
-#include "replay/macro.hpp"
 #include "render/renderer.hpp"
-#include "trajectory/trajectory.hpp"
 #include "ui/mobile_menu.hpp"
 
 using namespace geode::prelude;
@@ -16,22 +10,6 @@ using namespace geode::prelude;
 #ifdef GEODE_IS_MOBILE
 struct GrapeEndLevelLayer : Modify<GrapeEndLevelLayer, EndLevelLayer> {
 #ifdef GEODE_IS_IOS
-    void onEdit(CCObject* sender) {
-        GrapeEngine::get()->timeline().setPaused(false);
-        EndLevelLayer::onEdit(sender);
-    }
-
-    void goEdit() {
-        auto* bot = GrapeEngine::get();
-        bot->timeline().setPaused(false);
-        bot->trajectory().uninit();
-        bot->hitboxes().destroy();
-
-        EndLevelLayer::goEdit();
-        bot->practiceFix().removeAll();
-        bot->macro().onExit();
-    }
-
     void enterAnimFinished() override {
         EndLevelLayer::enterAnimFinished();
         Renderer::get()->notifyEndLevelMenuReady();

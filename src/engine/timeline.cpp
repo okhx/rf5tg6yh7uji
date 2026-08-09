@@ -250,6 +250,12 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
         return;
     }
 
+    if (isPlayLayer && ((PlayLayer*)pl)->m_hasCompletedLevel) {
+        this->m_tpsOverflow = 0;
+        update(realDt);
+        return;
+    }
+
     if (!isPlayLayer) {
         m_tpsOverflow = 0.0;
         update(realDt);

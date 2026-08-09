@@ -482,8 +482,18 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             actions[index - 2].m_type == action.m_type &&
             actions[index - 2].m_holding &&
             actions[index - 2].m_player2 == action.m_player2;
+        bool hasLaterPress = false;
+        for (size_t i = index;
+             i < actions.size() && actions[i].m_frame == action.m_frame; ++i) {
+            if (actions[i].m_type == action.m_type &&
+                actions[i].m_player2 == action.m_player2 &&
+                actions[i].m_holding) {
+                hasLaterPress = true;
+                break;
+            }
+        }
         const bool player2 = bot->macro().playerFlipped(action.m_player2);
-        if (swiftRelease) {
+        if (swiftRelease && !hasLaterPress) {
             m_fields->m_swiftReleases.push_back({
                 .m_button = static_cast<PlayerButton>(button),
                 .m_isPush = false,
