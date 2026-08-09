@@ -16,6 +16,11 @@ using namespace geode::prelude;
 #ifdef GEODE_IS_MOBILE
 struct GrapeEndLevelLayer : Modify<GrapeEndLevelLayer, EndLevelLayer> {
 #ifdef GEODE_IS_IOS
+    void onEdit(CCObject* sender) {
+        GrapeEngine::get()->timeline().setPaused(false);
+        EndLevelLayer::onEdit(sender);
+    }
+
     void goEdit() {
         auto* bot = GrapeEngine::get();
         bot->timeline().setPaused(false);
