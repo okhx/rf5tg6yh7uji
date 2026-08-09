@@ -455,9 +455,13 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             bot->cps().pushAction(action.m_player2);
         }
 
+#ifdef GEODE_IS_IOS
+        this->handleButton(action.m_holding, button,
+                           !bot->macro().playerFlipped(action.m_player2));
+#else
         this->queueButton(button, action.m_holding,
-                          bot->macro().playerFlipped(action.m_player2),
-                          0);
+                          bot->macro().playerFlipped(action.m_player2), 0);
+#endif
         return false;
     }
 

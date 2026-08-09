@@ -129,6 +129,7 @@ if (WIN32)
         endif()
         target_sources(${PROJECT_NAME} PRIVATE
             ${GRAPE_PRIVATE_PC_DIR}/src/license.cpp
+            ${GRAPE_PRIVATE_PC_DIR}/src/imgui_menu.cpp
             ${GRAPE_PRIVATE_PC_DIR}/src/skeet_menu.cpp
             ${GRAPE_PRIVATE_PC_DIR}/src/skrt_ui.cpp
         )

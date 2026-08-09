@@ -32,8 +32,15 @@ struct GrapeLevelEditorLayer : Modify<GrapeLevelEditorLayer, LevelEditorLayer> {
 
         bot->timeline().resetFrame();
 
+#ifndef GEODE_IS_MOBILE
+        if (auto* ui = EditorUI::get(); ui && ui->m_isPlayingMusic)
+            ui->onPlayback(nullptr);
+        m_playbackActive = false;
+#endif
+
         LevelEditorLayer::onPlaytest();
 
+#ifdef GEODE_IS_MOBILE
         bot->timeline().m_editorStartProgress = static_cast<uint32_t>(
             std::max(0, static_cast<int>(m_gameState.m_currentProgress)));
         bot->macro().onReset(0);
@@ -53,6 +60,15 @@ struct GrapeLevelEditorLayer : Modify<GrapeLevelEditorLayer, LevelEditorLayer> {
             m_player2->releaseAllButtons();
             return;
         }
+#else
+        bot->timeline().m_editorStartProgress = 0;
+        bot->macro().onReset(bot->timeline().getFrame());
+        bot->autoclicker().reset();
+        bot->trajectory().update(this);
+        bot->hitboxes().clearTrail();
+        handleButton(false, static_cast<int>(PlayerButton::Jump), true);
+        handleButton(false, static_cast<int>(PlayerButton::Jump), false);
+#endif
 
         bot->timeline().m_canDie->inner() = false;
         bot->timeline().m_inputIsDeath = false;
