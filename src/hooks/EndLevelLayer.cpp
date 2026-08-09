@@ -10,6 +10,8 @@ using namespace geode::prelude;
 #ifdef GEODE_IS_MOBILE
 struct GrapeEndLevelLayer : Modify<GrapeEndLevelLayer, EndLevelLayer> {
 #ifdef GEODE_IS_IOS
+    void onEdit(CCObject*) { EndLevelLayer::goEdit(); }
+
     void enterAnimFinished() override {
         EndLevelLayer::enterAnimFinished();
         Renderer::get()->notifyEndLevelMenuReady();

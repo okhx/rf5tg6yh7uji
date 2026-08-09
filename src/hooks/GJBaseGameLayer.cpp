@@ -105,20 +105,7 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
 
         PlayerState m_lastActualP1;
         PlayerState m_lastActualP2;
-#ifdef GEODE_IS_IOS
-        std::vector<PlayerButtonCommand> m_swiftReleases;
-#endif
     };
-
-#ifdef GEODE_IS_IOS
-    void releaseSwiftClicks() {
-        for (const auto& command : m_fields->m_swiftReleases) {
-            this->handleButton(false, static_cast<int>(command.m_button),
-                               !command.m_isPlayer2);
-        }
-        m_fields->m_swiftReleases.clear();
-    }
-#endif
 
     static void onModify(auto& self) {
         if (!self.setHookPriorityPre("GJBaseGameLayer::handleButton",
@@ -223,9 +210,6 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
         auto& updater = GrapeEngine::get()->timeline();
         if (updater.m_onlyRefresh || !GrapeEngine::get()->isEnabled()) {
             GJBaseGameLayer::update(dt);
-#ifdef GEODE_IS_IOS
-            this->releaseSwiftClicks();
-#endif
             return;
         }
 
@@ -255,9 +239,6 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
                 this->storeActualState();
             }
         }
-#ifdef GEODE_IS_IOS
-        this->releaseSwiftClicks();
-#endif
     }
 
     void gameEventTriggered(GJGameEvent event, int p1, int p2) {
@@ -412,7 +393,8 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
 
     void handleButton(bool pressed, int button, bool player1) {
         auto bot = GrapeEngine::get();
-        if (!bot->isRecording()) {
+        if (!bot->macro().m_useAlternateHook->inner() ||
+            !bot->isRecording()) {
             return GJBaseGameLayer::handleButton(pressed, button, player1);
         }
 
@@ -475,35 +457,13 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
         }
 
 #ifdef GEODE_IS_IOS
-        const auto index = bot->macro().getInputIndex();
-        const auto& actions = bot->macro().m_actionAtom.m_actions;
-        const bool swiftRelease = button == 1 && !action.m_holding &&
-            index >= 2 && actions[index - 2].m_frame == action.m_frame &&
-            actions[index - 2].m_type == action.m_type &&
-            actions[index - 2].m_holding &&
-            actions[index - 2].m_player2 == action.m_player2;
-        bool hasLaterPress = false;
-        for (size_t i = index;
-             i < actions.size() && actions[i].m_frame == action.m_frame; ++i) {
-            if (actions[i].m_type == action.m_type &&
-                actions[i].m_player2 == action.m_player2 &&
-                actions[i].m_holding) {
-                hasLaterPress = true;
-                break;
-            }
-        }
-        const bool player2 = bot->macro().playerFlipped(action.m_player2);
-        if (swiftRelease && !hasLaterPress) {
-            m_fields->m_swiftReleases.push_back({
-                .m_button = static_cast<PlayerButton>(button),
-                .m_isPush = false,
-                .m_isPlayer2 = player2,
-                .m_step = 0,
-                .m_timestamp = 0.0,
-            });
-        } else {
-            this->handleButton(action.m_holding, button, !player2);
-        }
+        m_queuedButtons.push_back({
+            .m_button = static_cast<PlayerButton>(button),
+            .m_isPush = action.m_holding,
+            .m_isPlayer2 = bot->macro().playerFlipped(action.m_player2),
+            .m_step = m_currentStep,
+            .m_timestamp = 0.0,
+        });
 #else
         this->queueButton(button, action.m_holding,
                           bot->macro().playerFlipped(action.m_player2), 0);
@@ -558,6 +518,9 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             }
 
             this->requeueInverted();
+            if (!bot->macro().m_useAlternateHook->inner()) {
+                this->saveQueuedButtons();
+            }
         } else if (bot->isPlaying()) {
             uint32_t frame = bot->timeline().getFrame();
 
