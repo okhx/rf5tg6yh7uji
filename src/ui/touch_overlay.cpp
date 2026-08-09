@@ -113,7 +113,6 @@ void TouchOverlay::updateVisibility() {
     m_leftBtn->setVisible(timeline.m_backwardsStepping->inner());
 
 #ifdef GEODE_IS_IOS
-    // Hide pause button while rendering on iOS
     bool isRendering = Renderer::get()->isRecording();
     this->setVisible(playLayer && timeline.isPaused() && !isRendering);
 #else

@@ -600,6 +600,13 @@ void Renderer::updateMobile(PlayLayer* pl) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     const bool showCompleteScene =
         m_settings.m_showLevelComplete && pl->m_hasCompletedLevel;
+    CCNode* pauseButton = pl->m_uiLayer
+        ? pl->m_uiLayer->getChildByIDRecursive("pause-button")
+        : nullptr;
+    if (!pauseButton)
+        pauseButton = pl->getChildByIDRecursive("pause-button");
+    const bool pauseWasVisible = pauseButton && pauseButton->isVisible();
+    if (pauseButton && !showCompleteScene) pauseButton->setVisible(false);
     if (!m_settings.m_renderOnlyLevel || showCompleteScene) {
         auto* scene = CCDirector::get()->m_pRunningScene;
         if (scene) scene->visit();
@@ -607,6 +614,8 @@ void Renderer::updateMobile(PlayLayer* pl) {
     } else {
         pl->visit();
     }
+    if (pauseButton && !showCompleteScene)
+        pauseButton->setVisible(pauseWasVisible);
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(0, 0, m_settings.m_width, m_settings.m_height,
                  GL_RGBA, GL_UNSIGNED_BYTE, m_mobileRGBAFrame.data());
