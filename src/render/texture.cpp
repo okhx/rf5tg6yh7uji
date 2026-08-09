@@ -114,6 +114,12 @@ bool RenderTexture::capture(uint8_t** data) {
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         m_slotMapped[w] = false;
     }
+#ifndef GEODE_IS_MOBILE
+    if (m_fence[w]) {
+        glDeleteSync(m_fence[w]);
+        m_fence[w] = nullptr;
+    }
+#endif
 
     for (size_t i = 0; i < m_passes.size(); ++i) {
         auto& pass = m_passes[i];
@@ -154,10 +160,25 @@ bool RenderTexture::capture(uint8_t** data) {
 
         pass.m_readPixels(0, 0);
     }
+#ifndef GEODE_IS_MOBILE
+    m_fence[w] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+#endif
 
     bool delivered = false;
     if (m_inflightSlot >= 0) {
         const int p = m_inflightSlot;
+#ifndef GEODE_IS_MOBILE
+        if (m_fence[p]) {
+            const auto status = glClientWaitSync(
+                m_fence[p], GL_SYNC_FLUSH_COMMANDS_BIT, 1'000'000'000ull);
+            if (status != GL_ALREADY_SIGNALED &&
+                status != GL_CONDITION_SATISFIED) {
+                glFinish();
+            }
+            glDeleteSync(m_fence[p]);
+            m_fence[p] = nullptr;
+        }
+#endif
         glBindBuffer(GL_PIXEL_PACK_BUFFER, m_pbo[p]);
 #ifdef GEODE_IS_IOS
         auto* pixelData = static_cast<uint8_t*>(glMapBufferRange(
@@ -224,6 +245,12 @@ void RenderTexture::destroy() {
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
             m_slotMapped[i] = false;
         }
+#ifndef GEODE_IS_MOBILE
+        if (m_fence[i]) {
+            glDeleteSync(m_fence[i]);
+            m_fence[i] = nullptr;
+        }
+#endif
     }
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 

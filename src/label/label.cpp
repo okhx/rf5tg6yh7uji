@@ -25,6 +25,68 @@ using namespace geode::prelude;
         }                                                                   \
     }
 
+static std::string getStringifiedOrbName(RingObject* ring);
+
+// True if the player is holding the jump button this frame. GD buffers a click
+// one tick before it actually consumes a touched orb, so when a click is
+// registered we anticipate that consumption and drop the top-priority orb from
+// the label immediately (same frame) rather than waiting for the next tick.
+static bool isPressingJump(PlayerObject* player) {
+    if (!player) return false;
+    if (player->m_jumpBuffered) return true;
+    const auto held =
+        player->m_holdingButtons.find(static_cast<int>(PlayerButton::Jump));
+    return held != player->m_holdingButtons.end() && held->second;
+}
+
+// Builds the "Yellow x2, Blue" / "None" orb list for a single player, reading
+// from that player's own m_touchingRings so it works for either P1 or P2.
+// When anticipateConsume is set, the first not-yet-activated orb (the one GD
+// will consume for the pending click this frame) is dropped from the list.
+static std::string orbPriorityString(PlayerObject* player,
+                                     bool anticipateConsume) {
+    if (!player || !player->m_touchingRings) return "None";
+    CCArray* touchingRings = player->m_touchingRings;
+
+    bool skipNextConsumable = anticipateConsume;
+    std::vector<std::pair<std::string, int>> orbs;
+    for (uint32_t i = 0; i < touchingRings->count(); ++i) {
+        RingObject* ring =
+            static_cast<RingObject*>(touchingRings->objectAtIndex(i));
+        if (ring->hasBeenActivatedByPlayer(player)) continue;
+
+        // Drop exactly the top-priority consumable orb we expect the pending
+        // click to eat this frame. Multi-activate orbs are never fully
+        // consumed, so leave those in place.
+        if (skipNextConsumable && !ring->m_isMultiActivate) {
+            skipNextConsumable = false;
+            continue;
+        }
+
+        std::string name = getStringifiedOrbName(ring);
+        if (ring->m_objectID == 1594)
+            name += fmt::format("({})", ring->m_targetGroupID);
+        if (ring->m_isMultiActivate) name += "*";
+
+        auto found = std::find_if(
+            orbs.begin(), orbs.end(),
+            [&](const auto& entry) { return entry.first == name; });
+        if (found == orbs.end()) orbs.emplace_back(name, 1);
+        else ++found->second;
+    }
+
+    if (orbs.empty()) return "None";
+
+    std::string text;
+    text.reserve(48);
+    for (size_t i = 0; i < orbs.size(); ++i) {
+        if (i) text += ", ";
+        text += orbs[i].first;
+        if (orbs[i].second > 1) text += fmt::format(" x{}", orbs[i].second);
+    }
+    return text;
+}
+
 static std::string getStringifiedOrbName(RingObject* ring) {
     switch (ring->m_objectID) {
         case 36:
@@ -178,42 +240,18 @@ LabelManager::LabelManager() {
              {});
     addLabel("touching_orbs", "Orb Priority",
              [](Label&) {
-                 PlayerObject* player = PlayLayer::get()->m_player1;
-                 CCArray* touchingRings = player->m_touchingRings;
-
-                 std::string ringText = "Orb Priority: ";
-                 ringText.reserve(64);
-                 std::vector<std::pair<std::string, int>> orbs;
-                 for (uint32_t i = 0; i < touchingRings->count(); ++i) {
-                     RingObject* ring = static_cast<RingObject*>(
-                         touchingRings->objectAtIndex(i));
-                     if (ring->hasBeenActivatedByPlayer(player)) continue;
-
-                     std::string name = getStringifiedOrbName(ring);
-                     if (ring->m_objectID == 1594)
-                         name += fmt::format("({})", ring->m_targetGroupID);
-                     if (ring->m_isMultiActivate) name += "*";
-
-                     auto found = std::find_if(
-                         orbs.begin(), orbs.end(), [&](const auto& entry) {
-                             return entry.first == name;
-                         });
-                     if (found == orbs.end()) orbs.emplace_back(name, 1);
-                     else ++found->second;
+                 auto pl = PlayLayer::get();
+                 auto player = pl->m_player1;
+                 auto player2 = pl->m_player2;
+                 if (pl->m_gameState.m_isDualMode && player2) {
+                     return fmt::format(
+                         "Orb Priority: {} / {}",
+                         orbPriorityString(player, isPressingJump(player)),
+                         orbPriorityString(player2, isPressingJump(player2)));
                  }
-
-                 if (orbs.empty()) {
-                     ringText += "None";
-                 } else {
-                     for (size_t i = 0; i < orbs.size(); ++i) {
-                         if (i) ringText += ", ";
-                         ringText += orbs[i].first;
-                         if (orbs[i].second > 1)
-                             ringText += fmt::format(" x{}", orbs[i].second);
-                     }
-                 }
-
-                 return ringText;
+                 return fmt::format(
+                     "Orb Priority: {}",
+                     orbPriorityString(player, isPressingJump(player)));
              },
              {});
 

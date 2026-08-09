@@ -229,6 +229,22 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
     player->updateRotation(delta);
     player->m_shipRotation = player->getPosition();
 
+    // Keep the ring-jump buffer alive while the jump button is held, so a
+    // simulated player can activate an orb it reaches mid-flight -- exactly like
+    // a real held/buffered input. The initial pushButton only sets these flags
+    // for a moment, so without this the simulation is blind to any orb more than
+    // a step away, which made the pathfinder ignore orbs and fall into pits.
+    // Both flags are read ONLY by phys::ringJump, so tying them to the held
+    // state has no other physics side effects.
+    {
+        const auto held = player->m_holdingButtons.find(
+            static_cast<int>(PlayerButton::Jump));
+        const bool holdingJump =
+            held != player->m_holdingButtons.end() && held->second;
+        player->m_stateJumpBuffered = holdingJump;
+        player->m_stateRingJump2 = holdingJump;
+    }
+
     if (pl->checkCollisions(player, delta, false) == 1)
         hasDied(player);
 
@@ -346,6 +362,23 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
                     if (dualBoth) op->releaseButton(static_cast<PlayerButton>(input.m_type));
                 }
                 ++trajectoryInputIndex;
+            }
+        }
+
+        // Delayed-input probe: flip the active player's jump at the requested
+        // step so callers can evaluate "wait, then act" plans. Only meaningful
+        // when we drive the input ourselves (recording / not replaying macro).
+        if (config.m_flipAtStep >= 0 && i == config.m_flipAtStep &&
+            !bot->isPlaying()) {
+            const bool toHold = (mode & CLICK_MASK) != TrajectoryMode::Hold;
+            for (int a = 0; a < activeCount; ++a) {
+                PlayerObject* plr = activePlayers[a];
+                if (toHold) {
+                    plr->pushButton(PlayerButton::Jump);
+                } else {
+                    plr->releaseButton(PlayerButton::Jump);
+                    plr->m_jumpBuffered = false;
+                }
             }
         }
 

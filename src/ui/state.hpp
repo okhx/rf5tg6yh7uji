@@ -53,6 +53,12 @@ struct UIState {
     int m_codec = 0;
     double m_bitrate = 30.0;
 
+    // Auto encoder detection: dropdown of encoders confirmed to work on this
+    // machine (populated by Renderer::detectEncoders), and whether we've run
+    // the probe yet this session.
+    slui::DropdownState m_encoderState = {};
+    bool m_encodersDetected = false;
+
     int m_editIndex = 0;
     bool m_editSelectionInitialized = false;
 
@@ -193,6 +199,7 @@ struct UIState {
     slui::ColorState m_holdingTrailColorState;
     slui::ColorState m_groundColorState;
     slui::ColorState m_bgColorState;
+    slui::ColorState m_noclipTintColorState;
 
     std::vector<std::string> m_customFontNames;
     std::vector<std::string> m_customFontFiles;

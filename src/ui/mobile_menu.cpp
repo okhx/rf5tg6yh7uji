@@ -372,20 +372,39 @@ class MobileFeaturePopup final : public geode::Popup {
             autoclicker->saveSettings();
             rebuild();
         }, 120.f);
-        number("Interval frames", 1, autoclicker->m_frequency,
+        number("Hold frames", 1, autoclicker->m_holdFrames,
                [autoclicker](double value) {
-                   autoclicker->m_frequency =
+                   autoclicker->m_holdFrames =
                        std::max(1, static_cast<int>(value));
                    autoclicker->saveSettings();
                },
                1, 100000, 0);
-        toggle("Swift clicks", 2, autoclicker->m_performSwifts,
+        number("Release frames", 2, autoclicker->m_releaseFrames,
+               [autoclicker](double value) {
+                   autoclicker->m_releaseFrames =
+                       std::max(1, static_cast<int>(value));
+                   autoclicker->saveSettings();
+               },
+               1, 100000, 0);
+        toggle("Swift clicks", 3, autoclicker->m_performSwifts,
                [autoclicker](bool value) {
                    autoclicker->m_performSwifts = value;
                    autoclicker->saveSettings();
                });
+        toggle("Moving gap assist", 4, autoclicker->m_movingGap,
+               [autoclicker](bool value) {
+                   autoclicker->m_movingGap = value;
+                   autoclicker->saveSettings();
+               });
+        number("Safety frames", 5, autoclicker->m_movingGapLookahead,
+               [autoclicker](double value) {
+                   autoclicker->m_movingGapLookahead =
+                       std::clamp(static_cast<int>(value), 1, 30);
+                   autoclicker->saveSettings();
+               },
+               1, 30, 0);
         label("Autoclicker runs only while recording a macro.", 185.f,
-              rowY(4), .3f, {130, 255, 170});
+              rowY(7), .3f, {130, 255, 170});
     }
 
     void buildLayout() {
@@ -1272,8 +1291,9 @@ void MobileMenu::buildAssistPage() {
         [autoclicker](bool value) {
             autoclicker->m_enabled->inner() = value;
             crash_log::breadcrumb(fmt::format(
-                "Autoclicker {} (interval={}, player={}, swifts={})",
-                value ? "enabled" : "disabled", autoclicker->m_frequency,
+                "Autoclicker {} (hold={}, release={}, player={}, swifts={})",
+                value ? "enabled" : "disabled", autoclicker->m_holdFrames,
+                autoclicker->m_releaseFrames,
                 static_cast<int>(autoclicker->m_player),
                 autoclicker->m_performSwifts));
         },

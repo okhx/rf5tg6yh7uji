@@ -22,6 +22,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <thread>
 
 #include "dsp.hpp"
 
@@ -83,6 +84,10 @@ struct RendererSettings {
     bool m_renderOnlyLevel = true;
     bool m_showLevelComplete = true;
     bool m_renderAudio = true;
+
+    // When true, the user manually types a codec string ("force" mode).
+    // When false, the codec is chosen from the auto-detected encoder menu.
+    bool m_forceCodec = false;
 };
 
 template <>
@@ -99,7 +104,8 @@ struct glz::meta<RendererSettings> {
         "record_paused", &T::m_firstAttemptPause,
         "render_only_level", &T::m_renderOnlyLevel,
         "show_level_complete", &T::m_showLevelComplete,
-        "render_audio", &T::m_renderAudio);
+        "render_audio", &T::m_renderAudio,
+        "force_codec", &T::m_forceCodec);
 };
 
 #define GRAPE_AV_PTR(type) std::unique_ptr<type, std::function<void(type*)>>
@@ -122,6 +128,8 @@ struct glz::meta<RendererSettings> {
 
 class Renderer {
    public:
+    ~Renderer();
+
     void queueStart() { m_shouldStart = true; }
     void startIfQueued() {
         if (m_shouldStart) {
@@ -176,6 +184,12 @@ class Renderer {
     void loadSettings(std::filesystem::path& path);
     void saveSettings(std::filesystem::path& path) const;
     void initializeDefaults();
+
+    // Probes a list of common encoders by actually attempting to open each one
+    // with FFmpeg (mirrors what tools like hwcodecdetect do). Returns the names
+    // of the encoders that this machine can actually use, so the user can pick
+    // from a menu instead of typing an encoder string. Requires FFmpeg loaded.
+    std::vector<std::string> detectEncoders();
     void loadFFmpeg() {
         if (ff) {
             free(ff);
@@ -246,6 +260,7 @@ class Renderer {
 
     std::mutex m_recordMutex;
     std::condition_variable m_recordCv;
+    std::thread m_recordThread;
 
     int m_frameCount = 0;
     int m_audioFrameCount = 0;

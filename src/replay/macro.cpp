@@ -557,6 +557,8 @@ bool MacroEngine::processSlc2(slc::v2::Replay<ReplayMeta>& replay) {
 }
 
 void MacroEngine::load(std::filesystem::path path) {
+    GrapeEngine::get()->setMode(GrapeEngine::Mode::Stopped);
+    onExit();
     m_lastOperationSucceeded = false;
     if (!std::filesystem::exists(path) && path.extension() == ".grape") {
         auto legacyPath = path;
@@ -585,6 +587,7 @@ void MacroEngine::load(std::filesystem::path path) {
             geode::log::error("Failed to load slc3 replay from {}", path);
         }
     }
+    if (m_lastOperationSucceeded) m_replayName = path.stem().string();
 }
 
 geode::utils::file::FilePickOptions MacroEngine::converterFileOptions() {
@@ -612,6 +615,8 @@ geode::Result<size_t> MacroEngine::loadSupported(
         if (!m_lastOperationSucceeded)
             return geode::Err("Could not parse SLC macro");
     } else {
+        GrapeEngine::get()->setMode(GrapeEngine::Mode::Stopped);
+        onExit();
         ImportedReplay imported;
         try {
             if (extension == ".txt")

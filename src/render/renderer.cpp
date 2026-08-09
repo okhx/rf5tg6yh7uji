@@ -169,6 +169,82 @@ void Renderer::initializeDefaults() {
 #endif
 }
 
+std::vector<std::string> Renderer::detectEncoders() {
+#ifdef GEODE_IS_MOBILE
+    // Mobile uses a fixed native/external encoder pipeline; nothing to probe.
+    return {};
+#else
+    std::vector<std::string> detected;
+
+    if (!m_ffmpegLoaded || !ff) {
+        geode::log::warn("detectEncoders: FFmpeg not loaded");
+        return detected;
+    }
+
+    // Common encoders across the three big GPU vendors + CPU fallbacks.
+    static const std::array<const char*, 12> kCandidates = {
+        "h264_nvenc", "hevc_nvenc", "av1_nvenc",  // NVIDIA
+        "h264_amf",   "hevc_amf",   "av1_amf",     // AMD
+        "h264_qsv",   "hevc_qsv",   "av1_qsv",     // Intel Quick Sync
+        "libx264",    "libx265",    "libaom-av1",  // CPU / software
+    };
+
+    for (const char* name : kCandidates) {
+        const AVCodec* codec = ff->avcodec_find_encoder_by_name(name);
+        if (!codec) {
+            continue;
+        }
+
+        AVCodecContext* ctx = ff->avcodec_alloc_context3(codec);
+        if (!ctx) {
+            continue;
+        }
+
+        // Pick the first pixel format the encoder advertises so the open call
+        // has a valid configuration to validate against the hardware.
+        AVPixelFormat pixFmt = AV_PIX_FMT_NONE;
+        AVPixelFormat* outPixFmts = nullptr;
+        int outPixFmtCount = 0;
+        if (ff->avcodec_get_supported_config(
+                ctx, codec, AV_CODEC_CONFIG_PIX_FORMAT, 0,
+                (const void**)&outPixFmts, &outPixFmtCount) >= 0 &&
+            outPixFmts && outPixFmtCount > 0) {
+            pixFmt = outPixFmts[0];
+        } else {
+            pixFmt = AV_PIX_FMT_YUV420P;
+        }
+
+        ctx->codec_id = codec->id;
+        ctx->pix_fmt = pixFmt;
+        ctx->width = 640;
+        ctx->height = 480;
+        ctx->bit_rate = 4'000'000;
+        ctx->time_base = {1, 30};
+        ctx->framerate = {30, 1};
+        ctx->max_b_frames = 0;
+
+        // Actually try to open it: this is what fails on machines whose GPU
+        // doesn't support the given hardware encoder.
+        AVDictionary* opts = nullptr;
+        const int ret = ff->avcodec_open2(ctx, codec, &opts);
+        if (opts) {
+            ff->av_dict_free(&opts);
+        }
+
+        if (ret >= 0) {
+            detected.emplace_back(name);
+            geode::log::info("detectEncoders: (+) {} supported", name);
+        } else {
+            geode::log::info("detectEncoders: (-) {} unsupported", name);
+        }
+
+        ff->avcodec_free_context(&ctx);
+    }
+
+    return detected;
+#endif
+}
+
 static void silentChangeSize(CCSize size);
 static void resizeShaderLayer(CCSize size, CCSize original);
 
@@ -712,14 +788,23 @@ geode::Result<> Renderer::start() {
 #endif
 #ifndef GEODE_IS_ANDROID
 
+    if (m_recording) return geode::Err("Renderer is already recording");
+    if (m_recordThread.joinable()) {
+        m_recordThread.join();
+    }
+
     if (!m_ffmpegLoaded || !ff) {
         return geode::Err(
             "Video export needs a mobile encoder backend (FFmpeg/AVFoundation)"
         );
     }
 
-    FMODAudioEngine::get()->m_system->getSoftwareFormat(&m_sampleRate, nullptr,
-                                                        &m_channels);
+    auto* audioRecorder = AudioRecorder::get();
+    if (!audioRecorder->refreshFormat()) {
+        return geode::Err("FMOD returned an invalid audio format");
+    }
+    m_sampleRate = audioRecorder->m_sampleRate;
+    m_channels = audioRecorder->m_channels;
     m_seenFrames = 0;
 
     std::vector<RenderOpt> args = {};
@@ -1016,9 +1101,17 @@ geode::Result<> Renderer::start() {
     AudioRecorder::get()->attach(m_settings.m_musicVolume,
                                  m_settings.m_sfxVolume);
 
-    std::thread(&Renderer::recordLoop, this).detach();
+    m_recordThread = std::thread(&Renderer::recordLoop, this);
 
     return geode::Ok();
+#endif
+}
+
+Renderer::~Renderer() {
+#ifndef GEODE_IS_MOBILE
+    m_recording = false;
+    m_recordCv.notify_one();
+    if (m_recordThread.joinable()) m_recordThread.join();
 #endif
 }
 
@@ -1091,6 +1184,18 @@ geode::Result<> Renderer::write() {
 }
 
 geode::Result<> Renderer::writeAudio(std::vector<float>& data, uint64_t pts) {
+    if (!m_audioFrame || !m_audioCodecCtx || !m_audioStream ||
+        m_sampleRate <= 0 || m_channels <= 0 ||
+        m_audioCodecCtx->sample_rate <= 0 ||
+        m_audioCodecCtx->frame_size <= 0) {
+        return geode::Err("Invalid audio encoder state");
+    }
+    const size_t requiredSamples =
+        static_cast<size_t>(m_audioCodecCtx->frame_size) * m_channels;
+    if (data.size() < requiredSamples) {
+        return geode::Err("Insufficient audio samples");
+    }
+
     m_audioFrame->pts = pts;
     m_audioFrame->nb_samples = m_audioCodecCtx->frame_size;
     m_audioFrame->ch_layout = m_audioCodecCtx->ch_layout;
@@ -1118,9 +1223,15 @@ geode::Result<> Renderer::writeAudio(std::vector<float>& data, uint64_t pts) {
         }
     }
 
+    if (ff->av_frame_make_writable(m_audioFrame.get()) < 0) {
+        return geode::Err("Failed to make audio frame writable");
+    }
+
     const uint8_t* inData[1] = {reinterpret_cast<const uint8_t*>(data.data())};
-    ff->swr_convert(m_swrCtx, m_audioFrame->data, m_audioCodecCtx->frame_size,
-                    inData, m_audioCodecCtx->frame_size);
+    ret = ff->swr_convert(m_swrCtx, m_audioFrame->data,
+                          m_audioCodecCtx->frame_size, inData,
+                          m_audioCodecCtx->frame_size);
+    if (ret < 0) return geode::Err("Failed to resample audio: {}", ret);
 
     ret = ff->avcodec_send_frame(m_audioCodecCtx.get(), m_audioFrame.get());
     if (ret < 0) {

@@ -49,10 +49,20 @@ void FMOD_System_update(FMOD::System* self) {
         self->update();
         return;
     }
+    if (audio->m_sampleRate <= 0 || audio->m_channels <= 0) {
+        geode::log::error("Invalid renderer audio format; stopping render");
+        Renderer::get()->signalStop();
+        return;
+    }
 
     unsigned int bufferLength;
     int bufferCount;
-    self->getDSPBufferSize(&bufferLength, &bufferCount);
+    if (self->getDSPBufferSize(&bufferLength, &bufferCount) != FMOD_OK ||
+        bufferLength == 0) {
+        geode::log::error("Invalid FMOD DSP buffer; stopping render");
+        Renderer::get()->signalStop();
+        return;
+    }
 
     const double requiredDt = std::max(audio->m_fmodTime - audio->m_time, 0.0);
 

@@ -396,9 +396,9 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
         EffectGameObject* obj = (EffectGameObject*)object;
         if (!obj) continue;
 
-        if ((bot->trajectory().playerHasActivated(player, obj) ||
-             bot->trajectory().realPlayerHasActivated(player, obj)) &&
-            (object->m_objectType != GameObjectType::Slope))
+        if (object->m_objectType != GameObjectType::Slope &&
+            (bot->trajectory().playerHasActivated(player, obj) ||
+             bot->trajectory().realPlayerHasActivated(player, obj)))
             continue;
 
         cocos2d::CCRect rect;

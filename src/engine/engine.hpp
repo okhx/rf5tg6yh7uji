@@ -28,6 +28,7 @@ class MacroEngine;
 class PracticeFix;
 class TrajectoryManager;
 class Autoclicker;
+class Pathfinder;
 class Hitboxes;
 class LabelManager;
 class CPSCounter;
@@ -57,7 +58,7 @@ class GrapeEngine {
 
     bool isRecording() { return m_mode == Recording; }
     bool isPlaying() { return m_mode == Playing; }
-    void setMode(Mode mode) { m_mode = mode; }
+    void setMode(Mode mode);
 
     FrameEngine& timeline();
     GameScheduler& clock();
@@ -68,6 +69,7 @@ class GrapeEngine {
     PracticeFix& practiceFix();
     TrajectoryManager& trajectory();
     Autoclicker& autoclicker();
+    Pathfinder& pathfinder();
     Hitboxes& hitboxes();
     LabelManager& labels();
     CPSCounter& cps();

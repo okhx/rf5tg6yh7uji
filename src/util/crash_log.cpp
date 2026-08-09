@@ -6,8 +6,51 @@
 #include <algorithm>
 #include <exception>
 #include <cstdlib>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
+
+namespace {
+std::filesystem::path g_sessionMarker;
+
+struct SessionGuard {
+    bool active = false;
+    ~SessionGuard() {
+        if (!active || g_sessionMarker.empty()) return;
+        std::error_code error;
+        std::filesystem::remove(g_sessionMarker, error);
+    }
+};
+
+void installSessionMarker() {
+    static SessionGuard guard;
+    if (guard.active) return;
+#ifdef GEODE_IS_IOS
+    const auto directory =
+        geode::dirs::getSaveDir().parent_path() / "Grape" / "logs";
+    std::filesystem::create_directories(directory);
+#else
+    const auto directory = grape::paths::directory("logs");
+#endif
+    g_sessionMarker = directory / "session-active.marker";
+    if (std::filesystem::exists(g_sessionMarker)) {
+        std::ifstream previous(g_sessionMarker);
+        std::ofstream log(directory / "forced-exit.log",
+                          std::ios::out | std::ios::app);
+        log << "\nPrevious Grape session ended without clean shutdown.\n"
+            << "Detected at Unix time: " << std::time(nullptr) << "\n"
+            << "This includes force-close, SIGKILL, OS termination, or a "
+               "crash before the handler ran.\n"
+            << "Previous session marker: " << previous.rdbuf() << "\n";
+        log.flush();
+    }
+    std::ofstream marker(g_sessionMarker,
+                         std::ios::out | std::ios::trunc);
+    marker << "Started at Unix time: " << std::time(nullptr) << "\n";
+    marker.flush();
+    guard.active = true;
+}
+}
 
 #ifdef GEODE_IS_WINDOWS
 
@@ -309,6 +352,7 @@ void crash_log::install() {
     std::set_terminate(terminateHandler);
 
     grape::paths::directory("logs");
+    installSessionMarker();
 }
 
 void crash_log::breadcrumb(std::string_view message) {
@@ -541,6 +585,7 @@ void crash_log::install() {
     session << "\nGrape mobile session started\n";
     session.flush();
     geode::log::info("Grape crash log: {}", path);
+    installSessionMarker();
 
     struct sigaction action = {};
     action.sa_sigaction = mobileSignalHandler;

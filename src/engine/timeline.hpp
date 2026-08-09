@@ -145,6 +145,7 @@ class FrameEngine {
 
     cocos2d::CCLabelBMFont* m_frameLabel = nullptr;
 
+    static float playerSpeedUnits(float speed);
     float getSSB();
     float getTimeWarp();
 

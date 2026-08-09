@@ -64,6 +64,7 @@ class AudioRecorder {
     }
 
     void init();
+    bool refreshFormat();
     void attach(double musicVolume, double sfxVolume);
     void detach();
     void uninit();

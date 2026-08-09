@@ -43,6 +43,7 @@ class GrapeSettings {
     double fpsTarget = 60.0;
     bool lockDelta = true;
     int lockDeltaMode = 0;
+    bool physics21 = false;
 
     bool fullGamePrediction = false;
     float acceptablePrediction = 0.45;
@@ -64,8 +65,24 @@ class GrapeSettings {
 
     bool autoclickerEnabled = false;
     int autoclickerFrequency = 1;
+    int autoclickerHoldFrames = 1;
+    int autoclickerReleaseFrames = 1;
     bool autoclickerSwifts = false;
+    bool autoclickerMovingGap = false;
+    int autoclickerMovingGapLookahead = 8;
     int autoclickerPlayer = 0;
+
+    // Proportional (triple slider) click timing: one 100% bar split into the
+    // relative time spent Holding / Released, plus the share of presses that
+    // become swift clicks. Applied over a cycle of autoclickerCycleFrames.
+    bool autoclickerProportional = false;
+    float autoclickerHoldPct = 50.0f;
+    float autoclickerReleasePct = 40.0f;
+    float autoclickerSwiftPct = 10.0f;
+    int autoclickerCycleFrames = 8;
+
+    bool pathfinderEnabled = false;
+    int pathfinderStuckDeaths = 5;
 
     bool useAlternateHook = false;
 
@@ -221,14 +238,27 @@ struct glz::meta<GrapeSettings> {
         "block_inputs", &T::blockInputs,
         "use_visual_updates", &T::useVisualUpdates,
         "lock_delta", &T::lockDelta,
+        "physics_21", &T::physics21,
         "auto_video_name", &T::automaticVideoName,
         "video_name_template", &T::videoNameTemplate,
         "preset", &T::lastLoadedPreset,
         "preview_audio", &T::previewAudio,
         "autoclicker_enabled", hide{&T::autoclickerEnabled},
         "autoclicker_frequency", &T::autoclickerFrequency,
+        "autoclicker_hold_frames", &T::autoclickerHoldFrames,
+        "autoclicker_release_frames", &T::autoclickerReleaseFrames,
         "autoclicker_swifts", &T::autoclickerSwifts,
+        "autoclicker_moving_gap", &T::autoclickerMovingGap,
+        "autoclicker_moving_gap_lookahead", &T::autoclickerMovingGapLookahead,
         "autoclicker_player", &T::autoclickerPlayer,
+        "autoclicker_proportional", &T::autoclickerProportional,
+        "autoclicker_hold_pct", &T::autoclickerHoldPct,
+        "autoclicker_release_pct", &T::autoclickerReleasePct,
+        "autoclicker_swift_pct", &T::autoclickerSwiftPct,
+        "autoclicker_cycle_frames", &T::autoclickerCycleFrames,
+
+        "pathfinder_enabled", hide{&T::pathfinderEnabled},
+        "pathfinder_stuck_deaths", &T::pathfinderStuckDeaths,
 
         "ssb_fix", &T::scrollSpeedBugFix,
 

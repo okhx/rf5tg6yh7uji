@@ -31,6 +31,9 @@ class RenderTexture {
     uint32_t m_fbo[2];
 
     uint32_t m_pbo[RING_SIZE];
+#ifndef GEODE_IS_MOBILE
+    GLsync m_fence[RING_SIZE] = {};
+#endif
     bool m_slotMapped[RING_SIZE] = {};
     size_t m_bufferSize = 0;
     int m_writeIndex = 0;

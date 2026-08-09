@@ -38,6 +38,7 @@ add_library(${PROJECT_NAME} SHARED
     src/engine/clock.cpp
 
     src/assist/autoclicker.cpp
+    src/assist/pathfinder.cpp
     src/assist/cps.cpp
     src/assist/hitboxes.cpp
 
@@ -144,6 +145,10 @@ if (WIN32)
         target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:/Gw>
             $<$<CONFIG:Release>:/Gy>
+            $<$<CONFIG:Release>:/GF>
+            $<$<CONFIG:Release>:/Oi>
+            $<$<CONFIG:Release>:/Ob3>
+            $<$<CONFIG:Release>:/Zc:inline>
             $<$<CONFIG:Release>:/GS>
             $<$<CONFIG:Release>:/guard:cf>
             $<$<CONFIG:Release>:/sdl>
@@ -156,6 +161,8 @@ if (WIN32)
             $<$<CONFIG:Release>:/HIGHENTROPYVA>
             $<$<CONFIG:Release>:/NXCOMPAT>
             $<$<CONFIG:Release>:/GUARD:CF>
+            $<$<CONFIG:Release>:/CETCOMPAT>
+            $<$<CONFIG:Release>:/INCREMENTAL:NO>
         )
     endif()
 endif()

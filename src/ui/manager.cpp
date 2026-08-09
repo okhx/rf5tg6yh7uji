@@ -1,4 +1,11 @@
- #include "manager.hpp"
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui_internal.h>
+
+#include "manager.hpp"
+
+void slui::bringCurrentWindowToFront() {
+    ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+}
 
 #ifdef GEODE_IS_WINDOWS
 #include <winuser.h>
@@ -41,9 +48,11 @@ constexpr int VK_OEM_7 = 0xDE;
 #include <slc/formats/v3/replay.hpp>
 #include <variant>
 #include <fstream>
+#include <optional>
 
 #include "Geode/utils/string.hpp"
 #include "assist/autoclicker.hpp"
+#include "assist/pathfinder.hpp"
 #include "assist/hitboxes.hpp"
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
@@ -63,6 +72,7 @@ constexpr int VK_OEM_7 = 0xDE;
 
 #ifdef GRAPE_PRIVATE_PC
 #include "license.hpp"
+#include "script_engine.hpp"
 #include "skeet_menu.hpp"
 #endif
 
@@ -71,6 +81,10 @@ constexpr int VK_OEM_7 = 0xDE;
 #endif
 
 using namespace geode::prelude;
+
+#ifdef GRAPE_PRIVATE_PC
+static std::optional<bool> s_pendingMenuStyle;
+#endif
 
 UIManager::UIManager() : m_font(nullptr), m_medium(nullptr), m_bold(nullptr) {}
 
@@ -554,8 +568,6 @@ void UIManager::setup() {
             .c_str(),
         18.0f, &mediumFontCfg, glyphRanges.Data);
 
-    ImGui::GetIO().Fonts->Build();
-
     ImFontConfig mainFontCfg;
     mainFontCfg.OversampleH = 3;
     mainFontCfg.OversampleV = 3;
@@ -574,8 +586,6 @@ void UIManager::setup() {
                                            "font_symbols.ttf")
             .c_str(),
         14.0f, &mainFontCfg, glyphRanges.Data);
-
-    ImGui::GetIO().Fonts->Build();
 
     m_font   = mainFont;
     m_medium = mediumFont;
@@ -623,6 +633,7 @@ void UIManager::setup() {
     for (const auto& label : GrapeEngine::get()->labels().m_labels) {
         m_state.m_labelState.options.push_back(label.getFriendlyName().c_str());
     }
+    m_state.m_labelState.selectedIndex = 0;
 
     m_state.m_replayNames.clear();
     for (const auto& entry : std::filesystem::directory_iterator(
@@ -653,11 +664,18 @@ void UIManager::setup() {
     m_replayAutocomplete.suggestions = m_state.m_replayNames;
     m_state.m_presetAutocomplete.suggestions = m_state.m_presetNames;
     m_state.m_scriptAutocomplete.suggestions = m_state.m_scriptNames;
+#ifdef GRAPE_PRIVATE_PC
+    auto& scripts = grape::pc::ScriptEngine::get();
+    scripts.refresh();
+    for (const auto& script : scripts.scripts()) scripts.load(script.name);
+#endif
 
     m_state.m_bgColorState.colors = GrapeSettings::get()->layoutBgColor;
     m_state.m_groundColorState.colors = GrapeSettings::get()->layoutGroundColor;
     m_state.m_holdingTrailColorState.colors =
         GrapeSettings::get()->hitboxes.holdingTrailColor;
+    m_state.m_noclipTintColorState.colors =
+        GrapeSettings::get()->noclipTintColor;
 
     for (auto& theme : s_themes) {
         theme.initialize();
@@ -892,12 +910,17 @@ void UIManager::drawKeybindContextMenu() {
             ctx.open        = true;
         } else {
             const float scale = slui::Config::get().uiScale;
-            const ImVec2 winSize{380.0f * scale, 0.0f};
+            const ImVec2 winSize{330.0f * scale, 0.0f};
             ImGui::SetNextWindowPos(
                 ImGui::GetMainViewport()->GetCenter(),
                 ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
             ImGui::SetNextWindowSize(winSize, ImGuiCond_Always);
             ImGui::SetNextWindowBgAlpha(1.0f);
+            ImGui::PushStyleColor(ImGuiCol_WindowBg,
+                                  ImVec4(0.067f, 0.067f, 0.067f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_Border,
+                                  ImVec4(0.27f, 0.27f, 0.27f, 1.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
             if (ImGui::Begin("##KeyCapture", nullptr,
                              ImGuiWindowFlags_NoDecoration |
                              ImGuiWindowFlags_NoNav |
@@ -919,6 +942,8 @@ void UIManager::drawKeybindContextMenu() {
                 }, contentWidth);
             }
             ImGui::End();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor(2);
             return;
         }
     }
@@ -926,12 +951,17 @@ void UIManager::drawKeybindContextMenu() {
     if (!ctx.open) return;
 
     const float scale = slui::Config::get().uiScale;
-    const ImVec2 winSize{380.0f * scale, 0.0f};
+    const ImVec2 winSize{330.0f * scale, 0.0f};
     ImGui::SetNextWindowPos(
         ImGui::GetMainViewport()->GetCenter(),
         ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSizeConstraints(winSize, ImVec2(winSize.x, FLT_MAX));
     ImGui::SetNextWindowBgAlpha(1.0f);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,
+                          ImVec4(0.067f, 0.067f, 0.067f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border,
+                          ImVec4(0.27f, 0.27f, 0.27f, 1.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
 
     if (!ImGui::Begin("##KeybindWindow", &ctx.open,
                       ImGuiWindowFlags_NoDecoration |
@@ -939,6 +969,8 @@ void UIManager::drawKeybindContextMenu() {
                       ImGuiWindowFlags_NoScrollbar |
                       ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::End();
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor(2);
         return;
     }
 
@@ -1019,6 +1051,8 @@ void UIManager::drawKeybindContextMenu() {
     }, contentWidth);
 
     ImGui::End();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(2);
 }
 
 void UIManager::draw() {
@@ -1030,13 +1064,21 @@ void UIManager::draw() {
     auto& cfg = slui::Config::get();
 
 #ifdef GRAPE_PRIVATE_PC
+    if (s_pendingMenuStyle) {
+        grape::pc::setSkeetMenu(*s_pendingMenuStyle);
+        s_pendingMenuStyle.reset();
+    }
     auto& license = grape::pc::License::get();
+    license.tick();
     if (!license.authorized()) {
         m_state.m_visible->inner() = true;
         CCEGLView::get()->showCursor(true);
         license.draw();
         return;
     }
+    grape::pc::ScriptEngine::get().update(
+        cocos2d::CCDirector::get()->getDeltaTime());
+    grape::pc::ScriptEngine::get().overlay();
 #endif
 
     ImGuiHookCtx::get().m_time += cocos2d::CCDirector::get()->getDeltaTime();
@@ -1045,7 +1087,7 @@ void UIManager::draw() {
 
     cfg.uiScale = m_state.m_uiScale->inner() * getWindowDpi();
     cfg.fitWindowToContent = GrapeSettings::get()->fitMenuToContent;
-    static constexpr float tabHeights[] = {445, 500, 280, 410, 500, 500, 530, 530};
+    static constexpr float tabHeights[] = {445, 500, 500, 410, 500, 500, 530, 530};
     cfg.fittedWindowHeight = tabHeights[static_cast<int>(m_state.m_currentTab)];
 
     if (!m_state.m_visible->inner()) {
@@ -1142,13 +1184,13 @@ void UIManager::draw() {
                               ImGuiWindowFlags_NoScrollbar);
             ImGui::SetCursorPosY(10.0f);
         }
-        tabButton("Record", "A", UIState::UITab::Record);
-        tabButton("Assist", "G", UIState::UITab::Assist);
-        tabButton("Prediction", "B", UIState::UITab::Prediction);
-        tabButton("Edit", "C", UIState::UITab::Edit);
-        tabButton("Render", "D", UIState::UITab::Render);
-        tabButton("Settings", "E", UIState::UITab::Settings);
-        tabButton("Theme", "F", UIState::UITab::Theme);
+        tabButton("Record", "\uf192", UIState::UITab::Record);
+        tabButton("Assist", "\uf004", UIState::UITab::Assist);
+        tabButton("Prediction", "\uefba", UIState::UITab::Prediction);
+        tabButton("Edit", "\uf044", UIState::UITab::Edit);
+        tabButton("Render", "\uf03d", UIState::UITab::Render);
+        tabButton("Settings", "\uf013", UIState::UITab::Settings);
+        tabButton("Scripts", "LUA", UIState::UITab::Scripts);
         if (skeetMenu) {
             ImGui::Dummy(ImVec2(1.0f, 1.0f));
             ImGui::EndChild();
@@ -1226,8 +1268,8 @@ void UIManager::draw() {
                     ImGui::EndTable();
                 }
                 if (toggleRecording) {
-                    bot->m_mode = recording ? GrapeEngine::Mode::Stopped
-                                            : GrapeEngine::Mode::Recording;
+                    bot->setMode(recording ? GrapeEngine::Mode::Stopped
+                                           : GrapeEngine::Mode::Recording);
                     if (PlayLayer::get() && bot->isRecording() &&
                         rs.getInputIndex() < rs.m_actionAtom.length()) {
                         rs.createBackup();
@@ -1235,8 +1277,8 @@ void UIManager::draw() {
                     }
                 }
                 if (togglePlaying)
-                    bot->m_mode = playing ? GrapeEngine::Mode::Stopped
-                                          : GrapeEngine::Mode::Playing;
+                    bot->setMode(playing ? GrapeEngine::Mode::Stopped
+                                        : GrapeEngine::Mode::Playing);
 
                 slui::divider();
 
@@ -1346,27 +1388,49 @@ void UIManager::draw() {
                     }
                 }
                 if (loadReplay) {
-                    auto path = std::filesystem::path(rs.m_replayName);
-                    if (!path.has_extension()) path += ".grape";
-                    auto loaded = rs.loadSupported(
-                        grape::paths::directory("replays") / path.filename());
-                    if (loaded.isErr())
-                        geode::log::error("Failed to load replay: {}",
-                                          loaded.unwrapErr());
+                    const auto dir = grape::paths::directory("replays");
+                    // Resolve the actual macro file. The typed name may already
+                    // include an extension, may contain dots (auto-named after a
+                    // level), or exist as either .grape or .slc -- try all of
+                    // these instead of blindly appending ".grape", which was
+                    // failing to reload after a replay renamed the field.
+                    std::filesystem::path resolved;
+                    if (std::filesystem::is_regular_file(dir / rs.m_replayName)) {
+                        resolved = dir / rs.m_replayName;
+                    } else {
+                        for (const char* ext : {".grape", ".slc"}) {
+                            auto cand = dir / (rs.m_replayName + ext);
+                            if (std::filesystem::is_regular_file(cand)) {
+                                resolved = cand;
+                                break;
+                            }
+                        }
+                    }
+                    if (resolved.empty()) {
+                        geode::log::error(
+                            "Failed to load replay: no file found for '{}'",
+                            rs.m_replayName);
+                    } else {
+                        auto loaded = rs.loadSupported(resolved);
+                        if (loaded.isErr())
+                            geode::log::error("Failed to load replay: {}",
+                                              loaded.unwrapErr());
+                    }
                 }
 
-                if (m_state.m_lastReplayName != rs.m_replayName) {
-                    m_state.m_lastReplayName = rs.m_replayName;
-                    m_state.m_replayNames.clear();
-                    for (const auto& entry :
-                         std::filesystem::directory_iterator(
-                              grape::paths::directory("replays"))) {
-                        if (entry.is_regular_file() &&
-                            (entry.path().extension() == ".grape" ||
-                             entry.path().extension() == ".slc")) {
-                            m_state.m_replayNames.push_back(
-                                entry.path().stem().string());
-                        }
+                // Rescan the replays directory every frame the tab is open so
+                // newly added / saved / imported macros always show up in the
+                // search list (it used to only refresh on Save or name change).
+                m_state.m_lastReplayName = rs.m_replayName;
+                m_state.m_replayNames.clear();
+                for (const auto& entry :
+                     std::filesystem::directory_iterator(
+                          grape::paths::directory("replays"))) {
+                    if (entry.is_regular_file() &&
+                        (entry.path().extension() == ".grape" ||
+                         entry.path().extension() == ".slc")) {
+                        m_state.m_replayNames.push_back(
+                            entry.path().stem().string());
                     }
                 }
 
@@ -1439,10 +1503,20 @@ void UIManager::draw() {
                 slui::divider(false);
 
                 slui::text("Smart Merge", m_medium);
-                slui::input_text("##MergeReplay", "Replay to merge",
-                                 m_state.m_mergeReplayName);
-
-                if (slui::button("Merge").pressed) {
+                bool doMerge = false;
+                if (ImGui::BeginTable("SmartMergeRow", 2,
+                                      ImGuiTableFlags_SizingStretchSame,
+                                      skeetMenu ? ImVec2(220.0f, 0.0f)
+                                                : ImVec2())) {
+                    ImGui::TableNextColumn();
+                    ImGui::SetNextItemWidth(-FLT_MIN);
+                    slui::input_text("##MergeReplay", "Replay to merge",
+                                     m_state.m_mergeReplayName);
+                    ImGui::TableNextColumn();
+                    doMerge = slui::raw_button("Merge", ImVec2(-FLT_MIN, 0.0f));
+                    ImGui::EndTable();
+                }
+                if (doMerge) {
                     auto mergePath =
                         grape::paths::directory("replays") /
                         (m_state.m_mergeReplayName + ".grape");
@@ -1465,16 +1539,24 @@ void UIManager::draw() {
 
                 if (GrapeEngine::get()->hitboxes().m_trailEnabled->inner()) {
                     auto& hitboxSettings = GrapeSettings::get()->hitboxes;
-                    slui::checkbox("Show Holding##Hitboxes",
-                                   hitboxSettings.holdingTrailEnabled);
                     m_state.m_holdingTrailColorState.colors =
                         hitboxSettings.holdingTrailColor;
-                    slui::color("Holding Color##Hitboxes",
-                                m_state.m_holdingTrailColorState, [&]() {
-                                    renderBlurBg(
-                                        12.0f, 1.5f,
-                                        m_state.m_useShader->inner());
-                                });
+                    if (ImGui::BeginTable("ShowHoldingRow", 2,
+                                          ImGuiTableFlags_SizingStretchSame,
+                                          skeetMenu ? ImVec2(220.0f, 0.0f)
+                                                    : ImVec2())) {
+                        ImGui::TableNextColumn();
+                        slui::checkbox("Show Holding##Hitboxes",
+                                       hitboxSettings.holdingTrailEnabled);
+                        ImGui::TableNextColumn();
+                        slui::color("Holding Color##Hitboxes",
+                                    m_state.m_holdingTrailColorState, [&]() {
+                                        renderBlurBg(
+                                            12.0f, 1.5f,
+                                            m_state.m_useShader->inner());
+                                    });
+                        ImGui::EndTable();
+                    }
                     hitboxSettings.holdingTrailColor =
                         m_state.m_holdingTrailColorState.colors;
 
@@ -1503,16 +1585,24 @@ void UIManager::draw() {
 
                     auto& category = GrapeSettings::get()->hitboxes.categories[h];
 
-                    slui::checkbox("Enabled##SpecificHitbox",
-                                    category.enabled);
-
                     m_state.m_hitboxColorState.colors = category.colors;
 
-                    slui::color("Color##SpecificHitbox",
-                                 m_state.m_hitboxColorState, [&]() {
-                                     renderBlurBg(12.0f, 1.5f,
-                                                  m_state.m_useShader->inner());
-                                 });
+                    if (ImGui::BeginTable("SpecificHitboxRow", 2,
+                                          ImGuiTableFlags_SizingStretchSame,
+                                          skeetMenu ? ImVec2(220.0f, 0.0f)
+                                                    : ImVec2())) {
+                        ImGui::TableNextColumn();
+                        slui::checkbox("Enabled##SpecificHitbox",
+                                       category.enabled);
+                        ImGui::TableNextColumn();
+                        slui::color("Color##SpecificHitbox",
+                                    m_state.m_hitboxColorState, [&]() {
+                                        renderBlurBg(
+                                            12.0f, 1.5f,
+                                            m_state.m_useShader->inner());
+                                    });
+                        ImGui::EndTable();
+                    }
 
                     category.colors = m_state.m_hitboxColorState.colors;
 
@@ -1531,14 +1621,23 @@ void UIManager::draw() {
                 }
                 keybindRightClick("updater.layout_mode");
 
-                slui::checkbox("Use Regular Background##LayoutMode",
-                                GrapeEngine::get()->timeline().m_useRegularBg->inner());
+                slui::checkbox(
+                    "Use Regular Background##LayoutMode",
+                    GrapeEngine::get()->timeline().m_useRegularBg->inner());
                 keybindRightClick("updater.use_regular_bg");
 
-                slui::color("Background Color##LayoutMode",
-                             m_state.m_bgColorState, popupShaderFn);
-                slui::color("Ground Color##LayoutMode",
-                             m_state.m_groundColorState, popupShaderFn);
+                if (ImGui::BeginTable("LayoutColorRow", 2,
+                                      ImGuiTableFlags_SizingStretchSame,
+                                      skeetMenu ? ImVec2(220.0f, 0.0f)
+                                                : ImVec2())) {
+                    ImGui::TableNextColumn();
+                    slui::color("Background Color##LayoutMode",
+                                m_state.m_bgColorState, popupShaderFn);
+                    ImGui::TableNextColumn();
+                    slui::color("Ground Color##LayoutMode",
+                                m_state.m_groundColorState, popupShaderFn);
+                    ImGui::EndTable();
+                }
 
                 GrapeSettings::get()->layoutBgColor =
                     m_state.m_bgColorState.colors;
@@ -1574,6 +1673,32 @@ void UIManager::draw() {
                 GrapeSettings::get()->noclipPlayer = static_cast<int>(
                     GrapeEngine::get()->timeline().m_noclipType);
 
+                if (ImGui::BeginTable("NoclipTintRow", 2,
+                                      ImGuiTableFlags_SizingStretchSame,
+                                      skeetMenu ? ImVec2(220.0f, 0.0f)
+                                                : ImVec2())) {
+                    ImGui::TableNextColumn();
+                    slui::checkbox("Death Tint##Noclip",
+                                   GrapeSettings::get()->noclipTintEnabled);
+                    ImGui::TableNextColumn();
+                    if (GrapeSettings::get()->noclipTintEnabled) {
+                        slui::color("Tint Color##Noclip",
+                                    m_state.m_noclipTintColorState,
+                                    popupShaderFn);
+                        GrapeSettings::get()->noclipTintColor =
+                            m_state.m_noclipTintColorState.colors;
+                    }
+                    ImGui::EndTable();
+                }
+                if (GrapeSettings::get()->noclipTintEnabled) {
+                    slui::drag("Tint Opacity##Noclip",
+                               GrapeSettings::get()->noclipTintOpacity, 0.0, 1.0,
+                               0.01, "{:.2f}");
+                    slui::drag("Tint Time##Noclip",
+                               GrapeSettings::get()->noclipTintTime, 0.0, 10.0,
+                               0.05, "{:.2f}");
+                }
+
                 slui::divider();
 
                 slui::text("Trajectory", m_medium);
@@ -1598,13 +1723,21 @@ void UIManager::draw() {
                 }
 
                 auto& trajectorySettings = GrapeSettings::get()->trajectory;
-                slui::checkbox("Straight Wave##Trajectory",
-                               trajectorySettings.straightEnabled);
                 m_state.m_straightTrajectoryColorState.colors =
                     trajectorySettings.straightColor;
-                slui::color("Straight Color##Trajectory",
-                            m_state.m_straightTrajectoryColorState,
-                            popupShaderFn);
+                if (ImGui::BeginTable("StraightTrajectoryRow", 2,
+                                      ImGuiTableFlags_SizingStretchSame,
+                                      skeetMenu ? ImVec2(220.0f, 0.0f)
+                                                : ImVec2())) {
+                    ImGui::TableNextColumn();
+                    slui::checkbox("Straight Wave##Trajectory",
+                                   trajectorySettings.straightEnabled);
+                    ImGui::TableNextColumn();
+                    slui::color("Straight Color##Trajectory",
+                                m_state.m_straightTrajectoryColorState,
+                                popupShaderFn);
+                    ImGui::EndTable();
+                }
                 trajectorySettings.straightColor =
                     m_state.m_straightTrajectoryColorState.colors;
 
@@ -1621,16 +1754,24 @@ void UIManager::draw() {
                     auto& category =
                         GrapeSettings::get()->trajectory.categories[t];
 
-                    slui::checkbox("Enabled##SpecificTrajectory",
-                                    category.enabled);
-
                     m_state.m_trajectoryColorState.colors = category.colors;
 
-                    slui::color("Color##SpecificTrajectory",
-                                 m_state.m_trajectoryColorState, [&]() {
-                                     renderBlurBg(12.0f, 1.5f,
-                                                  m_state.m_useShader->inner());
-                                 });
+                    if (ImGui::BeginTable("SpecificTrajectoryRow", 2,
+                                          ImGuiTableFlags_SizingStretchSame,
+                                          skeetMenu ? ImVec2(220.0f, 0.0f)
+                                                    : ImVec2())) {
+                        ImGui::TableNextColumn();
+                        slui::checkbox("Enabled##SpecificTrajectory",
+                                       category.enabled);
+                        ImGui::TableNextColumn();
+                        slui::color("Color##SpecificTrajectory",
+                                    m_state.m_trajectoryColorState, [&]() {
+                                        renderBlurBg(
+                                            12.0f, 1.5f,
+                                            m_state.m_useShader->inner());
+                                    });
+                        ImGui::EndTable();
+                    }
 
                     category.colors = m_state.m_trajectoryColorState.colors;
                 };
@@ -1690,13 +1831,33 @@ void UIManager::draw() {
                             &GrapeEngine::get()->autoclicker().m_player), popupShaderFn);
                     ImGui::EndTable();
                 }
-                slui::drag("Interval##Autoclicker",
-                            GrapeEngine::get()->autoclicker().m_frequency, 0,
-                            std::numeric_limits<int>::max(), 1.0f,
-                            "{} Frame(s)");
+                auto& autoclicker = GrapeEngine::get()->autoclicker();
+                const bool linkHold =
+                    autoclicker.m_holdFrames == autoclicker.m_releaseFrames;
+                const auto hold = slui::drag(
+                    "Hold Frames##Autoclicker", autoclicker.m_holdFrames, 1,
+                    std::numeric_limits<int>::max(), 1.0f, "{} Frame(s)");
+                if (linkHold && hold.changed &&
+                    ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                    autoclicker.m_releaseFrames = autoclicker.m_holdFrames;
+                const bool linkRelease =
+                    autoclicker.m_holdFrames == autoclicker.m_releaseFrames;
+                const auto release = slui::drag(
+                    "Release Frames##Autoclicker",
+                    autoclicker.m_releaseFrames, 1,
+                    std::numeric_limits<int>::max(), 1.0f, "{} Frame(s)");
+                if (linkRelease && release.changed &&
+                    ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                    autoclicker.m_holdFrames = autoclicker.m_releaseFrames;
                 slui::checkbox("Swift Clicks",
                                 GrapeEngine::get()->autoclicker().m_performSwifts);
-                GrapeEngine::get()->autoclicker().saveSettings();
+                slui::checkbox("Moving Gap Assist",
+                                GrapeEngine::get()->autoclicker().m_movingGap);
+                slui::drag(
+                    "Safety Frames##Autoclicker",
+                    GrapeEngine::get()->autoclicker().m_movingGapLookahead,
+                    1, 30, 1.0f, "{} Frame(s)");
+                autoclicker.saveSettings();
                 keybindRightClick("autoclicker.swift_clicks");
 
                 slui::divider();
@@ -1747,6 +1908,34 @@ void UIManager::draw() {
                     GrapeEngine::get()->timeline().m_acceptablePrediction->inner(), 0.0f,
                     1.0f, 0.01f, "{:.2f}");
 
+                slui::divider();
+
+                slui::text("Pathfinder", m_medium);
+
+                auto& pathfinder = GrapeEngine::get()->pathfinder();
+                slui::checkbox("Pathfinder", pathfinder.m_enabled->inner());
+                keybindRightClick("pathfinder.enabled");
+                slui::drag("Stuck Deaths##Pathfinder",
+                           pathfinder.m_stuckDeaths, 1, 50, 1.0f, "{}");
+                if (!GrapeEngine::get()->timeline().m_backwardsStepping->inner())
+                    slui::text(
+                        "Enable Backwards Stepping for checkpoint learning.");
+                slui::divider();
+
+                slui::text("Click Timing", m_medium);
+
+                slui::checkbox("Proportional Timing", pathfinder.m_proportional);
+                if (pathfinder.m_proportional) {
+                    slui::triple_slider("Hold / Release / Swift##pf",
+                                        pathfinder.m_holdPct,
+                                        pathfinder.m_releasePct,
+                                        pathfinder.m_swiftPct);
+                    slui::drag("Cycle Frames##pf", pathfinder.m_cycleFrames,
+                               2, 120,
+                               1.0f, "{} Frame(s)");
+                }
+                pathfinder.saveSettings();
+
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Edit, [&]() {
@@ -1773,10 +1962,15 @@ void UIManager::draw() {
                 }
 
                 const float editorHeight = skeetMenu
-                    ? 420.0f
+                    ? 440.0f
                     : ImGui::GetContentRegionAvail().y;
+                // Reserve room for the 3 rows of macro buttons. Each table row
+                // also adds CellPadding on top and bottom, which the previous
+                // calculation ignored - that made the last two buttons ("Flip
+                // Hold & Release" / "Flip P1 & P2") get clipped at the bottom.
                 const float buttonHeight =
-                    (ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y) *
+                    (ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y +
+                     ImGui::GetStyle().CellPadding.y * 2.0f) *
                     3.0f;
                 const auto drawEditor = [&] {
                     const float top = ImGui::GetCursorPosY();
@@ -2136,8 +2330,56 @@ void UIManager::draw() {
                     },
                     16.0);
 
-                slui::input_text("Codec", "Codec",
-                                  renderer->m_settings.m_codec);
+                slui::checkbox("Force Codec", renderer->m_settings.m_forceCodec);
+                if (renderer->m_settings.m_forceCodec) {
+                    slui::input_text("Codec", "Codec",
+                                      renderer->m_settings.m_codec);
+                } else {
+                    if (slui::button(m_state.m_encodersDetected
+                                         ? "Re-detect Encoders"
+                                         : "Detect Encoders")
+                            .pressed) {
+                        auto encoders = renderer->detectEncoders();
+                        m_state.m_encoderState.options = encoders;
+                        m_state.m_encodersDetected = true;
+
+                        // Keep the current selection pointing at the active
+                        // codec if it's still in the detected list.
+                        int selected = 0;
+                        for (int i = 0;
+                             i < static_cast<int>(encoders.size()); ++i) {
+                            if (encoders[i] == renderer->m_settings.m_codec) {
+                                selected = i;
+                                break;
+                            }
+                        }
+                        m_state.m_encoderState.selectedIndex = selected;
+                        m_state.m_codec = selected;
+                        if (!encoders.empty()) {
+                            renderer->m_settings.m_codec = encoders[selected];
+                        }
+                    }
+
+                    if (m_state.m_encoderState.options.empty()) {
+                        slui::text(
+                            m_state.m_encodersDetected
+                                ? "No supported encoders found - enable Force "
+                                  "Codec to type one manually."
+                                : "Run detection to list encoders your PC "
+                                  "supports.");
+                    } else {
+                        if (slui::dropdown("Codec", m_state.m_encoderState,
+                                           m_state.m_codec, popupShaderFn)
+                                .changed) {
+                            m_state.m_codec = std::clamp(
+                                m_state.m_codec, 0,
+                                static_cast<int>(
+                                    m_state.m_encoderState.options.size()) - 1);
+                            renderer->m_settings.m_codec =
+                                m_state.m_encoderState.options[m_state.m_codec];
+                        }
+                    }
+                }
                 slui::input_text("Extension", "Extension",
                                   renderer->m_settings.m_extension);
                 slui::drag("After End Time",
@@ -2172,7 +2414,7 @@ void UIManager::draw() {
                 menuStyleState.selectedIndex = menuStyle;
                 if (slui::dropdown(
                         "Menu Style", menuStyleState, menuStyle).changed) {
-                    grape::pc::setSkeetMenu(menuStyle == 1);
+                    s_pendingMenuStyle = menuStyle == 1;
                     m_state.m_visible->inner() = false;
                 }
 #endif
@@ -2203,6 +2445,10 @@ void UIManager::draw() {
                         .changed) {
                     m_state.m_opacity->notifyChange();
                 }
+
+                slui::divider();
+
+                drawImGuiThemeEditor(m_bold);
 
                 slui::divider();
 
@@ -2368,8 +2614,61 @@ void UIManager::draw() {
 
             });
 
-            slui::tab(m_state.m_currentTab, UIState::UITab::Theme, [&]() {
-                drawImGuiThemeEditor(m_bold);
+            slui::tab(m_state.m_currentTab, UIState::UITab::Scripts, [&]() {
+#ifdef GRAPE_PRIVATE_PC
+                auto& scripts = grape::pc::ScriptEngine::get();
+                static std::string selectedScript;
+                slui::divider(false);
+                slui::text("Lua Scripts", m_bold);
+                if (slui::button("Open Scripts Folder").pressed)
+                    geode::utils::file::openFolder(grape::paths::directory("scripts"));
+                if (slui::button("Refresh").pressed) scripts.refresh();
+                auto available = scripts.scripts();
+                const auto selectedExists = std::ranges::find(
+                    available, selectedScript, &grape::pc::ScriptStatus::name);
+                if (selectedExists == available.end())
+                    selectedScript = available.empty() ? "" : available.front().name;
+                slui::DropdownState selector;
+                for (const auto& script : available)
+                    selector.options.push_back(script.name);
+                int selectedIndex = -1;
+                for (int i = 0; i < static_cast<int>(selector.options.size()); ++i)
+                    if (selector.options[i] == selectedScript) selectedIndex = i;
+                if (slui::dropdown("Script", selector, selectedIndex).changed &&
+                    selectedIndex >= 0) {
+                    selectedScript = selector.options[selectedIndex];
+                    scripts.load(selectedScript);
+                    available = scripts.scripts();
+                }
+                const auto current = std::ranges::find(
+                    available, selectedScript, &grape::pc::ScriptStatus::name);
+                if (current != available.end()) {
+                    slui::text(current->status);
+                    if (current->loaded) {
+                        if (ImGui::BeginTable("ScriptActionsRow", 2,
+                                              ImGuiTableFlags_SizingStretchSame,
+                                              skeetMenu ? ImVec2(220.0f, 0.0f)
+                                                        : ImVec2())) {
+                            ImGui::TableNextColumn();
+                            if (slui::raw_button("Unload",
+                                                 ImVec2(-FLT_MIN, 0.0f)))
+                                scripts.unload(selectedScript);
+                            ImGui::TableNextColumn();
+                            if (slui::raw_button("Reload",
+                                                 ImVec2(-FLT_MIN, 0.0f)))
+                                scripts.load(selectedScript);
+                            ImGui::EndTable();
+                        }
+                    } else if (slui::button("Load").pressed) {
+                        scripts.load(selectedScript);
+                    }
+                } else {
+                    slui::text("No Lua scripts found");
+                }
+                slui::divider();
+                slui::text("Script Menu", m_medium);
+                scripts.draw();
+#endif
             });
         }
         ImGui::EndChild();

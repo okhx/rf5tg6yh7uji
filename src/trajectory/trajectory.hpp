@@ -6,6 +6,7 @@
 #include <Geode/modify/GJBaseGameLayer.hpp>
 #include <functional>
 #include <unordered_set>
+#include <vector>
 
 #include "../config/config.hpp"
 #include "../shared/value/value.hpp"
@@ -54,6 +55,11 @@ struct PredictionConfig {
     bool m_bypassConfig = false;
     int m_maxLength = 10'000'000;
     double m_overridenTPS = 0.0;
+    // If >= 0, the active player's jump input is flipped (held<->released) at
+    // this simulation step, letting a caller probe delayed-click plans such as
+    // "wait N frames, then jump". -1 keeps the input constant for the whole
+    // prediction (the default used by trajectory rendering / prevent-death).
+    int m_flipAtStep = -1;
 };
 
 class Trajectory {

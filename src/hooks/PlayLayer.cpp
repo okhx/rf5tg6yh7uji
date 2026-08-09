@@ -2,6 +2,7 @@
 #include <filesystem>
 
 #include "assist/autoclicker.hpp"
+#include "assist/pathfinder.hpp"
 #include "assist/cps.hpp"
 #include "assist/hitboxes.hpp"
 #include "engine/engine.hpp"
@@ -116,6 +117,15 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
     void delayedResetLevel() {
 
         auto bot = GrapeEngine::get();
+
+        // The pathfinder respawns instantly on death, so this delayed reset --
+        // scheduled by the death that already restarted us -- would otherwise
+        // restart a run that's already back underway. Skip it once we're alive.
+        if (bot->pathfinder().m_enabled->inner() && m_player1 &&
+            !m_player1->m_isDead) {
+            return;
+        }
+
         if (bot->timeline().m_canDie->inner()) {
             bot->timeline().m_inputIsDeath = true;
         }
@@ -391,6 +401,11 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
 
     void resetLevel() override {
         auto bot = GrapeEngine::get();
+
+        // Drop any leftover noclip tint overlay before the level restarts so
+        // it can't linger into the fresh attempt.
+        this->removeNoclipTint();
+
         if (!bot->isEnabled()) {
             m_player1->releaseAllButtons();
             m_player2->releaseAllButtons();
@@ -415,6 +430,11 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
         uint64_t deathFrame = bot->timeline().getFrame();
 
         this->checkIfResetWasExpected(deathFrame);
+
+        // Let the pathfinder learn from this death before checkpoints are
+        // resolved -- if we're stuck it drops the latest checkpoint here so the
+        // restore below resumes from an earlier point.
+        bot->pathfinder().onDeath(this, deathFrame);
 
         bool hasAddedCheckpoint = this->handleResetWithCheckpoints(deathFrame);
 
@@ -599,6 +619,9 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
                           (player == m_player1));
 
         if (!bot->timeline().m_noclip->inner() || shouldDie) {
+            // Real death: clear any in-flight noclip tint so it doesn't flash
+            // back at full opacity over the death animation.
+            this->removeNoclipTint();
             return PlayLayer::destroyPlayer(player, gameObject);
         }
 
@@ -608,23 +631,26 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
             auto* tint =
                 typeinfo_cast<CCLayerColor*>(this->getChildByID(tintID));
             auto& source = settings->noclipTintColor;
-            ccColor4B color = {
+            const ccColor3B rgb = {
                 static_cast<GLubyte>(std::clamp(source[0], 0.f, 1.f) * 255.f),
                 static_cast<GLubyte>(std::clamp(source[1], 0.f, 1.f) * 255.f),
-                static_cast<GLubyte>(std::clamp(source[2], 0.f, 1.f) * 255.f),
-                static_cast<GLubyte>(
-                    std::clamp(settings->noclipTintOpacity, 0.0, 1.0) *
-                    255.0)};
+                static_cast<GLubyte>(std::clamp(source[2], 0.f, 1.f) * 255.f)};
+            const GLubyte opacity = static_cast<GLubyte>(
+                std::clamp(settings->noclipTintOpacity, 0.0, 1.0) * 255.0);
             if (!tint) {
                 auto size = CCDirector::get()->getWinSize();
-                tint = CCLayerColor::create(color, size.width, size.height);
+                tint = CCLayerColor::create({rgb.r, rgb.g, rgb.b, 0},
+                                            size.width, size.height);
                 tint->setID(tintID);
                 this->addChild(tint, 100000);
             } else {
+                // Reuse the existing node: cancel the in-flight fade so it
+                // doesn't stack a second tint (previously this left a leftover
+                // node that flashed back at full opacity on the next death).
                 tint->stopAllActions();
-                tint->setColor({color.r, color.g, color.b});
-                tint->setOpacity(color.a);
             }
+            tint->setColor(rgb);
+            tint->setOpacity(opacity);
 
             const float duration = static_cast<float>(
                 std::clamp(settings->noclipTintTime, 0.0, 10.0));
@@ -634,6 +660,17 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
                 geode::cocos::CallFuncExt::create(
                     [tint] { tint->removeFromParent(); }),
                 nullptr));
+        }
+    }
+
+    // Remove any lingering noclip tint overlay so it can't reappear (e.g. at
+    // full opacity) when the player actually dies or the level resets.
+    void removeNoclipTint() {
+        constexpr auto tintID = "noclip-tint"_spr;
+        if (auto* tint =
+                typeinfo_cast<CCLayerColor*>(this->getChildByID(tintID))) {
+            tint->stopAllActions();
+            tint->removeFromParent();
         }
     }
 

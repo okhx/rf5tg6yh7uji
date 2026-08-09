@@ -13,6 +13,7 @@
 
 #include "Geode/cocos/CCScheduler.h"
 #include "assist/autoclicker.hpp"
+#include "assist/pathfinder.hpp"
 #include "assist/hitboxes.hpp"
 #include "engine.hpp"
 #include "checkpoint/fix.hpp"
@@ -27,16 +28,20 @@
 
 using namespace geode::prelude;
 
-float FrameEngine::getSSB() {
+float FrameEngine::playerSpeedUnits(float speed) {
     static constexpr float speeds[] = {
         251.1601f, 311.5801f, 387.4201f, 468.0002f, 576.0002f};
-    auto* layer = GJBaseGameLayer::get();
-    if (!layer || !layer->m_player1) return 1.0f;
-    const float speed = layer->m_player1->m_playerSpeed;
     const int index = speed == .7f ? 0 : speed == .9f ? 1 :
                       speed == 1.1f ? 2 : speed == 1.3f ? 3 : 4;
+    return speeds[index];
+}
+
+float FrameEngine::getSSB() {
+    auto* layer = GJBaseGameLayer::get();
+    if (!layer || !layer->m_player1) return 1.0f;
     const float x = layer->m_player1->getPositionX();
-    const float step = speeds[index] / std::max(getTps(), 1.0);
+    const float step = playerSpeedUnits(layer->m_player1->m_playerSpeed) /
+                       std::max(getTps(), 1.0);
     const float factor = ((x + step) - x) / step;
     return factor > 0.0f && !layer->m_levelEndAnimationStarted
         ? factor : 1.0f;
@@ -536,6 +541,7 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
     }
 
     bot->autoclicker().update(playLayer);
+    bot->pathfinder().update(playLayer);
 }
 
 
@@ -627,6 +633,7 @@ static void frameUpdateMidhook(SafetyHookContext&) {
 
     if (pll) {
         bot->autoclicker().update(pll);
+        bot->pathfinder().update(pll);
     }
 }
 

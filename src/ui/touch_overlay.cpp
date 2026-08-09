@@ -2,6 +2,7 @@
 #include "config/config.hpp"
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
+#include "render/renderer.hpp"
 
 using namespace geode::prelude;
 
@@ -110,7 +111,14 @@ void TouchOverlay::updateVisibility() {
     m_leftSprite->setOpacity(opacity);
     m_rightSprite->setOpacity(opacity);
     m_leftBtn->setVisible(timeline.m_backwardsStepping->inner());
+
+#ifdef GEODE_IS_IOS
+    // Hide pause button while rendering on iOS
+    bool isRendering = Renderer::get()->isRecording();
+    this->setVisible(playLayer && timeline.isPaused() && !isRendering);
+#else
     this->setVisible(playLayer && timeline.isPaused());
+#endif
 }
 
 void TouchOverlay::hide() {

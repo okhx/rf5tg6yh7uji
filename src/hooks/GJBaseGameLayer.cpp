@@ -508,7 +508,7 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             }
 
             this->requeueInverted();
-        } else if (!LevelEditorLayer::get() || bot->isPlaying()) {
+        } else if (bot->isPlaying()) {
             uint32_t frame = bot->timeline().getFrame();
 
             if (auto input = bot->macro().getCurrentQueuedInput();

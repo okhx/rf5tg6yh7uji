@@ -23,6 +23,8 @@
 
 namespace slui {
 
+void bringCurrentWindowToFront();
+
 struct WidgetState {
     bool pressed = false;
     bool hovered = false;
@@ -154,6 +156,92 @@ WidgetState drag(std::string_view label, T& value, T min = T{}, T max = T{100},
                                    speed, &min, &max));
 }
 
+// A single 100%-wide track split into three draggable segments (a + b + c ==
+// 100). Two dividers can be dragged to redistribute between adjacent segments.
+inline WidgetState triple_slider(std::string_view label, float& a, float& b,
+                                 float& c) {
+#ifdef GRAPE_PRIVATE_PC
+    if (Config::get().skeetMode)
+        return state(grape::pc::skrt::tripleSlider(label, a, b, c));
+#endif
+    float sum = a + b + c;
+    if (!(sum > 0.0f)) {
+        a = b = c = 100.0f / 3.0f;
+        sum = 100.0f;
+    } else if (std::fabs(sum - 100.0f) > 0.001f) {
+        a = a / sum * 100.0f;
+        b = b / sum * 100.0f;
+        c = c / sum * 100.0f;
+    }
+
+    const std::string_view shown = visible_label(label);
+    if (!shown.empty())
+        ImGui::TextUnformatted(shown.data(), shown.data() + shown.size());
+
+    const float width = std::max(1.0f, ImGui::CalcItemWidth());
+    const float height = ImGui::GetFrameHeight();
+    const ImVec2 p0 = ImGui::GetCursorScreenPos();
+    const ImVec2 p1(p0.x + width, p0.y + height);
+    const std::string id = "##tri-" + std::string(label);
+    ImGui::InvisibleButton(id.c_str(), ImVec2(width, height));
+
+    float d1 = a * 0.01f;
+    float d2 = (a + b) * 0.01f;
+
+    static ImGuiID s_activeId = 0;
+    static int s_activeDivider = 0;
+
+    bool changed = false;
+    if (ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+        const float ratio = std::clamp(
+            (ImGui::GetIO().MousePos.x - p0.x) / width, 0.0f, 1.0f);
+        if (ImGui::IsItemActivated()) {
+            s_activeId = ImGui::GetItemID();
+            s_activeDivider =
+                std::fabs(ratio - d1) <= std::fabs(ratio - d2) ? 1 : 2;
+        }
+        if (s_activeId == ImGui::GetItemID()) {
+            if (s_activeDivider == 1) d1 = std::clamp(ratio, 0.0f, d2);
+            else d2 = std::clamp(ratio, d1, 1.0f);
+            a = d1 * 100.0f;
+            b = (d2 - d1) * 100.0f;
+            c = (1.0f - d2) * 100.0f;
+            changed = true;
+        }
+    }
+
+    auto* draw = ImGui::GetWindowDrawList();
+    const float mid1 = p0.x + width * d1;
+    const float mid2 = p0.x + width * d2;
+    const ImU32 colA = IM_COL32(90, 200, 120, 255);
+    const ImU32 colB = IM_COL32(90, 150, 235, 255);
+    const ImU32 colC = IM_COL32(235, 165, 80, 255);
+    draw->AddRectFilled(p0, ImVec2(mid1, p1.y), colA);
+    draw->AddRectFilled(ImVec2(mid1, p0.y), ImVec2(mid2, p1.y), colB);
+    draw->AddRectFilled(ImVec2(mid2, p0.y), p1, colC);
+    draw->AddLine(ImVec2(mid1, p0.y), ImVec2(mid1, p1.y),
+                  IM_COL32(15, 15, 15, 255), 2.0f);
+    draw->AddLine(ImVec2(mid2, p0.y), ImVec2(mid2, p1.y),
+                  IM_COL32(15, 15, 15, 255), 2.0f);
+    draw->AddRect(p0, p1, IM_COL32(10, 10, 10, 255));
+
+    const auto segLabel = [&](float loX, float hiX, float pct) {
+        char buf[16]{};
+        std::snprintf(buf, sizeof(buf), "%.0f%%", pct);
+        const ImVec2 ts = ImGui::CalcTextSize(buf);
+        if (hiX - loX < ts.x + 2.0f) return;
+        const ImVec2 tp((loX + hiX - ts.x) * 0.5f,
+                        p0.y + (height - ts.y) * 0.5f);
+        draw->AddText(ImVec2(tp.x + 1, tp.y + 1), IM_COL32(0, 0, 0, 200), buf);
+        draw->AddText(tp, IM_COL32(245, 245, 245, 255), buf);
+    };
+    segLabel(p0.x, mid1, a);
+    segLabel(mid1, mid2, b);
+    segLabel(mid2, p1.x, c);
+
+    return {changed, ImGui::IsItemHovered(), ImGui::IsItemActive(), changed};
+}
+
 inline WidgetState input_text(std::string_view label, std::string_view hint,
                               std::string& value) {
 #ifdef GRAPE_PRIVATE_PC
@@ -177,12 +265,13 @@ inline WidgetState input_text_autocomplete(
     bool changed = input_text(label, hint, value).changed;
     const bool hovered = ImGui::IsItemHovered();
     const bool held = ImGui::IsItemActive();
-    if ((held || ImGui::IsItemActivated() || ImGui::IsItemClicked() ||
-         changed) && !autocomplete.suggestions.empty())
+    if ((ImGui::IsItemActivated() || ImGui::IsItemClicked() || changed) &&
+        !autocomplete.suggestions.empty())
         ImGui::OpenPopup((std::string(label) + "##suggestions").c_str());
     const std::string popup = std::string(label) + "##suggestions";
     if (ImGui::BeginPopup(popup.c_str(),
                           ImGuiWindowFlags_NoFocusOnAppearing)) {
+        bringCurrentWindowToFront();
         for (const auto& suggestion : autocomplete.suggestions) {
             if (ImGui::Selectable(suggestion.c_str())) {
                 value = suggestion;
@@ -287,6 +376,12 @@ inline WidgetState color(std::string_view label, ColorState& value,
         ImGui::OpenPopup(("##color_popup" + id).c_str());
     }
     bool changed = false;
+    const bool styledPopup = Config::get().skeetMode;
+    if (styledPopup) {
+        ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.067f, 0.067f, 0.067f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.27f, 0.27f, 0.27f, 1.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 1.0f);
+    }
     if (ImGui::BeginPopup(("##color_popup" + id).c_str())) {
         if (ImGui::ColorPicker4(
                 ("##color_picker" + id).c_str(), value.colors.data(),
@@ -323,6 +418,10 @@ inline WidgetState color(std::string_view label, ColorState& value,
             ImGui::EndTable();
         }
         ImGui::EndPopup();
+    }
+    if (styledPopup) {
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor(2);
     }
     return {pressed || changed, hovered, held, changed};
 }

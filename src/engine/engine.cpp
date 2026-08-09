@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "assist/autoclicker.hpp"
+#include "assist/pathfinder.hpp"
 #include "assist/cps.hpp"
 #include "assist/hitboxes.hpp"
 #include "checkpoint/fix.hpp"
@@ -47,6 +48,7 @@ class GrapeEngine::Impl {
     TrajectoryManager m_trajectory;
 
     Autoclicker m_autoclicker;
+    Pathfinder m_pathfinder;
     Hitboxes m_hitboxes;
 
     LabelManager m_labels;
@@ -67,12 +69,30 @@ ENGINE_COMPONENT(MacroEngine, macro)
 ENGINE_COMPONENT(PracticeFix, practiceFix)
 ENGINE_COMPONENT(TrajectoryManager, trajectory)
 ENGINE_COMPONENT(Autoclicker, autoclicker)
+ENGINE_COMPONENT(Pathfinder, pathfinder)
 ENGINE_COMPONENT(Hitboxes, hitboxes)
 ENGINE_COMPONENT(LabelManager, labels)
 ENGINE_COMPONENT(CPSCounter, cps)
 
 GrapeEngine::GrapeEngine() : m_impl(std::make_unique<Impl>()) {}
 GrapeEngine::~GrapeEngine() = default;
+
+void GrapeEngine::setMode(Mode mode) {
+    const bool modeChanged = m_mode != mode;
+    const bool stoppedPlayback = m_mode == Playing && mode != Playing;
+    const bool stoppedInputMode = m_mode != Stopped && modeChanged;
+    m_mode = mode;
+    if (modeChanged) {
+        autoclicker().reset();
+        pathfinder().reset();
+    }
+    if (stoppedPlayback) macro().m_forceNextInput = false;
+    if (!stoppedInputMode) return;
+    if (auto* layer = GJBaseGameLayer::get()) {
+        if (layer->m_player1) layer->m_player1->releaseAllButtons();
+        if (layer->m_player2) layer->m_player2->releaseAllButtons();
+    }
+}
 
 void GrapeEngine::initialize() {
 #ifdef SILICATE_PROTECT
@@ -119,10 +139,32 @@ void GrapeEngine::initialize() {
     settings.stepsToSave = std::max<uint32_t>(2, settings.stepsToSave);
     settings.autoclickerFrequency =
         std::max(1, settings.autoclickerFrequency);
-    this->autoclicker().m_frequency = settings.autoclickerFrequency;
+    if (settings.autoclickerHoldFrames == 1 &&
+        settings.autoclickerReleaseFrames == 1 &&
+        settings.autoclickerFrequency > 1) {
+        settings.autoclickerHoldFrames = settings.autoclickerFrequency;
+        settings.autoclickerReleaseFrames = settings.autoclickerFrequency;
+    }
+    settings.autoclickerHoldFrames =
+        std::max(1, settings.autoclickerHoldFrames);
+    settings.autoclickerReleaseFrames =
+        std::max(1, settings.autoclickerReleaseFrames);
+    this->autoclicker().m_holdFrames = settings.autoclickerHoldFrames;
+    this->autoclicker().m_releaseFrames = settings.autoclickerReleaseFrames;
     this->autoclicker().m_performSwifts = settings.autoclickerSwifts;
+    this->autoclicker().m_movingGap = settings.autoclickerMovingGap;
+    this->autoclicker().m_movingGapLookahead = std::clamp(
+        settings.autoclickerMovingGapLookahead, 1, 30);
     this->autoclicker().m_player = static_cast<Autoclicker::PlayerToggle>(
         std::clamp(settings.autoclickerPlayer, 0, 2));
+    this->pathfinder().m_proportional = settings.autoclickerProportional;
+    this->pathfinder().m_holdPct = settings.autoclickerHoldPct;
+    this->pathfinder().m_releasePct = settings.autoclickerReleasePct;
+    this->pathfinder().m_swiftPct = settings.autoclickerSwiftPct;
+    this->pathfinder().m_cycleFrames =
+        std::max(2, settings.autoclickerCycleFrames);
+    this->pathfinder().m_stuckDeaths =
+        std::max(1, settings.pathfinderStuckDeaths);
     this->timeline().m_noclipType = static_cast<FrameEngine::NoclipType>(
         std::clamp(settings.noclipPlayer, 0, 2));
 
@@ -157,7 +199,7 @@ void GrapeEngine::initialize() {
         auto* playLayer = PlayLayer::get();
 
         if (!enabled) {
-            this->m_mode = Stopped;
+            this->setMode(Stopped);
             if (Renderer::get()->isRecording()) {
                 Renderer::get()->signalStop();
             }

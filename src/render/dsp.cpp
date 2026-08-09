@@ -57,6 +57,7 @@ FMOD_RESULT F_CALLBACK AudioRecorder::monitorReadCallback(
 }
 
 void AudioRecorder::haltWithData(float* data, unsigned int length) {
+    if (!data || length == 0) return;
 
     GRAPE_LOG_DEV("Collected data, unpausing... {}", collected++);
 
@@ -94,7 +95,37 @@ void AudioRecorder::init() {
     m_buffer.clear();
 }
 
+bool AudioRecorder::refreshFormat() {
+    auto* system = FMODAudioEngine::get()->m_system;
+    if (!system) return false;
+
+    int sampleRate = 0;
+    int rawSpeakers = 0;
+    int channels = 0;
+    FMOD_SPEAKERMODE speakerMode = FMOD_SPEAKERMODE_DEFAULT;
+    if (system->getSoftwareFormat(&sampleRate, &speakerMode, &rawSpeakers) !=
+        FMOD_OK)
+        return false;
+
+    if (speakerMode == FMOD_SPEAKERMODE_RAW) {
+        channels = rawSpeakers;
+    } else if (system->getSpeakerModeChannels(speakerMode, &channels) !=
+               FMOD_OK) {
+        return false;
+    }
+
+    if (sampleRate <= 0 || channels <= 0) return false;
+    m_sampleRate = sampleRate;
+    m_channels = channels;
+    return true;
+}
+
 void AudioRecorder::attach(double musicVolume, double sfxVolume) {
+    if (!refreshFormat()) {
+        geode::log::error("Cannot attach renderer audio: invalid FMOD format");
+        return;
+    }
+
     int numDsps;
     m_master->getNumDSPs(&numDsps);
     m_master->addDSP(numDsps, m_dsp);
@@ -106,9 +137,6 @@ void AudioRecorder::attach(double musicVolume, double sfxVolume) {
 
     m_previousSFXVolume = engine->getEffectsVolume();
     m_master->setPaused(false);
-    FMODAudioEngine::get()->m_system->getSoftwareFormat(&m_sampleRate, nullptr,
-                                                        &m_channels);
-
     engine->setEffectsVolume(sfxVolume);
     engine->setBackgroundMusicVolume(musicVolume);
 
@@ -212,11 +240,9 @@ void AudioRecorder::proceed() {
 void AudioRecorder::uninit() { m_dsp->release(); }
 
 float AudioRecorder::calculateTime() {
-    int sampleRate, channels;
-    FMODAudioEngine::get()->m_system->getSoftwareFormat(&sampleRate, nullptr,
-                                                        &channels);
-
-    return (float)m_buffer.size() / ((float)sampleRate * (float)channels);
+    if (m_sampleRate <= 0 || m_channels <= 0) return 0.0f;
+    return static_cast<float>(m_buffer.size()) /
+           static_cast<float>(m_sampleRate * m_channels);
 }
 
 void AudioRecorder::unpause() {
