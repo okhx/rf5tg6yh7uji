@@ -28,6 +28,29 @@
 
 using namespace geode::prelude;
 
+constexpr uint32_t consumePortableFrames(double progress, double& remainder) {
+    const double accumulated = progress + remainder;
+    if (accumulated >= 1000.0) {
+        remainder = 0.0;
+        return 1000;
+    }
+
+    auto frames = static_cast<uint32_t>(accumulated);
+    remainder = accumulated - frames;
+    if (remainder > 0.99999) {
+        ++frames;
+        remainder = 0.0;
+    }
+    return frames;
+}
+
+static_assert([] {
+    double remainder = 0.0;
+    return consumePortableFrames(0.25, remainder) == 0 &&
+           consumePortableFrames(0.25, remainder) == 0 &&
+           consumePortableFrames(0.50, remainder) == 1 && remainder == 0.0;
+}());
+
 float FrameEngine::playerSpeedUnits(float speed) {
     static constexpr float speeds[] = {
         251.1601f, 311.5801f, 387.4201f, 468.0002f, 576.0002f};
@@ -245,12 +268,6 @@ void FrameEngine::runUpdates(std::function<void(float)> update, float realDt,
     }
 
     if (!pl || (isPlayLayer && ((PlayLayer*)pl)->m_isPaused)) {
-        this->m_tpsOverflow = 0;
-        update(realDt);
-        return;
-    }
-
-    if (isPlayLayer && ((PlayLayer*)pl)->m_hasCompletedLevel) {
         this->m_tpsOverflow = 0;
         update(realDt);
         return;
@@ -525,6 +542,19 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
     }
 
     if (!playLayer->m_playerDied) {
+        uint32_t logicalSteps = 1;
+#ifdef GEODE_IS_ANDROID
+        if (!m_paused->inner()) {
+            const double progress = m_tps->inner() * visualDt;
+            if (!std::isfinite(progress) || progress <= 0.0) return;
+            logicalSteps = consumePortableFrames(
+                progress, m_portableFrameRemainder);
+            if (logicalSteps == 0) return;
+        } else {
+            m_portableFrameRemainder = 0.0;
+        }
+#endif
+
         if (m_backwardsStepping->inner() &&
             !Renderer::get()->isRecording()) {
             auto* checkpoint = playLayer->createCheckpoint();
@@ -534,7 +564,7 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
             }
         }
 
-        uint32_t logicalSteps = 1;
+#ifndef GEODE_IS_ANDROID
         if (!m_paused->inner()) {
             const double steps = m_tps->inner() * visualDt;
             if (std::isfinite(steps) && steps > 1.0) {
@@ -542,6 +572,7 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
                     std::lround(steps), 1l, 1000l));
             }
         }
+#endif
         incrementFrame(logicalSteps);
         bot->hitboxes().saveToTrail(playLayer);
     }

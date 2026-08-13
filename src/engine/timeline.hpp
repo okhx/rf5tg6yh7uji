@@ -72,9 +72,10 @@ class FrameEngine {
     ConfigValuePtr<bool> m_layoutMode =
         ConfigValue<bool>::create("updater.layout_mode", &_layoutMode);
     ConfigValuePtr<bool> m_useRegularBg = ConfigValue<bool>::create(
-        "updater.layout_use_bg", &GrapeSettings::get()->useRegularBg);
+        "updater.use_regular_bg", &GrapeSettings::get()->useRegularBg);
 
     double m_tpsOverflow = 0.0;
+    double m_portableFrameRemainder = 0.0;
     bool m_shouldRender = true;
 
     ConfigValuePtr<bool> m_lockDelta = ConfigValue<bool>::create(
@@ -195,8 +196,14 @@ class FrameEngine {
      * Incrementing the frame WILL forward time in the macro.
      */
     void incrementFrame(uint32_t count = 1) { m_frame += count; }
-    void resetFrame() { m_frame = 0; }
-    void setFrame(uint32_t frame) { m_frame = frame; }
+    void resetFrame() {
+        m_frame = 0;
+        m_portableFrameRemainder = 0.0;
+    }
+    void setFrame(uint32_t frame) {
+        m_frame = frame;
+        m_portableFrameRemainder = 0.0;
+    }
 
     bool isPaused() { return m_paused->inner(); }
     bool isLockDelta();

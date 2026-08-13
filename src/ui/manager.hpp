@@ -16,6 +16,9 @@ class UIManager {
     ImFont* m_font;
     ImFont* m_medium;
     ImFont* m_bold;
+    ImFont* m_menuFont;
+    ImFont* m_menuMediumFont;
+    ImFont* m_menuBoldFont;
     Theme* m_theme;
     slui::AutocompleteState m_replayAutocomplete;
 

@@ -1,6 +1,8 @@
 #include "label.hpp"
 #include "util/storage.hpp"
 
+#include <filesystem>
+
 #include <glaze/glaze.hpp>
 
 #include "assist/cps.hpp"
@@ -439,8 +441,25 @@ CCNode* Label::get() {
         label = CCLabelBMFont::create("Loading...", desiredFont.c_str());
     } else {
         auto path = grape::paths::directory("fonts") / desiredFont;
-        label = CCLabelTTF::create(
-            "Loading...", path.string().c_str(), 20.0f);
+        // Only hand the file to cocos once we know it is actually there: a
+        // custom font name also arrives straight out of labels.json, so a font
+        // that has since been deleted or renamed would otherwise be passed
+        // through blindly.
+        std::error_code ec;
+        if (!labelFontsSupported() ||
+            !std::filesystem::is_regular_file(path, ec)) {
+            // Unusable on this platform (or missing) -- drop the custom font so
+            // it is not retried every frame and cannot persist into the next
+            // launch, then fall back to the built-in bitmap font.
+            m_config.m_customFont.clear();
+            desiredFont = m_config.m_font == LabelFont::BigFont
+                              ? "bigFont.fnt"
+                              : "chatFont.fnt";
+            label = CCLabelBMFont::create("Loading...", desiredFont.c_str());
+        } else {
+            label = CCLabelTTF::create("Loading...", path.string().c_str(),
+                                       20.0f);
+        }
     }
     if (!label) return nullptr;
 

@@ -1,0 +1,120 @@
+include_guard(GLOBAL)
+
+function(mindguard_protect_cpp_target target)
+  cmake_parse_arguments(MG "" "PROJECT_ID;RELEASE_ID" "SOURCES" ${ARGN})
+  if(NOT TARGET "${target}")
+    message(FATAL_ERROR "MindGuard target does not exist: ${target}")
+  endif()
+  get_target_property(target_type "${target}" TYPE)
+  if(WIN32)
+    if(NOT target_type MATCHES "SHARED_LIBRARY|MODULE_LIBRARY")
+      message(FATAL_ERROR "MindGuard Hardened Windows target must be a PE32+ DLL")
+    endif()
+  elseif(NOT target_type STREQUAL "EXECUTABLE")
+    message(FATAL_ERROR "MindGuard Hardened Linux target must be an executable")
+  endif()
+  if(NOT MINDGUARD_PROFILE STREQUAL "Hardened")
+    message(FATAL_ERROR "mindguard_protect_cpp_target requires MINDGUARD_PROFILE=Hardened")
+  endif()
+  if(NOT MG_PROJECT_ID OR NOT MG_RELEASE_ID OR NOT MG_SOURCES)
+    message(FATAL_ERROR "MindGuard PROJECT_ID, RELEASE_ID, and SOURCES are required")
+  endif()
+  foreach(tool IN ITEMS MINDGUARD_BUILD_TOOL MINDGUARD_SCAN_TOOL)
+    if(NOT DEFINED ${tool} OR NOT EXISTS "${${tool}}")
+      message(FATAL_ERROR "${tool} must name an existing executable")
+    endif()
+  endforeach()
+  if(NOT DEFINED MINDGUARD_LLVM_PASS_PLUGIN OR NOT EXISTS "${MINDGUARD_LLVM_PASS_PLUGIN}")
+    message(FATAL_ERROR "MindGuard Hardened requires an existing MINDGUARD_LLVM_PASS_PLUGIN")
+  endif()
+  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(mindguard_pass_option "/clang:-fpass-plugin=${MINDGUARD_LLVM_PASS_PLUGIN}")
+  else()
+    set(mindguard_pass_option "-fpass-plugin=${MINDGUARD_LLVM_PASS_PLUGIN}")
+  endif()
+  target_compile_options(mindguard_static PRIVATE "${mindguard_pass_option}")
+  if(NOT DEFINED ENV{MG_BUILD_SEED_FILE} OR NOT EXISTS "$ENV{MG_BUILD_SEED_FILE}")
+    message(FATAL_ERROR "MG_BUILD_SEED_FILE must name the ephemeral exact 32-byte seed file")
+  endif()
+
+  get_target_property(target_sources "${target}" SOURCES)
+  set(generated_outputs)
+  foreach(source IN LISTS MG_SOURCES)
+    get_filename_component(source_abs "${source}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(source_registered FALSE)
+    foreach(target_source IN LISTS target_sources)
+      get_filename_component(target_source_abs "${target_source}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+      if(target_source_abs STREQUAL source_abs)
+        set(source_registered TRUE)
+        break()
+      endif()
+    endforeach()
+    if(NOT source_registered)
+      message(FATAL_ERROR "MindGuard protected source is not registered on target ${target}: ${source}")
+    endif()
+    file(RELATIVE_PATH source_id "${CMAKE_SOURCE_DIR}" "${source_abs}")
+    if(source_id MATCHES "^\\.\\." OR NOT source_id MATCHES "\\.(cpp|cc|cxx)$")
+      message(FATAL_ERROR "MindGuard protected source must be a target C++ source under CMAKE_SOURCE_DIR: ${source}")
+    endif()
+    string(SHA256 source_hash "${source_id}")
+    string(SUBSTRING "${source_hash}" 0 16 source_hash)
+    set(output_dir "${CMAKE_CURRENT_BINARY_DIR}/mindguard/${target}/${source_hash}")
+    set(header "${output_dir}/mindguard_generated.hpp")
+    set(audit "${output_dir}/audit.txt")
+    add_custom_command(
+      OUTPUT "${header}" "${audit}"
+      COMMAND "${CMAKE_COMMAND}" -E rm -rf "${output_dir}"
+      COMMAND "${MINDGUARD_SCAN_TOOL}" prepare-cpp
+              --input "${source_abs}" --output-dir "${output_dir}"
+              --builder "${MINDGUARD_BUILD_TOOL}"
+              --seed-file "$ENV{MG_BUILD_SEED_FILE}"
+              --target-id "${target}" --source-id "${source_id}"
+              --project-id "${MG_PROJECT_ID}" --release-id "${MG_RELEASE_ID}"
+      DEPENDS "${source_abs}" "$ENV{MG_BUILD_SEED_FILE}"
+              "${MINDGUARD_SCAN_TOOL}" "${MINDGUARD_BUILD_TOOL}"
+      VERBATIM
+      COMMENT "MindGuard Hardened generation: ${source_id}")
+    set_property(SOURCE "${source_abs}" APPEND PROPERTY
+                 COMPILE_DEFINITIONS "MINDGUARD_GENERATED_HEADER=\"${header}\"")
+    set_property(SOURCE "${source_abs}" APPEND PROPERTY OBJECT_DEPENDS "${header}")
+    list(APPEND generated_outputs "${header}" "${audit}")
+  endforeach()
+
+  add_custom_target("${target}_mindguard_generated" DEPENDS ${generated_outputs})
+  add_dependencies("${target}" "${target}_mindguard_generated")
+  if(NOT CMAKE_CROSSCOMPILING)
+    add_dependencies("${target}" "${MINDGUARD_SEAL_TARGET}")
+  endif()
+  set_property(TARGET "${target}" APPEND PROPERTY LINK_LIBRARIES mindguard_static)
+  set_property(TARGET "${target}" PROPERTY POSITION_INDEPENDENT_CODE ON)
+  if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    target_compile_options("${target}" PRIVATE /Gy /Gw /Zc:inline
+      "${mindguard_pass_option}")
+  elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options("${target}" PRIVATE -ffunction-sections -fdata-sections -fno-ident)
+    if(NOT WIN32)
+      target_compile_options("${target}" PRIVATE -fvisibility=hidden -fvisibility-inlines-hidden)
+    endif()
+    target_compile_options("${target}" PRIVATE "${mindguard_pass_option}")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+      target_link_options("${target}" PRIVATE
+        -pie -Wl,--gc-sections -Wl,--build-id=none
+        -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now)
+    elseif(WIN32 AND NOT CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+      target_link_options("${target}" PRIVATE
+        -Wl,--gc-sections,--dynamicbase,--high-entropy-va,--nxcompat,--no-insert-timestamp)
+    endif()
+  endif()
+  if(WIN32 AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    target_link_options("${target}" PRIVATE
+      /DYNAMICBASE /HIGHENTROPYVA /NXCOMPAT /OPT:REF /OPT:ICF /INCREMENTAL:NO)
+  endif()
+  if(CMAKE_CROSSCOMPILING)
+    set(mindguard_seal_command "${MINDGUARD_SEAL_TOOL}")
+  else()
+    set(mindguard_seal_command "$<TARGET_FILE:${MINDGUARD_SEAL_TARGET}>")
+  endif()
+  add_custom_command(TARGET "${target}" POST_BUILD
+    COMMAND "${mindguard_seal_command}" "$<TARGET_FILE:${target}>"
+    VERBATIM COMMENT "MindGuard sealing final .text")
+endfunction()

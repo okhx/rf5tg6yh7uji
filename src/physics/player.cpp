@@ -3,6 +3,8 @@
 
 #include <Geode/Geode.hpp>
 
+#include "config/config.hpp"
+
 using namespace geode::prelude;
 
 namespace phys {
@@ -329,7 +331,16 @@ void ringJump(PlayerObject* player, RingObject* ring) {
         gravity = 0.8;
     }
 
-    float yStart = player->m_yStart;
+    // Every orb below scales this base, and 2.2 lowered it: measuring the
+    // resulting velocity across three gamemodes puts 2.2 at ~11.03 where the
+    // 2.1 decomp uses a flat 11.180032 (cube 15.212/1.38 = 11.023, robot
+    // 14.116/1.28 = 11.028, ball 10.357/(1.34*0.7) = 11.042). The shortfall
+    // tracks the orb multiplier rather than being a fixed offset, which is what
+    // a smaller base looks like -- every 2.1 per-orb multiplier itself already
+    // matches this code exactly, so the base is the only thing to restore.
+    float yStart = GrapeSettings::get()->physics21
+                       ? 11.180032f
+                       : player->m_yStart;
     if (ring->m_objectType == GameObjectType::GravityRing) {
         yStart *= 0.8;
     } else {

@@ -5,6 +5,8 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 private="$root/pc"
 build="${GRAPE_BUILD_DIR:-$root/build-private-win}"
 output="$root/output"
+mindguard="$root/mindguard/static-sdk"
+jobs="${GRAPE_BUILD_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)}"
 
 if [[ ! -f "$private/CMakeLists.txt" ]]; then
     echo "Private PC source was not found at $private" >&2
@@ -32,8 +34,28 @@ if [[ -z "${GEODE_SDK:-}" || ! -d "$GEODE_SDK" ]]; then
     exit 1
 fi
 
-command -v cmake >/dev/null
-command -v geode >/dev/null
+for tool in cmake geode; do
+    if ! command -v "$tool" >/dev/null; then
+        echo "$tool is missing" >&2
+        exit 1
+    fi
+done
+
+cargo_bin="$(command -v cargo || true)"
+if [[ -z "$cargo_bin" && -x "${HOME:-}/.cargo/bin/cargo" ]]; then
+    cargo_bin="${HOME}/.cargo/bin/cargo"
+fi
+if [[ -z "$cargo_bin" ]]; then
+    echo "cargo is missing; install Rust 1.97.1 with rustup" >&2
+    exit 1
+fi
+
+"$cargo_bin" build --locked --release --manifest-path "$mindguard/build/Cargo.toml"
+umask 077
+mindguard_seed="$(mktemp "${TMPDIR:-/tmp}/grape-mindguard.XXXXXX")"
+trap 'rm -f "$mindguard_seed"' EXIT
+dd if=/dev/urandom of="$mindguard_seed" bs=32 count=1 status=none
+export MG_BUILD_SEED_FILE="$mindguard_seed"
 
 configure=(
     -S "$private"
@@ -53,10 +75,14 @@ if command -v ninja >/dev/null; then
 fi
 
 if [[ "$(uname -s)" == Linux* ]]; then
-    if ! command -v clang-cl >/dev/null; then
-        echo "clang-cl is missing" >&2
-        exit 1
-    fi
+    llvm_major=19
+    llvm_path="${GRAPE_LLVM_PATH:-/usr/lib/llvm-$llvm_major/bin}"
+    for tool in clang-cl clang++ lld-link llvm-config llvm-lib llvm-mt llvm-rc; do
+        if [[ ! -x "$llvm_path/$tool" ]]; then
+            echo "$llvm_path/$tool is missing; this build requires LLVM 19.x" >&2
+            exit 1
+        fi
+    done
     cross="${GRAPE_CROSS_TOOLS:-$HOME/.local/share/Geode/cross-tools}"
     toolchain="${GRAPE_TOOLCHAIN_FILE:-$cross/clang-msvc-sdk/clang-cl-msvc.cmake}"
     splat="${GRAPE_SPLAT_DIR:-$cross/splat}"
@@ -64,26 +90,36 @@ if [[ "$(uname -s)" == Linux* ]]; then
         echo "Windows cross-tools are missing; run: geode sdk install-linux" >&2
         exit 1
     fi
-    clang_cl="$(command -v clang-cl)"
-    llvm_major="$("$clang_cl" --version | sed -n 's/.*version \([0-9][0-9]*\).*/\1/p' | head -n1)"
-    if [[ -z "$llvm_major" ]]; then
-        echo "Could not determine the clang-cl version" >&2
-        exit 1
-    fi
-    llvm_path="${GRAPE_LLVM_PATH:-/usr/lib/llvm-$llvm_major/bin}"
-    if [[ -x "$llvm_path/clang-cl" && -x "$llvm_path/lld-link" ]]; then
-        export PATH="$llvm_path:$PATH"
-        configure+=(
-            "-DLLVM_VER=$llvm_major"
-            "-DCLANG_VER=$llvm_major"
-            "-DLLVM_PATH=$llvm_path"
-            "-DCMAKE_LINKER=$llvm_path/lld-link"
-            "-DLLD_LINK_PATH=$llvm_path/lld-link"
-            "-DLLVM_LIB_PATH=$llvm_path/llvm-lib"
-            "-DLLVM_MT_PATH=$llvm_path/llvm-mt"
-            "-DLLVM_RC_PATH=$llvm_path/llvm-rc"
-        )
-    fi
+
+    mindguard_host="$build/mindguard-host"
+    mindguard_plugin_build="$mindguard_host/llvm-pass-$llvm_major"
+    cmake -S "$mindguard/llvm-pass" -B "$mindguard_plugin_build" \
+        -DCMAKE_BUILD_TYPE=Release \
+        "-DCMAKE_CXX_COMPILER=$llvm_path/clang++" \
+        "-DLLVM_DIR=$("$llvm_path/llvm-config" --cmakedir)"
+    cmake --build "$mindguard_plugin_build" --parallel "$jobs"
+    mindguard_plugin="$mindguard_plugin_build/MindGuardPass.so"
+    mindguard_sealer="$mindguard_host/mindguard_seal_pe"
+    "$llvm_path/clang++" -std=c++20 -O2 \
+        -I "$mindguard/cpp/include" \
+        "$mindguard/cpp/tools/seal_pe.cpp" \
+        -o "$mindguard_sealer"
+
+    export PATH="$llvm_path:$PATH"
+    configure+=(
+        "-DLLVM_VER=$llvm_major"
+        "-DCLANG_VER=$llvm_major"
+        "-DLLVM_PATH=$llvm_path"
+        "-DCMAKE_C_COMPILER=$llvm_path/clang-cl"
+        "-DCMAKE_CXX_COMPILER=$llvm_path/clang-cl"
+        "-DCMAKE_LINKER=$llvm_path/lld-link"
+        "-DLLD_LINK_PATH=$llvm_path/lld-link"
+        "-DLLVM_LIB_PATH=$llvm_path/llvm-lib"
+        "-DLLVM_MT_PATH=$llvm_path/llvm-mt"
+        "-DLLVM_RC_PATH=$llvm_path/llvm-rc"
+        "-DMINDGUARD_LLVM_PASS_PLUGIN=$mindguard_plugin"
+        "-DMINDGUARD_SEAL_TOOL=$mindguard_sealer"
+    )
     configure+=(
         "-DCMAKE_TOOLCHAIN_FILE=$toolchain"
         "-DSPLAT_DIR=$splat"
@@ -93,7 +129,6 @@ if [[ "$(uname -s)" == Linux* ]]; then
 fi
 
 cmake "${configure[@]}"
-jobs="${GRAPE_BUILD_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)}"
 cmake --build "$build" --config Release --parallel "$jobs"
 
 mapfile -d '' packages < <(find "$build" -type f -name '*.geode' -print0)

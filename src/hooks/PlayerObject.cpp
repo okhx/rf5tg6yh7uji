@@ -82,7 +82,19 @@ struct GrapePlayerObject : Modify<GrapePlayerObject, PlayerObject> {
         if (bot->trajectory().isFakePlayer(this)) {
             phys::ringJump(this, ring);
         } else {
+            // 2.1 restore: every orb scales m_yStart, and 2.2 lowered that base
+            // to ~11.03 from 2.1's 11.180032 (measured across cube/ball/robot;
+            // the per-orb multipliers themselves are unchanged). Swapping the
+            // base just for the duration of the call reproduces 2.1's orb
+            // heights while leaving all of the game's own orb handling -- and
+            // every visual effect -- untouched.
+            const bool restore = GrapeSettings::get()->physics21;
+            const float savedYStart = m_yStart;
+            if (restore) m_yStart = 11.180032f;
+
             PlayerObject::ringJump(ring, unk);
+
+            if (restore) m_yStart = savedYStart;
             bot->labels().update(Renderer::get()->isRecording());
         }
     }

@@ -7,7 +7,27 @@
 #include <string>
 #include <vector>
 
+#include "shared/value/value.hpp"
+
 using namespace cocos2d;
+
+// Whether custom .ttf/.otf label fonts can be used on this platform.
+//
+// Custom fonts are drawn with CCLabelTTF, and the bindings only bind that class
+// on Apple platforms -- Cocos2d.bro gives CCLabelTTF::create addresses for imac,
+// m1 and ios and none for win or android, and the inline implementation is
+// wrapped in `#if defined(GEODE_IS_IOS)`. Selecting a custom font elsewhere
+// therefore called into nothing and took the game down. Bitmap fonts
+// (CCLabelBMFont) are unaffected, so the rest falls back to those. Gates both
+// the font picker and the label itself, so an unusable font can neither be
+// selected nor loaded from a config saved before this fix.
+constexpr bool labelFontsSupported() {
+#if defined(GEODE_IS_IOS) || defined(GEODE_IS_MACOS)
+    return true;
+#else
+    return false;
+#endif
+}
 
 class Label;
 
@@ -97,6 +117,8 @@ class LabelManager {
     std::vector<Label> m_labels;
     bool m_requiresRefresh = false;
     bool m_globalEnabled = true;
+    ConfigValuePtr<bool> m_globalEnabledValue = ConfigValue<bool>::create(
+        "labels.global_enabled", &m_globalEnabled);
 
     template <typename F>
         requires std::is_invocable_r_v<std::string, F, Label&>

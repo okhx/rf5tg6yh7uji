@@ -43,8 +43,14 @@ class Autoclicker {
 
     ConfigValuePtr<bool> m_enabled = ConfigValue<bool>::create(
         "autoclicker.enabled", &GrapeSettings::get()->autoclickerEnabled);
+    ConfigValuePtr<bool> m_performSwiftsValue = ConfigValue<bool>::create(
+        "autoclicker.swift_clicks", &m_performSwifts);
     PlayerToggle m_player = static_cast<PlayerToggle>(
         std::clamp(GrapeSettings::get()->autoclickerPlayer, 0, 2));
+
+    Autoclicker() {
+        m_performSwiftsValue->handle([this](bool&) { saveSettings(); });
+    }
 
     void saveSettings() {
         m_holdFrames = std::max(1, m_holdFrames);

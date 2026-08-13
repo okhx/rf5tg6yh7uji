@@ -28,7 +28,7 @@ class MacroEngine {
     ConfigValuePtr<bool> m_ignoreInputs = ConfigValue<bool>::create(
         "replay.ignore_inputs", &GrapeSettings::get()->blockInputs);
     ConfigValuePtr<bool> m_autosaveAtLevelEnd = ConfigValue<bool>::create(
-        "replay.autosave", &GrapeSettings::get()->autosaveAtLevelEnd);
+        "replay.autosave_at_level_end", &GrapeSettings::get()->autosaveAtLevelEnd);
 
     ConfigValuePtr<bool> m_useAlternateHook = ConfigValue<bool>::create(
         "replay.althook", &GrapeSettings::get()->useAlternateHook);
@@ -50,6 +50,12 @@ class MacroEngine {
     bool m_mirrorInputs = false;
     bool m_mirrorInverted = false;
     bool m_maintainGravity = false;
+    ConfigValuePtr<bool> m_mirrorInputsValue = ConfigValue<bool>::create(
+        "replay.mirror_inputs", &m_mirrorInputs);
+    ConfigValuePtr<bool> m_mirrorInvertedValue = ConfigValue<bool>::create(
+        "replay.mirror_inverted", &m_mirrorInverted);
+    ConfigValuePtr<bool> m_maintainGravityValue = ConfigValue<bool>::create(
+        "replay.maintain_gravity", &m_maintainGravity);
 
     std::string m_replayName = "";
     bool m_lastOperationSucceeded = false;

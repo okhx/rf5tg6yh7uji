@@ -22,6 +22,7 @@ class GrapeSettings {
     float uiOpacity = 0.66f;
     bool fitMenuToContent = false;
     int theme = 0;
+    std::array<float, 4> grapeAccent = {0.60f, 0.45f, 0.90f, 1.0f};
     std::array<float, 4> skeetAccent = {0.576f, 0.773f, 0.224f, 1.0f};
     std::array<float, 4> skeetGradientLeft = {0.216f, 0.694f, 0.855f, 1.0f};
     std::array<float, 4> skeetGradientMiddle = {0.788f, 0.329f, 0.753f, 1.0f};
@@ -43,6 +44,9 @@ class GrapeSettings {
     double fpsTarget = 60.0;
     bool lockDelta = true;
     int lockDeltaMode = 0;
+    // Restore Geometry Dash 2.1 physics for levels built before the 2.2
+    // changes. Off by default, and every 2.1 branch is gated on it, so with it
+    // off the game behaves exactly as it does today.
     bool physics21 = false;
 
     bool fullGamePrediction = false;
@@ -162,6 +166,7 @@ class GrapeSettings {
 
     struct HitboxSettings {
         double width = 0.5;
+        bool showOnDeath = false;
         bool trailEnabled = false;
         bool holdingTrailEnabled = true;
         std::array<float, 4> holdingTrailColor = {0.0f, 1.0f, 1.0f, 1.0f};
@@ -222,6 +227,7 @@ struct glz::meta<GrapeSettings> {
         "play_animations", &T::playAnimations,
         "pride_mode", &T::rainbowMode,
         "theme", &T::theme,
+        "grape_accent", &T::grapeAccent,
         "skeet_accent", &T::skeetAccent,
         "skeet_gradient_left", &T::skeetGradientLeft,
         "skeet_gradient_middle", &T::skeetGradientMiddle,

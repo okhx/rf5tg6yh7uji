@@ -34,7 +34,7 @@ using namespace geode::prelude;
 #include "util/storage.hpp"
 
 struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
-#ifndef GEODE_IS_WINDOWS
+#if !defined(GEODE_IS_WINDOWS) && !defined(GEODE_IS_ANDROID)
     void postUpdate(float dt) override {
         PlayLayer::postUpdate(dt);
         GrapeEngine::get()->timeline().portableFrameUpdate(this, dt);
@@ -294,7 +294,11 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
 
             if (bot->timeline().m_expectsDeath) {
                 while (auto input = bot->macro().getNextQueuedInput()) {
+#ifdef GEODE_IS_MOBILE
+                    if (input->m_frame <= deathFrame) {
+#else
                     if (input->m_frame == deathFrame) {
+#endif
                         bot->macro().advanceInputIndex();
                     } else {
                         break;
@@ -316,7 +320,13 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
             return;
         }
 
-        if (bot->isRecording()) {
+        // Also covers plain play (mode Stopped), not just recording: this block
+        // used to be gated on isRecording(), so with the bot enabled but no
+        // macro being recorded nothing ever cleared a jump that was held at the
+        // moment of death -- the held state survived the respawn and the player
+        // carried on holding by itself. isPlaying() already returned above, so
+        // this reads as "recording or plain play".
+        if (!bot->isPlaying()) {
             if (bot->timeline().m_canDie->inner()) {
                 m_player1->releaseAllButtons();
                 m_player2->releaseAllButtons();
@@ -607,6 +617,7 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
     void conditionalDestroyPlayer(PlayerObject* player,
                                   GameObject* gameObject) {
         if (gameObject == m_anticheatSpike) {
+            GrapeEngine::get()->hitboxes().captureDeath(player, gameObject);
             return PlayLayer::destroyPlayer(player, gameObject);
         }
 
@@ -622,6 +633,7 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
             // Real death: clear any in-flight noclip tint so it doesn't flash
             // back at full opacity over the death animation.
             this->removeNoclipTint();
+            bot->hitboxes().captureDeath(player, gameObject);
             return PlayLayer::destroyPlayer(player, gameObject);
         }
 
@@ -637,18 +649,27 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
                 static_cast<GLubyte>(std::clamp(source[2], 0.f, 1.f) * 255.f)};
             const GLubyte opacity = static_cast<GLubyte>(
                 std::clamp(settings->noclipTintOpacity, 0.0, 1.0) * 255.0);
-            if (!tint) {
+            if (tint) {
+                // Still fading, so this is the same pass-through rather than a
+                // new death: the game calls destroyPlayer on every frame the
+                // hitbox overlaps the hazard, and restarting the fade on each
+                // of those snapped the overlay back to full opacity -- the
+                // brief second flash. Leave the running fade alone; it removes
+                // itself at the end, so the next death tints normally.
+                if (tint->numberOfRunningActions() > 0) return;
+                // No actions left but still parented: the fade was cut short
+                // (CCActionManager::update is skipped on refresh frames), so
+                // re-animate this node rather than returning -- otherwise a
+                // stranded overlay would sit on screen and suppress every
+                // future tint.
+            } else {
                 auto size = CCDirector::get()->getWinSize();
                 tint = CCLayerColor::create({rgb.r, rgb.g, rgb.b, 0},
                                             size.width, size.height);
                 tint->setID(tintID);
                 this->addChild(tint, 100000);
-            } else {
-                // Reuse the existing node: cancel the in-flight fade so it
-                // doesn't stack a second tint (previously this left a leftover
-                // node that flashed back at full opacity on the next death).
-                tint->stopAllActions();
             }
+
             tint->setColor(rgb);
             tint->setOpacity(opacity);
 
@@ -766,6 +787,9 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
         PlayLayer::levelComplete();
 
         auto bot = GrapeEngine::get();
+#ifdef GEODE_IS_MOBILE
+        if (bot->isRecording()) bot->setMode(GrapeEngine::Stopped);
+#endif
         auto& replay = bot->macro();
         if (!replay.m_autosaveAtLevelEnd->inner()) return;
 
@@ -832,12 +856,17 @@ void PlayLayer_queueCheckpoint(void* unk, void* unk2) {
     auto pl = PlayLayer::get();
 
     if (!pl) return;
-    if (pl->m_player1->m_isDead || pl->m_player2->m_isDead) {
+    // Was only checking m_isDead, and dereferenced m_player2 unconditionally.
+    if (checkpointPlacementBlocked(pl)) {
         return;
     }
 
-    GrapeEngine::get()->timeline().scheduleFrozenFunction(
-        [pl](float) { pl->markCheckpoint(); });
+    // Re-check on the way out: the placement is deferred to a frozen frame, so
+    // the player can die between queueing it and it actually running.
+    GrapeEngine::get()->timeline().scheduleFrozenFunction([pl](float) {
+        if (checkpointPlacementBlocked(pl)) return;
+        pl->markCheckpoint();
+    });
 }
 
 $execute {

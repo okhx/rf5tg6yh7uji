@@ -195,6 +195,11 @@ class BindingManager {
         return m_values.contains(tag);
     }
 
+    std::shared_ptr<BindingInterface> getValue(const std::string& tag) const {
+        const auto found = m_values.find(tag);
+        return found == m_values.end() ? nullptr : found->second;
+    }
+
     bool addKeybindForTag(const std::string& tag, RawKeybind& raw) {
         auto value = m_values.find(tag);
         if (value == m_values.end() || !value->second) return false;

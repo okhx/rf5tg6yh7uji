@@ -83,10 +83,12 @@ constexpr int VK_OEM_7 = 0xDE;
 using namespace geode::prelude;
 
 #ifdef GRAPE_PRIVATE_PC
-static std::optional<bool> s_pendingMenuStyle;
+static std::optional<int> s_pendingMenuStyle;
 #endif
 
-UIManager::UIManager() : m_font(nullptr), m_medium(nullptr), m_bold(nullptr) {}
+UIManager::UIManager()
+  : m_font(nullptr), m_medium(nullptr), m_bold(nullptr), m_menuFont(nullptr),
+    m_menuMediumFont(nullptr), m_menuBoldFont(nullptr) {}
 
 void UIManager::toggle() { m_state.toggle(); }
 
@@ -375,6 +377,84 @@ static void applyAmethystStyle() {
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.45f, 0.90f, 1.00f);
 }
 
+static void pushDefaultMenuStyle() {
+    const auto color = [](int r, int g, int b, float alpha = 1.0f) {
+        return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, alpha);
+    };
+    const ImVec4 surface = color(0x18, 0x15, 0x18);
+    const auto& savedAccent = GrapeSettings::get()->grapeAccent;
+    const ImVec4 accent(savedAccent[0], savedAccent[1], savedAccent[2],
+                        savedAccent[3]);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(5.0f, 2.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4.0f, 3.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(4.0f, 3.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, surface);
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, surface);
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, surface);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, surface);
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, color(0x21, 0x1d, 0x21));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, color(0x2a, 0x25, 0x2a));
+    ImGui::PushStyleColor(ImGuiCol_Button, surface);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color(0x21, 0x1d, 0x21));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, color(0x2a, 0x25, 0x2a));
+    ImGui::PushStyleColor(ImGuiCol_Header, surface);
+    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, color(255, 255, 255, .20f));
+    ImGui::PushStyleColor(ImGuiCol_HeaderActive, color(255, 255, 255, .26f));
+    ImGui::PushStyleColor(ImGuiCol_CheckMark, color(255, 255, 255));
+    ImGui::PushStyleColor(ImGuiCol_TitleBg, color(0x1c, 0x1a, 0x1d));
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, color(0x1c, 0x1a, 0x1d));
+    ImGui::PushStyleColor(ImGuiCol_Tab, surface);
+    ImGui::PushStyleColor(ImGuiCol_TabHovered, color(255, 255, 255, .20f));
+    ImGui::PushStyleColor(ImGuiCol_TabActive, color(255, 255, 255, .14f));
+    ImGui::PushStyleColor(ImGuiCol_NavHighlight, accent);
+    ImGui::PushStyleColor(ImGuiCol_SliderGrab, accent);
+    ImGui::PushStyleColor(
+        ImGuiCol_SliderGrabActive,
+        ImVec4(std::min(accent.x * 1.15f, 1.0f),
+               std::min(accent.y * 1.15f, 1.0f),
+               std::min(accent.z * 1.15f, 1.0f), accent.w));
+    ImGui::PushStyleColor(ImGuiCol_Border, color(0x22, 0x22, 0x22));
+    ImGui::PushStyleColor(ImGuiCol_Separator, color(0x22, 0x22, 0x22));
+}
+
+static void popDefaultMenuStyle() {
+    ImGui::PopStyleColor(23);
+    ImGui::PopStyleVar(14);
+}
+
+static bool defaultMenuTab(const char* label, bool selected) {
+    const ImVec2 textSize = ImGui::CalcTextSize(label);
+    const ImVec2 min = ImGui::GetCursorScreenPos();
+    const ImVec2 size(textSize.x + 12.0f, ImGui::GetFrameHeight());
+    const bool pressed = ImGui::InvisibleButton(label, size);
+    const float active = slui::animate_last_item(selected ? 1.0f : 0.0f);
+    auto* draw = ImGui::GetWindowDrawList();
+    const ImVec2 textPos(min.x + 6.0f,
+                         min.y + (size.y - textSize.y) * .5f - 1.0f);
+    const int text = static_cast<int>(128.0f + 127.0f * active);
+    draw->AddText(textPos, IM_COL32(text, text, text, 255), label);
+    if (active > .001f) {
+        ImVec4 accent = ImGui::GetStyleColorVec4(ImGuiCol_NavHighlight);
+        accent.w *= active;
+        draw->AddRectFilled(
+            ImVec2(textPos.x, min.y + size.y - 2.0f),
+            ImVec2(textPos.x + textSize.x, min.y + size.y),
+            ImGui::GetColorU32(accent), 1.0f);
+    }
+    return pressed;
+}
+
 static bool saveImGuiTheme(const std::filesystem::path& path) {
     std::ofstream out(path, std::ios::trunc);
     if (!out) return false;
@@ -426,6 +506,15 @@ static std::pair<bool, bool> drawSkeetActionRow(
 }
 
 static void drawImGuiThemeEditor(ImFont* headingFont) {
+    if (slui::Config::get().customMode) {
+        auto* settings = GrapeSettings::get();
+        static slui::ColorState accent;
+        accent.colors = settings->grapeAccent;
+        slui::text("Menu Accent", headingFont);
+        if (slui::color("Accent", accent).changed)
+            settings->grapeAccent = accent.colors;
+        return;
+    }
     if (slui::Config::get().skeetMode) {
         auto* settings = GrapeSettings::get();
         static slui::ColorState accent;
@@ -595,6 +684,36 @@ void UIManager::setup() {
             Mod::get()->getResourcesDir() / "font_bold.ttf").c_str(), 32.0f);
 
 #ifdef GRAPE_PRIVATE_PC
+    const auto menuFontPath = geode::utils::string::pathToString(
+        Mod::get()->getResourcesDir() / "Arboria-Medium.ttf");
+    const auto loadMenuFont = [&](float size) {
+        ImFontConfig config;
+        config.OversampleH = 3;
+        config.OversampleV = 3;
+        return ImGui::GetIO().Fonts->AddFontFromFileTTF(
+            menuFontPath.c_str(), size, &config);
+    };
+    m_menuFont = loadMenuFont(14.0f);
+    m_menuMediumFont = loadMenuFont(16.0f);
+    m_menuBoldFont = loadMenuFont(24.0f);
+    for (auto* font : {m_menuFont, m_menuMediumFont, m_menuBoldFont}) {
+        if (!font) continue;
+        for (ImWchar upper = 'A'; upper <= 'Z'; ++upper)
+            font->AddRemapChar(upper, upper - 'A' + 'a');
+    }
+    if (m_menuFont) {
+        ImFontConfig symbols;
+        symbols.MergeMode = true;
+        symbols.GlyphOffset = ImVec2(0.0f, -2.0f);
+        ImGui::GetIO().Fonts->AddFontFromFileTTF(
+            geode::utils::string::pathToString(
+                Mod::get()->getResourcesDir() / "font_symbols.ttf")
+                .c_str(),
+            14.0f, &symbols, glyphRanges.Data);
+    }
+    if (!m_menuFont) m_menuFont = m_font;
+    if (!m_menuMediumFont) m_menuMediumFont = m_medium;
+    if (!m_menuBoldFont) m_menuBoldFont = m_bold;
     grape::pc::setupSkeetFonts();
     slui::Config::get().skeetHeaderFont = grape::pc::skeetHeaderFont();
     ImGui::GetIO().Fonts->Build();
@@ -608,15 +727,20 @@ void UIManager::setup() {
         m_state.m_customFontNames.clear();
         m_state.m_customFontFiles.clear();
 
-        for (const auto& entry : fs::directory_iterator(fontsDir)) {
-            auto ext = entry.path().extension().string();
-            std::transform(ext.begin(), ext.end(), ext.begin(),
-                           [](unsigned char c) { return std::tolower(c); });
-            if (ext != ".ttf" && ext != ".otf") continue;
+        // Don't offer custom fonts where they can't be drawn -- picking one
+        // used to crash the game outright. See labelFontsSupported().
+        if (labelFontsSupported()) {
+            for (const auto& entry : fs::directory_iterator(fontsDir)) {
+                auto ext = entry.path().extension().string();
+                std::transform(ext.begin(), ext.end(), ext.begin(),
+                               [](unsigned char c) { return std::tolower(c); });
+                if (ext != ".ttf" && ext != ".otf") continue;
 
-            m_state.m_customFontNames.push_back(entry.path().stem().string());
-            m_state.m_customFontFiles.push_back(
-                entry.path().filename().string());
+                m_state.m_customFontNames.push_back(
+                    entry.path().stem().string());
+                m_state.m_customFontFiles.push_back(
+                    entry.path().filename().string());
+            }
         }
 
         m_state.m_labelFontsState.options = {"Big", "Regular"};
@@ -1065,15 +1189,39 @@ void UIManager::draw() {
 
 #ifdef GRAPE_PRIVATE_PC
     if (s_pendingMenuStyle) {
-        grape::pc::setSkeetMenu(*s_pendingMenuStyle);
+        Mod::get()->setSavedValue("pc-menu-style", *s_pendingMenuStyle);
         s_pendingMenuStyle.reset();
     }
+    const int savedMenuStyle =
+        Mod::get()->getSavedValue<int>("pc-menu-style", 0);
+    const bool customMenu = savedMenuStyle == 0;
+    const bool skeetMenu = savedMenuStyle == 1;
+#else
+    const int savedMenuStyle = 2;
+    const bool customMenu = false;
+    const bool skeetMenu = false;
+#endif
+    cfg.customMode = customMenu;
+    cfg.customFont = m_menuFont;
+    cfg.mediumFont = m_medium;
+    cfg.customMediumFont = m_menuMediumFont;
+    cfg.boldFont = m_bold;
+    cfg.customBoldFont = m_menuBoldFont;
+
+#ifdef GRAPE_PRIVATE_PC
     auto& license = grape::pc::License::get();
     license.tick();
     if (!license.authorized()) {
         m_state.m_visible->inner() = true;
         CCEGLView::get()->showCursor(true);
-        license.draw();
+        if (customMenu) {
+            pushDefaultMenuStyle();
+            slui::ScopedFont loginFont(m_font);
+            license.draw(true);
+            popDefaultMenuStyle();
+        } else {
+            license.draw(false);
+        }
         return;
     }
     grape::pc::ScriptEngine::get().update(
@@ -1110,6 +1258,9 @@ void UIManager::draw() {
     CCEGLView::get()->showCursor(true);
 #endif
 
+#ifdef GRAPE_PRIVATE_PC
+    cfg.username = license.username();
+#endif
     slui::ScopedFont s(m_font);
     
     static GLuint logoTex = 0;
@@ -1139,29 +1290,37 @@ void UIManager::draw() {
 
     ImTextureID tex = (logoTex != 0 && logoTex != (GLuint)-1) ? (ImTextureID)(intptr_t)logoTex : (ImTextureID)(intptr_t)0;
 #ifdef GRAPE_PRIVATE_PC
-    bool skeetMenu = grape::pc::useSkeetMenu();
-    if (skeetMenu) grape::pc::pushSkeetStyle(m_state.m_opacity->inner());
-#else
-    bool skeetMenu = false;
+    if (customMenu) pushDefaultMenuStyle();
+    else if (skeetMenu) grape::pc::pushSkeetStyle(m_state.m_opacity->inner());
 #endif
     slui::Config::get().skeetMode = skeetMenu;
-    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv, [this, bot, popupShaderFn, skeetMenu]() {
-        if (!skeetMenu) {
+    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv, [this, bot, popupShaderFn, savedMenuStyle, customMenu, skeetMenu]() {
+        if (!skeetMenu && !customMenu) {
             ImGui::GetWindowDrawList()->AddRectFilled(
                 ImGui::GetWindowPos(),
                 ImGui::GetWindowPos() + ImGui::GetWindowSize(),
                 ImGui::GetColorU32(ImVec4(
                     0.1f, 0.1f, 0.1f, m_state.m_opacity->inner())),
-                0.0f,
+                // Must track the window's own rounding. Hardcoding 0 painted a
+                // square over the corners the rounded window background had
+                // left transparent, which is the dark notch that grew as the
+                // rounding slider went up.
+                ImGui::GetStyle().WindowRounding,
                 ImDrawFlags_RoundCornersAll);
         }
 
-        const auto tabButton = [this, skeetMenu](
+        const auto tabButton = [this, customMenu, skeetMenu](
                                    const char* label, const char* icon,
                                    UIState::UITab tab) {
             (void)icon;
             const bool active = m_state.m_currentTab == tab;
 #ifdef GRAPE_PRIVATE_PC
+            if (customMenu) {
+                if (defaultMenuTab(label, active))
+                    m_state.m_currentTab = tab;
+                ImGui::SameLine();
+                return;
+            }
             if (skeetMenu) {
                 if (grape::pc::skeetTab(label, icon, active, 75.0f))
                     m_state.m_currentTab = tab;
@@ -1206,7 +1365,9 @@ void UIManager::draw() {
             "Content", skeetMenu ? ImVec2(572.0f, 542.0f)
                                  : ImVec2(0.0f, 0.0f),
             false,
-                          ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            customMenu && m_state.m_currentTab == UIState::UITab::Edit
+                ? ImGuiWindowFlags_NoScrollbar
+                : ImGuiWindowFlags_AlwaysVerticalScrollbar);
         {
             if (m_state.m_currentTab != UIState::UITab::Edit)
                 m_state.m_editSelectionInitialized = false;
@@ -1227,9 +1388,10 @@ void UIManager::draw() {
             }
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Record, [&]() {
-                if (!skeetMenu) slui::text("Record", m_bold);
+                if (!skeetMenu && !customMenu) slui::text("Record", m_bold);
 
                 slui::divider(false);
+                if (customMenu) slui::text("Recorder", m_medium);
                 auto& rs = GrapeEngine::get()->macro();
 
                 slui::text(fmt::format("Frame: {} - Macro Size: {}",
@@ -1281,8 +1443,10 @@ void UIManager::draw() {
                                         : GrapeEngine::Mode::Playing);
 
                 slui::divider();
+                if (customMenu) slui::text("Playback", m_medium);
 
                 const auto drawTps = [&] {
+                    if (customMenu) ImGui::SetNextItemWidth(80.0f);
                     if (slui::drag("TPS", bot->timeline().m_tps->inner(), 0.0,
                                    std::numeric_limits<double>::max(), 1.0f,
                                    "{:g}")
@@ -1334,6 +1498,7 @@ void UIManager::draw() {
                 }
 
                 slui::divider();
+                if (customMenu) slui::text("Replays", m_medium);
 
                 const auto replayNameInput = [&] {
                     m_replayAutocomplete.suggestions = filterCandidates(
@@ -1435,6 +1600,7 @@ void UIManager::draw() {
                 }
 
                 slui::divider();
+                if (customMenu) slui::text("Frame Advance", m_medium);
 
                 if (ImGui::BeginTable(
                         "FrameAdvance", 2,
@@ -1462,13 +1628,13 @@ void UIManager::draw() {
                     ImGui::TableNextColumn();
                     slui::checkbox("Seed Override", rs.m_overrideSeed);
                     ImGui::TableNextColumn();
-                    slui::drag(skeetMenu ? "##Seed" : "Seed",
-                               rs.m_overriddenSeed, uint64_t{0},
+                    slui::drag("##Seed", rs.m_overriddenSeed, uint64_t{0},
                                std::numeric_limits<uint64_t>::max());
                     ImGui::EndTable();
                 }
 
                 slui::divider();
+                if (customMenu) slui::text("Options", m_medium);
 
                 if (skeetMenu) {
                     slui::checkbox(
@@ -1477,7 +1643,7 @@ void UIManager::draw() {
                     keybindRightClick("updater.intentional_death");
                     slui::divider();
                     slui::checkbox(
-                        "Frame Extrapolation",
+                        "Extrapolation",
                         GrapeEngine::get()->timeline().m_extrapolateFrames->inner());
                     keybindRightClick("updater.frame_extrapolation");
                 } else if (ImGui::BeginTable(
@@ -1489,7 +1655,7 @@ void UIManager::draw() {
                     keybindRightClick("updater.intentional_death");
                     ImGui::TableNextColumn();
                     slui::checkbox(
-                        "Frame Extrapolation",
+                        "Extrapolation",
                         GrapeEngine::get()->timeline().m_extrapolateFrames->inner());
                     keybindRightClick("updater.frame_extrapolation");
                     ImGui::EndTable();
@@ -1498,7 +1664,7 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Assist, [&]() {
-                if (!skeetMenu) slui::text("Assist", m_bold);
+                if (!skeetMenu && !customMenu) slui::text("Assist", m_bold);
 
                 slui::divider(false);
 
@@ -1532,6 +1698,10 @@ void UIManager::draw() {
                 slui::checkbox("Toggle##Hitboxes",
                                 GrapeEngine::get()->hitboxes().m_enabled->inner());
                 keybindRightClick("hitboxes.enabled");
+
+                slui::checkbox("Show Death Collision##Hitboxes",
+                                GrapeEngine::get()->hitboxes().m_showOnDeath->inner());
+                keybindRightClick("hitboxes.show_on_death");
 
                 slui::checkbox("Show Trail##Hitboxes",
                                 GrapeEngine::get()->hitboxes().m_trailEnabled->inner());
@@ -1652,7 +1822,9 @@ void UIManager::draw() {
                     slui::checkbox("Enabled##Noclip",
                                    GrapeEngine::get()->timeline().m_noclip->inner());
                     keybindRightClick("updater.noclip");
-                    slui::dropdown("Player##Noclip", m_state.m_noclipState,
+                    slui::dropdown(customMenu ? "##NoclipPlayer"
+                                              : "Player##Noclip",
+                                   m_state.m_noclipState,
                                    *reinterpret_cast<int*>(
                                        &GrapeEngine::get()->timeline().m_noclipType),
                                    popupShaderFn);
@@ -1664,7 +1836,9 @@ void UIManager::draw() {
                                    GrapeEngine::get()->timeline().m_noclip->inner());
                     keybindRightClick("updater.noclip");
                     ImGui::TableNextColumn();
-                    slui::dropdown("Player##Noclip", m_state.m_noclipState,
+                    slui::dropdown(customMenu ? "##NoclipPlayer"
+                                              : "Player##Noclip",
+                                   m_state.m_noclipState,
                                    *reinterpret_cast<int*>(
                                        &GrapeEngine::get()->timeline().m_noclipType),
                                    popupShaderFn);
@@ -1813,7 +1987,9 @@ void UIManager::draw() {
                                    GrapeEngine::get()->autoclicker().m_enabled->inner());
                     keybindRightClick("autoclicker.enabled");
                     slui::dropdown(
-                        "Player##Autoclicker", m_state.m_autoclickerState,
+                        customMenu ? "##AutoclickerPlayer"
+                                   : "Player##Autoclicker",
+                        m_state.m_autoclickerState,
                         *reinterpret_cast<int*>(
                             &GrapeEngine::get()->autoclicker().m_player),
                         popupShaderFn);
@@ -1826,7 +2002,9 @@ void UIManager::draw() {
                     keybindRightClick("autoclicker.enabled");
                     ImGui::TableNextColumn();
                     slui::dropdown(
-                        "Player##Autoclicker", m_state.m_autoclickerState,
+                        customMenu ? "##AutoclickerPlayer"
+                                   : "Player##Autoclicker",
+                        m_state.m_autoclickerState,
                         *reinterpret_cast<int*>(
                             &GrapeEngine::get()->autoclicker().m_player), popupShaderFn);
                     ImGui::EndTable();
@@ -1881,7 +2059,8 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Prediction, [&]() {
-                if (!skeetMenu) slui::text("Prediction", m_bold);
+                if (!skeetMenu && !customMenu)
+                    slui::text("Prediction", m_bold);
 
                 slui::divider(false);
 
@@ -1939,9 +2118,14 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Edit, [&]() {
-                if (!skeetMenu) slui::text("Edit", m_bold);
+                if (!skeetMenu && !customMenu) slui::text("Edit", m_bold);
 
+                if (customMenu)
+                    slui::Config::get().customSectionHeight = std::max(
+                        1.0f, ImGui::GetContentRegionAvail().y -
+                            ImGui::GetFontSize() - 12.0f);
                 slui::divider(false);
+                if (customMenu) slui::text("Input Editor", m_medium);
 
                 auto& replay = GrapeEngine::get()->macro().m_actionAtom;
                 auto& inputs = replay.m_actions;
@@ -1962,12 +2146,7 @@ void UIManager::draw() {
                 }
 
                 const float editorHeight = skeetMenu
-                    ? 440.0f
-                    : ImGui::GetContentRegionAvail().y;
-                // Reserve room for the 3 rows of macro buttons. Each table row
-                // also adds CellPadding on top and bottom, which the previous
-                // calculation ignored - that made the last two buttons ("Flip
-                // Hold & Release" / "Flip P1 & P2") get clipped at the bottom.
+                    ? 440.0f : ImGui::GetContentRegionAvail().y;
                 const float buttonHeight =
                     (ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y +
                      ImGui::GetStyle().CellPadding.y * 2.0f) *
@@ -2079,7 +2258,7 @@ void UIManager::draw() {
                 };
                 const auto drawInputs = [&] {
                     ImGui::BeginChild(
-                        "InputList", ImVec2(0.0f, editorHeight), true);
+                        "InputList", ImVec2(0.0f, editorHeight), !customMenu);
                     for (int i = 0; i < static_cast<int>(inputs.size()); ++i) {
                         const auto& input = inputs[i];
                         using ActionType = slc::v3::Action::ActionType;
@@ -2101,7 +2280,12 @@ void UIManager::draw() {
                     ImGui::EndChild();
                 };
 
-                if (skeetMenu) {
+                if (customMenu) {
+                    drawEditor();
+                    slui::divider();
+                    slui::text("Inputs", m_medium);
+                    drawInputs();
+                } else if (skeetMenu) {
                     slui::hide_section_box();
                     drawEditor();
                     slui::divider();
@@ -2119,9 +2303,10 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Render, [&]() {
-                if (!skeetMenu) slui::text("Render", m_bold);
+                if (!skeetMenu && !customMenu) slui::text("Render", m_bold);
 
                 slui::divider(false);
+                if (customMenu) slui::text("Render", m_medium);
 
                 auto renderer = Renderer::get();
 
@@ -2305,6 +2490,8 @@ void UIManager::draw() {
                 }
                 if (savePreset) renderer->saveSettings(presetPath);
 
+                if (customMenu)
+                    slui::Config::get().customSectionIndex |= 1;
                 slui::divider();
 
                 slui::text("Video Settings", m_medium);
@@ -2401,20 +2588,22 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Settings, [&]() {
-                if (!skeetMenu) slui::text("Settings", m_bold);
+                if (!skeetMenu && !customMenu) slui::text("Settings", m_bold);
 
                 slui::divider(false);
 
                 slui::text("Interface", m_medium);
 
 #ifdef GRAPE_PRIVATE_PC
-                int menuStyle = grape::pc::useSkeetMenu() ? 1 : 0;
+                int menuStyle = savedMenuStyle == 1 ? 2
+                    : savedMenuStyle == 2 ? 1 : 0;
                 static slui::DropdownState menuStyleState{
-                    {"Default", "Skeet.cc"}, 0};
+                    {"Default", "imGui", "Skeet.cc"}, 0};
                 menuStyleState.selectedIndex = menuStyle;
                 if (slui::dropdown(
                         "Menu Style", menuStyleState, menuStyle).changed) {
-                    s_pendingMenuStyle = menuStyle == 1;
+                    s_pendingMenuStyle = menuStyle == 2 ? 1
+                        : menuStyle == 1 ? 2 : 0;
                     m_state.m_visible->inner() = false;
                 }
 #endif
@@ -2566,8 +2755,18 @@ void UIManager::draw() {
 
                 if (ImGui::BeginTable(
                         "LockDelta", 2,
-                        ImGuiTableFlags_SizingStretchSame,
+                        ImGuiTableFlags_SizingStretchProp,
                         skeetMenu ? ImVec2(220.0f, 0.0f) : ImVec2())) {
+                    // Weighted rather than an even split: with equal columns
+                    // the dropdown started too far right and clipped its widest
+                    // option to "Performan". Giving it the larger share moves
+                    // its left edge over and fits the full text.
+                    ImGui::TableSetupColumn("##lockDeltaToggle",
+                                            ImGuiTableColumnFlags_WidthStretch,
+                                            0.75f);
+                    ImGui::TableSetupColumn("##lockDeltaMode",
+                                            ImGuiTableColumnFlags_WidthStretch,
+                                            1.25f);
                     ImGui::TableNextColumn();
                     slui::checkbox("Lock Delta",
                                     bot->timeline().m_lockDelta->inner());
@@ -2679,7 +2878,9 @@ void UIManager::draw() {
                 ImGui::GetWindowPos(),
                 ImGui::GetWindowPos() + ImGui::GetWindowSize(),
                 ImGui::GetColorU32(ImVec4(1.0, 1.0, 1.0, 0.1f)),
-                0.0f,
+                // Same reason as the fill above: a square outline poked past
+                // the rounded corners.
+                ImGui::GetStyle().WindowRounding,
                 ImDrawFlags_RoundCornersAll,
                 1.0f * slui::Config::get().uiScale);
         }
@@ -2714,8 +2915,10 @@ void UIManager::draw() {
     drawKeybindContextMenu();
 
 #ifdef GRAPE_PRIVATE_PC
-    if (skeetMenu) grape::pc::popSkeetStyle();
+    if (customMenu) popDefaultMenuStyle();
+    else if (skeetMenu) grape::pc::popSkeetStyle();
 #endif
+    slui::Config::get().customMode = false;
     slui::Config::get().skeetMode = false;
 
 #ifdef SILICATE_PROTECT

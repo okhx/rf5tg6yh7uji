@@ -1,0 +1,50 @@
+========================================
+  Grape Crash Log
+  Time: 2026-08-12 14:56:59
+========================================
+
+Reason: Unhandled SEH exception
+
+Exception: EXCEPTION_ACCESS_VIOLATION (0xc0000005)
+Address:   0xdead
+Access:    WRITE at 0xdead
+
+Registers:
+  RAX=0  RBX=1357183a4c0  RCX=dead  RDX=0
+  RSI=ebc5ee5e0  RDI=0  RSP=ebc5edef0  RBP=ebc5ee000
+  R8 =ebc5edef0  R9 =ebc5ee000  R10=0  R11=244
+  R12=80003f02  R13=ebc5ee9b0  R14=ffffffffdc0114ec  R15=1357641cfa0
+  RIP=dead
+
+Stack Trace:
+  #0  0xdead  GeometryDash.exe!?
+  #1  0x7ffb15125964  win32u.dll!NtGdiDdDDIPresent + 0x14
+  #2  0x7ffa946452d9  OPENGL32.dll!wglUseFontBitmapsW + 0x849
+  #3  0x7ffa6fa0078c  ig9icd64.dll!?
+  #4  0x7ffa6ff91983  ig9icd64.dll!DrvPresentBuffers + 0x213
+  #5  0x7ffa94645075  OPENGL32.dll!wglUseFontBitmapsW + 0x5e5
+  #6  0x7ffa6ff92f80  ig9icd64.dll!DrvSwapBuffers + 0x820
+  #7  0x7ffa6ff928f3  ig9icd64.dll!DrvSwapBuffers + 0x193
+  #8  0x7ffa94645803  OPENGL32.dll!wglUseFontBitmapsW + 0xd73
+  #9  0x7ffa94661adb  OPENGL32.dll!wglSwapBuffers + 0x8b
+  #10  0x7ffb1517f488  gdi32full.dll!SwapBuffers + 0x38
+  #11  0x13562ee29d9  <unknown module>!?
+  #12  0x13560fcebf0  <unknown module>!?
+  #13  0x7ffa94620000  OPENGL32.dll!?
+  #14  0x1  GeometryDash.exe!?
+  #15  0x13500000000  <unknown module>!?
+  #16  0x7ffa94645bd0  OPENGL32.dll!wglUseFontBitmapsW + 0x1140
+  #17  0x7ffa94645b00  OPENGL32.dll!wglUseFontBitmapsW + 0x1070
+  #18  0x7ffa94645b00  OPENGL32.dll!wglUseFontBitmapsW + 0x1070
+  #19  0x7ffa94645af0  OPENGL32.dll!wglUseFontBitmapsW + 0x1060
+  #20  0x7ffa704d6e9f  ig9icd64.dll!RegisterProcTableCallback + 0x4f8f2f
+  #21  0x7ffa704d71af  ig9icd64.dll!RegisterProcTableCallback + 0x4f923f
+  #22  0x7ffa704d8d8f  ig9icd64.dll!RegisterProcTableCallback + 0x4fae1f
+  #23  0x7ffa7010d5af  ig9icd64.dll!RegisterProcTableCallback + 0x12f63f
+  #24  0x135718316f0  <unknown module>!?
+  #25  0xebc7a4138  <unknown module>!?
+  #26  0x18  GeometryDash.exe!?
+
+========================================
+  End of crash log
+========================================

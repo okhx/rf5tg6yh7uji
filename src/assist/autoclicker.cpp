@@ -240,9 +240,21 @@ void Autoclicker::update(PlayLayer* pl) {
         }
         if (!current) current = movingGap(pl, player, predictedY);
         if (current) {
-            const float velocity = std::isfinite(state.center)
+            const float rawVelocity = std::isfinite(state.center)
                 ? (current->center - state.center) / elapsed : 0.0f;
-            const float acceleration = (velocity - state.velocity) / elapsed;
+            // Gap detection re-picks the nearest bounding objects every frame,
+            // so the raw center jitters even when the true gap moves smoothly.
+            // We still blend with an EMA to kill single-frame spikes, but with a
+            // faster response (0.6, was 0.45): too much smoothing lags the true
+            // speed of a fast gap, and an under-estimated speed makes the wave
+            // react too late and clip the wall. 0.6 converges in ~3 frames while
+            // still damping a lone bad sample.
+            const float velocity = std::isfinite(state.center)
+                ? state.velocity + (rawVelocity - state.velocity) * 0.6f
+                : rawVelocity;
+            const float rawAccel = (velocity - state.velocity) / elapsed;
+            const float acceleration =
+                state.acceleration + (rawAccel - state.acceleration) * 0.6f;
             state = {current->center, current->lower, current->upper,
                      std::clamp(velocity, -60.0f, 60.0f),
                      std::clamp(acceleration, -15.0f, 15.0f), frame};
@@ -266,7 +278,6 @@ void Autoclicker::update(PlayLayer* pl) {
             return std::nullopt;
         if (!player->m_isDart) return std::nullopt;
         if (!std::isfinite(gap.center)) return std::nullopt;
-        if (pressed && touchingRing(player)) return false;
         const auto hitbox = player->getObjectRect();
         const float gapHeight = gap.upper - gap.lower;
         const float playerHeight = hitbox.getMaxY() - hitbox.getMinY();
@@ -287,6 +298,18 @@ void Autoclicker::update(PlayLayer* pl) {
             safetyFrames = std::clamp(
                 static_cast<int>(safetyFrames * tightness + 0.5f), 1, 30);
         }
+        // A gap sweeping quickly up or down must be met earlier: the wave climbs
+        // and dives at a fixed rate, so a reaction tuned for a still gap lands
+        // after the safe corridor has already slid past. Stretch the lookahead
+        // with the gap's speed so the override below fires while there is still
+        // room to correct.
+        const float gapSpeed = std::fabs(gap.velocity);
+        if (gapSpeed > 4.0f) {
+            const float speedScale =
+                std::min(2.25f, 1.0f + (gapSpeed - 4.0f) / 10.0f);  // 1..2.25
+            safetyFrames = std::clamp(
+                static_cast<int>(safetyFrames * speedScale + 0.5f), 1, 30);
+        }
         const float safetyGapOffset = futureGapOffset(
             gap.velocity, gap.acceleration, safetyFrames);
         const float safetyPlayerOffset =
@@ -299,6 +322,13 @@ void Autoclicker::update(PlayLayer* pl) {
             return !player->m_isUpsideDown;
         if (futureUpper <= margin && futureUpper < futureLower)
             return player->m_isUpsideDown;
+
+        // Touching an orb while steering: a fresh press edge inside a ring can
+        // activate it and hijack the trajectory. Survival (the overrides above)
+        // always wins, but when the gap is otherwise safe just hold the current
+        // button state so no activation edge is created. This replaces a blind
+        // forced release that used to dive the wave straight into a fast gap.
+        if (touchingRing(player)) return pressed;
 
         const float nextGapOffset = futureGapOffset(
             gap.velocity, gap.acceleration, 1);

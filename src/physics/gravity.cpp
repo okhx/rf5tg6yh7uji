@@ -2,6 +2,7 @@
 
 #include <Geode/Geode.hpp>
 
+#include "config/config.hpp"
 #include "engine/engine.hpp"
 #include "replay/macro.hpp"
 #include "trajectory/trajectory.hpp"
@@ -37,7 +38,17 @@ void flipGravityInner(PlayerObject* player, bool gravity) {
     player->m_lastCollisionLeft = -1;
     player->m_lastCollisionRight = -1;
 
-    player->m_yVelocity = player->m_yVelocity * 0.5;
+    // 2.2 halves your speed through a gravity flip; the 2.1 decomp instead
+    // scales it up (flipGravity.cpp:19, `m_yAccel *= 1.75`), so old levels that
+    // were built around carrying momentum through a portal play very
+    // differently now. Only the multiplier changed, so the 2.1 restore is this
+    // one constant.
+    // NOTE: 1.75 appears exactly once across both decompiled trees with no
+    // second source to corroborate it, so treat it as the value to verify
+    // first -- fall at a known speed into a portal and compare the Y Velocity
+    // label against 1.75x (2.1) vs 0.5x (2.2).
+    player->m_yVelocity =
+        player->m_yVelocity * (GrapeSettings::get()->physics21 ? 1.75 : 0.5);
     player->m_isOnGround = false;
     if (player->m_isBall) {
         player->m_isRotating = false;

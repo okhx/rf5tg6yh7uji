@@ -17,6 +17,21 @@
 #include "config/config.hpp"
 #include "shared/value/value.hpp"
 
+class PlayLayer;
+
+// True while a practice checkpoint must not be created.
+//
+// A checkpoint snapshots the current frame, the replay input index and the RNG
+// states (see PracticeFix::createCheckpoint). Taking one after the player has
+// died records a moment the run never actually played through, so restoring it
+// resumes the macro from an input index that doesn't line up with the frame and
+// the macro desyncs. Every placement path has to go through this.
+//
+// Both the level's death flag and each player's are checked because they aren't
+// set at the same moment: PlayLayer::m_playerDied covers the death-to-respawn
+// window, while m_isDead is per-player (and player 2 may not exist).
+bool checkpointPlacementBlocked(PlayLayer* pl);
+
 class PracticeFix {
    private:
    public:

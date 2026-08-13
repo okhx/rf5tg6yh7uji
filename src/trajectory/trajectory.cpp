@@ -198,7 +198,7 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
 
     if ((m_deadP1 && (mode & TrajectoryMode::Player1) != 0) ||
         (m_deadP2 && (mode & TrajectoryMode::Player2) != 0)) {
-        if (stepCount > 1) drawHitbox(pl, player);
+        if (config.m_draw && stepCount > 1) drawHitbox(pl, player);
         return true;
     }
 
@@ -252,8 +252,9 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
     pl->m_effectManager->postCollisionCheck();
 
     const float width = m_state->m_width->inner() / pl->m_gameState.m_cameraZoom;
-    m_node->drawSegment(
-        prevPos, player->getPosition(), width, toCocosColor(colors));
+    if (config.m_draw)
+        m_node->drawSegment(
+            prevPos, player->getPosition(), width, toCocosColor(colors));
 
     ++stepCount;
     return false;
@@ -317,11 +318,13 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
         }
     }
 
-    for (int i = 0; i < activeCount; ++i) {
-        PlayerObject* plr = activePlayers[i];
-        const CCPoint pos = plr->getPosition();
-        m_node->drawSegment(pos, plr->getPosition(), width,
-                            toCocosColor(colors));
+    if (config.m_draw) {
+        for (int i = 0; i < activeCount; ++i) {
+            PlayerObject* plr = activePlayers[i];
+            const CCPoint pos = plr->getPosition();
+            m_node->drawSegment(pos, plr->getPosition(), width,
+                                toCocosColor(colors));
+        }
     }
 
     bool breakP1 = false;
@@ -403,6 +406,7 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
         .rotation    = player->getRotationX(),
         .p1          = (mode & TrajectoryMode::Player1) != 0,
         .holding     = (mode & TrajectoryMode::Hold) != 0,
+        .dead        = player == m_fakePlayer1 ? m_deadP1 : m_deadP2,
         .score       = predCount,
         .minY        = minY,
         .maxY        = maxY,

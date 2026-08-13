@@ -8,7 +8,7 @@
   },
   "id": "okhx.grape",
   "name": "Grape",
-  "version": "v1.0.0",
+  "version": "v1.0.1",
   "developer": "okhx",
   "description": "An GDBot.",
   "resources": {
@@ -17,6 +17,7 @@
       "resources/fonts/font_bold.ttf",
       "resources/fonts/font_medium.ttf",
       "resources/fonts/font_symbols.ttf",
+      "Arboria-Medium.ttf",
       "resources/img/logo.png"
     ],
     "sprites": [

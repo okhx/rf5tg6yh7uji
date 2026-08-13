@@ -169,7 +169,7 @@ void GrapeEngine::initialize() {
         std::clamp(settings.noclipPlayer, 0, 2));
 
 #ifdef GEODE_IS_MOBILE
-    settings.useAlternateHook = false;
+    settings.useAlternateHook = true;
 #endif
 
     std::filesystem::path keybindsPath =

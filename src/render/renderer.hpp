@@ -222,6 +222,11 @@ class Renderer {
         "renderer.auto_video_name", &GrapeSettings::get()->automaticVideoName);
     ConfigValuePtr<std::string> m_videoNameTemplate = ConfigValue<std::string>::create(
         "renderer.video_name_template", &GrapeSettings::get()->videoNameTemplate);
+    ConfigValuePtr<bool> m_firstAttemptPause = ConfigValue<bool>::create(
+        "render.first_attempt_pause", &m_settings.m_firstAttemptPause);
+    ConfigValuePtr<bool> m_renderLabels = ConfigValue<bool>::create(
+        "render.labels_while_recording",
+        &GrapeSettings::get()->renderLabelsWhileRecording);
 
     double m_time = 0;
     RenderTexture m_texture;

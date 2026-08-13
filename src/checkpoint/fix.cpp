@@ -22,14 +22,23 @@ using namespace geode::prelude;
 #include "engine/timeline.hpp"
 #include "replay/macro.hpp"
 
+bool checkpointPlacementBlocked(PlayLayer* pl) {
+    if (!pl) return false;
+    if (pl->m_playerDied) return true;
+    if (pl->m_player1 && pl->m_player1->m_isDead) return true;
+    if (pl->m_player2 && pl->m_player2->m_isDead) return true;
+    return false;
+}
+
 #ifdef GEODE_IS_MOBILE
 struct GrapeUILayer : Modify<GrapeUILayer, UILayer> {
     void onCheck(CCObject* sender) {
         auto* pl = PlayLayer::get();
-        if (GrapeEngine::get()->isEnabled() && pl &&
-            (pl->m_player1->m_isDead ||
-             (pl->m_player2 && pl->m_player2->m_isDead))) {
-            pl->markCheckpoint();
+        // Swallow the button while dead instead of placing a checkpoint: the
+        // saved frame/input index would not match anything the run played
+        // through and the macro desyncs on restore.
+        if (GrapeEngine::get()->isEnabled() &&
+            checkpointPlacementBlocked(pl)) {
             return;
         }
         UILayer::onCheck(sender);

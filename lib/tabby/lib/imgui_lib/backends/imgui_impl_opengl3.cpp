@@ -732,6 +732,9 @@ void ImGui_ImplOpenGL3_UpdateTexture(ImTextureData* tex)
         GL_CALL(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
 #endif
         GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->Width, tex->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+        // ponytail: Intel drivers may defer reading client memory until
+        // SwapBuffers; font uploads are rare, so finish before ImGui mutates it.
+        GL_CALL(glFinish());
 
         // Store identifiers
         tex->SetTexID((ImTextureID)(intptr_t)gl_texture_id);
@@ -742,32 +745,22 @@ void ImGui_ImplOpenGL3_UpdateTexture(ImTextureData* tex)
     }
     else if (tex->Status == ImTextureStatus_WantUpdates)
     {
-        // Update selected blocks. We only ever write to textures regions which have never been used before!
-        // This backend choose to use tex->Updates[] but you can use tex->UpdateRect to upload a single region.
+        // ponytail: Intel ig75icd64 can crash while consuming the temporary
+        // glTexSubImage2D buffer. Upload the rare font-atlas update from
+        // ImGui's persistent pixel storage; restore subrects if glyph churn
+        // ever becomes measurable.
         GLint last_texture;
         GL_CALL(glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture));
 
         GLuint gl_tex_id = (GLuint)(intptr_t)tex->TexID;
         GL_CALL(glBindTexture(GL_TEXTURE_2D, gl_tex_id));
-#if 0// GL_UNPACK_ROW_LENGTH // Not on WebGL/ES
-        GL_CALL(glPixelStorei(GL_UNPACK_ROW_LENGTH, tex->Width));
-        for (ImTextureRect& r : tex->Updates)
-            GL_CALL(glTexSubImage2D(GL_TEXTURE_2D, 0, r.x, r.y, r.w, r.h, GL_RGBA, GL_UNSIGNED_BYTE, tex->GetPixelsAt(r.x, r.y)));
+#ifdef GL_UNPACK_ROW_LENGTH
         GL_CALL(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
-#else
-        // GL ES doesn't have GL_UNPACK_ROW_LENGTH, so we need to (A) copy to a contiguous buffer or (B) upload line by line.
-        ImGui_ImplOpenGL3_Data* bd = ImGui_ImplOpenGL3_GetBackendData();
-        for (ImTextureRect& r : tex->Updates)
-        {
-            const int src_pitch = r.w * tex->BytesPerPixel;
-            bd->TempBuffer.resize(r.h * src_pitch);
-            char* out_p = bd->TempBuffer.Data;
-            for (int y = 0; y < r.h; y++, out_p += src_pitch)
-                memcpy(out_p, tex->GetPixelsAt(r.x, r.y + y), src_pitch);
-            IM_ASSERT(out_p == bd->TempBuffer.end());
-            GL_CALL(glTexSubImage2D(GL_TEXTURE_2D, 0, r.x, r.y, r.w, r.h, GL_RGBA, GL_UNSIGNED_BYTE, bd->TempBuffer.Data));
-        }
 #endif
+        GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->Width,
+                            tex->Height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                            tex->GetPixels()));
+        GL_CALL(glFinish());
         tex->SetStatus(ImTextureStatus_OK);
         GL_CALL(glBindTexture(GL_TEXTURE_2D, last_texture)); // Restore state
     }

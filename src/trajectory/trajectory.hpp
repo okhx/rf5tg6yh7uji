@@ -36,6 +36,7 @@ struct TrajectoryPlayerData {
     float rotation;
     bool p1;
     bool holding;
+    bool dead;
 
     int score;
     float minY;
@@ -55,6 +56,7 @@ struct PredictionConfig {
     bool m_bypassConfig = false;
     int m_maxLength = 10'000'000;
     double m_overridenTPS = 0.0;
+    bool m_draw = true;
     // If >= 0, the active player's jump input is flipped (held<->released) at
     // this simulation step, letting a caller probe delayed-click plans such as
     // "wait N frames, then jump". -1 keeps the input constant for the whole

@@ -21,6 +21,9 @@
 #include "physics/gjbasegamelayer.hpp"
 #include "replay/macro.hpp"
 #include "trajectory/trajectory.hpp"
+#ifdef GRAPE_PRIVATE_PC
+#include "script_engine.hpp"
+#endif
 #ifdef GEODE_IS_WINDOWS
 #include "util/midhook.hpp"
 #endif
@@ -241,6 +244,13 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
         }
     }
 
+#ifdef GEODE_IS_ANDROID
+    void processCommands(float dt, bool isHalfTick, bool isLastTick) {
+        GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick);
+        GrapeEngine::get()->timeline().portableFrameUpdate(PlayLayer::get(), dt);
+    }
+#endif
+
     void gameEventTriggered(GJGameEvent event, int p1, int p2) {
         auto bot = GrapeEngine::get();
 
@@ -392,9 +402,12 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void handleButton(bool pressed, int button, bool player1) {
+#ifdef GRAPE_PRIVATE_PC
+        grape::pc::ScriptEngine::get().input(
+            player1 ? 1 : 2, button, pressed);
+#endif
         auto bot = GrapeEngine::get();
-        if (!bot->macro().m_useAlternateHook->inner() ||
-            !bot->isRecording()) {
+        if (!bot->isRecording()) {
             return GJBaseGameLayer::handleButton(pressed, button, player1);
         }
 
@@ -456,18 +469,9 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             bot->cps().pushAction(action.m_player2);
         }
 
-#ifdef GEODE_IS_IOS
-        m_queuedButtons.push_back({
-            .m_button = static_cast<PlayerButton>(button),
-            .m_isPush = action.m_holding,
-            .m_isPlayer2 = bot->macro().playerFlipped(action.m_player2),
-            .m_step = m_currentStep,
-            .m_timestamp = 0.0,
-        });
-#else
         this->queueButton(button, action.m_holding,
-                          bot->macro().playerFlipped(action.m_player2), 0);
-#endif
+                          bot->macro().playerFlipped(action.m_player2),
+                          0);
         return false;
     }
 
@@ -518,9 +522,6 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
             }
 
             this->requeueInverted();
-            if (!bot->macro().m_useAlternateHook->inner()) {
-                this->saveQueuedButtons();
-            }
         } else if (bot->isPlaying()) {
             uint32_t frame = bot->timeline().getFrame();
 
@@ -586,8 +587,20 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
         auto bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(player)) {
             phys::flipGravity(player, gravity);
-        } else {
-            GJBaseGameLayer::flipGravity(player, gravity, unk);
+            return;
+        }
+
+        // 2.1 restore: a gravity flip scaled your speed by 1.75 in 2.1 but is
+        // halved in 2.2, so old levels built around carrying momentum through a
+        // portal play very differently. The game only applies its scale when the
+        // direction actually changes, so mirror that condition and convert the
+        // 0.5 it just applied into 1.75.
+        // NOTE: 1.75 comes from a single line in the decompiled 2.1 source with
+        // nothing to corroborate it -- this is the part to verify first.
+        const bool willFlip = player && player->m_isUpsideDown != gravity;
+        GJBaseGameLayer::flipGravity(player, gravity, unk);
+        if (willFlip && player && GrapeSettings::get()->physics21) {
+            player->m_yVelocity *= 1.75 / 0.5;
         }
     }
 

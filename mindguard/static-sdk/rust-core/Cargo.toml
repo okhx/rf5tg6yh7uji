@@ -1,0 +1,16 @@
+[package]
+name = "mindguard-static-core"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+publish = false
+
+[features]
+embedded-test = []
+
+[[example]]
+name = "embedded"
+required-features = ["embedded-test"]
+
+[workspace]
+resolver = "3"
