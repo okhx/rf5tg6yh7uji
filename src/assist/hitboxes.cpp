@@ -115,11 +115,9 @@ const std::array ALWAYS_ALLOWED_MODIFIERS = {200, 201, 202, 203,
 static void drawObjectHitbox(cocos2d::CCDrawNode*    node,
                              GJBaseGameLayer*         pl,
                              GameObject*              object,
-                             const ResolvedObjectHB&  hb,
-                             bool                     force = false) {
-    if (!object || (!force &&
-        (object->m_isGroupDisabled || !object->m_isActivated ||
-         object->m_objectType == GameObjectType::Decoration)))
+                             const ResolvedObjectHB&  hb) {
+    if (!object || object->m_isGroupDisabled || !object->m_isActivated ||
+        object->m_objectType == GameObjectType::Decoration)
         return;
 
     if (object == pl->m_player1 || object == pl->m_player2 ||
@@ -130,16 +128,16 @@ static void drawObjectHitbox(cocos2d::CCDrawNode*    node,
 
     switch (object->m_objectType) {
         default: {
-            if (!force && object->hasBeenActivatedByPlayer(pl->m_player1) &&
+            if (object->hasBeenActivatedByPlayer(pl->m_player1) &&
                 (!pl->m_gameState.m_isDualMode ||
                  object->hasBeenActivatedByPlayer(pl->m_player2)))
                 return;
 
-            if (!force && (object == pl->m_player1CollisionBlock ||
-                           object == pl->m_player2CollisionBlock))
+            if (object == pl->m_player1CollisionBlock ||
+                object == pl->m_player2CollisionBlock)
                 return;
 
-            if (!force && object->m_objectType == GameObjectType::Modifier &&
+            if (object->m_objectType == GameObjectType::Modifier &&
                 std::ranges::find(ALWAYS_ALLOWED_MODIFIERS,
                                   object->m_objectID) ==
                     ALWAYS_ALLOWED_MODIFIERS.end()) {
@@ -147,7 +145,7 @@ static void drawObjectHitbox(cocos2d::CCDrawNode*    node,
                     return;
             }
 
-            if (!force && !hb.interactable.enabled) break;
+            if (!hb.interactable.enabled) break;
 
             bool rectDirty      = object->m_isObjectRectDirty;
             bool offsetCalced   = object->m_boxOffsetCalculated;
@@ -179,7 +177,7 @@ static void drawObjectHitbox(cocos2d::CCDrawNode*    node,
 
         case GameObjectType::Solid: {
             const auto& cat = object->m_isPassable ? hb.passable : hb.solid;
-            if (force || cat.enabled)
+            if (cat.enabled)
                 node->drawRect(usingWidth(object->getObjectRect(), width),
                                cat.fill, width, cat.line);
             break;
@@ -187,7 +185,7 @@ static void drawObjectHitbox(cocos2d::CCDrawNode*    node,
 
         case GameObjectType::Slope: {
             const auto& cat = object->m_isPassable ? hb.passable : hb.solid;
-            if (!force && !cat.enabled) break;
+            if (!cat.enabled) break;
 
             auto rect = object->getObjectRect();
             std::array<cocos2d::CCPoint, 3> verts = {
@@ -207,8 +205,8 @@ static void drawObjectHitbox(cocos2d::CCDrawNode*    node,
 
         case GameObjectType::AnimatedHazard:
         case GameObjectType::Hazard: {
-            if (!force && (!object->m_isActivated ||
-                object == pl->m_anticheatSpike || !hb.hazard.enabled))
+            if (!object->m_isActivated || object == pl->m_anticheatSpike ||
+                !hb.hazard.enabled)
                 return;
 
             bool rectDirty    = object->m_isObjectRectDirty;
@@ -294,24 +292,6 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
 
     m_drawNode->clear();
 
-    auto& hbs = GrapeSettings::get()->hitboxes;
-    const ResolvedObjectHB objHB{
-        .width = static_cast<float>(hbs.width / pl->m_gameState.m_cameraZoom),
-        .interactable = resolveHB(hbs, GrapeSettings::HitboxSettings::Interactable),
-        .interactableActive = resolveHB(hbs, GrapeSettings::HitboxSettings::InteractableActive),
-        .solid = resolveHB(hbs, GrapeSettings::HitboxSettings::Solid),
-        .passable = resolveHB(hbs, GrapeSettings::HitboxSettings::Passable),
-        .hazard = resolveHB(hbs, GrapeSettings::HitboxSettings::Hazard),
-    };
-
-    if (m_showOnDeath->inner() && m_deathPlayer) {
-        m_trailDrawNode->clear();
-        m_trailDirty = true;
-        drawObjectHitbox(m_drawNode, pl, m_deathObject, objHB, true);
-        drawPlayerHitbox(m_drawNode, pl, m_deathPlayer, hbs);
-        return;
-    }
-
     if (!m_trailEnabled->inner()) {
         m_trailDrawNode->clear();
         m_trailDirty = true;
@@ -319,6 +299,7 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
         m_trailDrawNode->clear();
         m_trailDirty = false;
 
+        auto&       hbs      = GrapeSettings::get()->hitboxes;
         auto&       settings = hbs;
         using       Type   = GrapeSettings::HitboxSettings::Type;
         const float width  = hbs.width / pl->m_gameState.m_cameraZoom;
@@ -409,10 +390,24 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
 
     if (!m_enabled->inner()) return;
 
-    iterateObjects(pl, [&](GameObject* object) {
-        drawObjectHitbox(m_drawNode, pl, object, objHB);
-    });
+    {
+        auto& hbs = GrapeSettings::get()->hitboxes;
+        using Type = GrapeSettings::HitboxSettings::Type;
+        const ResolvedObjectHB objHB{
+            .width              = static_cast<float>(hbs.width / pl->m_gameState.m_cameraZoom),
+            .interactable       = resolveHB(hbs, Type::Interactable),
+            .interactableActive = resolveHB(hbs, Type::InteractableActive),
+            .solid              = resolveHB(hbs, Type::Solid),
+            .passable           = resolveHB(hbs, Type::Passable),
+            .hazard             = resolveHB(hbs, Type::Hazard),
+        };
 
+        iterateObjects(pl, [&](GameObject* object) {
+            drawObjectHitbox(m_drawNode, pl, object, objHB);
+        });
+    }
+
+    auto& hbs = GrapeSettings::get()->hitboxes;
     drawPlayerHitbox(m_drawNode, pl, pl->m_player1, hbs);
     if (pl->m_gameState.m_isDualMode)
         drawPlayerHitbox(m_drawNode, pl, pl->m_player2, hbs);
@@ -470,14 +465,6 @@ void Hitboxes::clearTrail() {
     m_trailP2.clear();
     m_trailStepCounter = 0;
     m_trailDirty = true;
-    m_deathPlayer = nullptr;
-    m_deathObject = nullptr;
-}
-
-void Hitboxes::captureDeath(PlayerObject* player, GameObject* object) {
-    if (!m_showOnDeath->inner() || m_deathPlayer) return;
-    m_deathPlayer = player;
-    m_deathObject = object;
 }
 
 void Hitboxes::destroy() {
@@ -486,8 +473,6 @@ void Hitboxes::destroy() {
     safeRelease(m_drawNode);
     safeRelease(m_trailDrawNode);
 
-    m_deathPlayer = nullptr;
-    m_deathObject = nullptr;
     m_trailDirty = true;
     m_initialized = false;
 }

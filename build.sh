@@ -5,7 +5,6 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 private="$root/pc"
 build="${GRAPE_BUILD_DIR:-$root/build-private-win}"
 output="$root/output"
-mindguard="$root/mindguard/static-sdk"
 jobs="${GRAPE_BUILD_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)}"
 
 if [[ ! -f "$private/CMakeLists.txt" ]]; then
@@ -41,22 +40,6 @@ for tool in cmake geode; do
     fi
 done
 
-cargo_bin="$(command -v cargo || true)"
-if [[ -z "$cargo_bin" && -x "${HOME:-}/.cargo/bin/cargo" ]]; then
-    cargo_bin="${HOME}/.cargo/bin/cargo"
-fi
-if [[ -z "$cargo_bin" ]]; then
-    echo "cargo is missing; install Rust 1.97.1 with rustup" >&2
-    exit 1
-fi
-
-"$cargo_bin" build --locked --release --manifest-path "$mindguard/build/Cargo.toml"
-umask 077
-mindguard_seed="$(mktemp "${TMPDIR:-/tmp}/grape-mindguard.XXXXXX")"
-trap 'rm -f "$mindguard_seed"' EXIT
-dd if=/dev/urandom of="$mindguard_seed" bs=32 count=1 status=none
-export MG_BUILD_SEED_FILE="$mindguard_seed"
-
 configure=(
     -S "$private"
     -B "$build"
@@ -77,7 +60,7 @@ fi
 if [[ "$(uname -s)" == Linux* ]]; then
     llvm_major=19
     llvm_path="${GRAPE_LLVM_PATH:-/usr/lib/llvm-$llvm_major/bin}"
-    for tool in clang-cl clang++ lld-link llvm-config llvm-lib llvm-mt llvm-rc; do
+    for tool in clang-cl lld-link llvm-lib llvm-mt llvm-rc; do
         if [[ ! -x "$llvm_path/$tool" ]]; then
             echo "$llvm_path/$tool is missing; this build requires LLVM 19.x" >&2
             exit 1
@@ -91,20 +74,6 @@ if [[ "$(uname -s)" == Linux* ]]; then
         exit 1
     fi
 
-    mindguard_host="$build/mindguard-host"
-    mindguard_plugin_build="$mindguard_host/llvm-pass-$llvm_major"
-    cmake -S "$mindguard/llvm-pass" -B "$mindguard_plugin_build" \
-        -DCMAKE_BUILD_TYPE=Release \
-        "-DCMAKE_CXX_COMPILER=$llvm_path/clang++" \
-        "-DLLVM_DIR=$("$llvm_path/llvm-config" --cmakedir)"
-    cmake --build "$mindguard_plugin_build" --parallel "$jobs"
-    mindguard_plugin="$mindguard_plugin_build/MindGuardPass.so"
-    mindguard_sealer="$mindguard_host/mindguard_seal_pe"
-    "$llvm_path/clang++" -std=c++20 -O2 \
-        -I "$mindguard/cpp/include" \
-        "$mindguard/cpp/tools/seal_pe.cpp" \
-        -o "$mindguard_sealer"
-
     export PATH="$llvm_path:$PATH"
     configure+=(
         "-DLLVM_VER=$llvm_major"
@@ -117,8 +86,6 @@ if [[ "$(uname -s)" == Linux* ]]; then
         "-DLLVM_LIB_PATH=$llvm_path/llvm-lib"
         "-DLLVM_MT_PATH=$llvm_path/llvm-mt"
         "-DLLVM_RC_PATH=$llvm_path/llvm-rc"
-        "-DMINDGUARD_LLVM_PASS_PLUGIN=$mindguard_plugin"
-        "-DMINDGUARD_SEAL_TOOL=$mindguard_sealer"
     )
     configure+=(
         "-DCMAKE_TOOLCHAIN_FILE=$toolchain"

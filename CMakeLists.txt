@@ -215,21 +215,6 @@ else()
 endif()
 target_compile_options(GeodeBindings PRIVATE -Wno-overloaded-virtual -Wno-unused-variable)
 
-if (GRAPE_PRIVATE_PC)
-    set(MINDGUARD_PROFILE Hardened CACHE STRING "" FORCE)
-    set(MINDGUARD_BUILD_TOOL
-        "${CMAKE_CURRENT_SOURCE_DIR}/mindguard/static-sdk/build/target/release/mindguard-build"
-        CACHE FILEPATH "" FORCE)
-    set(MINDGUARD_SCAN_TOOL
-        "${CMAKE_CURRENT_SOURCE_DIR}/mindguard/static-sdk/build/target/release/mindguard-scan"
-        CACHE FILEPATH "" FORCE)
-    add_subdirectory(mindguard/static-sdk/cpp mindguard-static)
-    mindguard_protect_cpp_target(${PROJECT_NAME}
-        PROJECT_ID grape-private-pc
-        RELEASE_ID ${PROJECT_VERSION}
-        SOURCES ${GRAPE_PRIVATE_PC_DIR}/src/license.cpp)
-endif()
-
 setup_geode_mod(${PROJECT_NAME})
 
 # Geode enables -Wpedantic and -Werror as part of setup_geode_mod. Its

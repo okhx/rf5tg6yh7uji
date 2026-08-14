@@ -37,8 +37,6 @@ class Hitboxes {
 
     HitboxesDrawNode* m_drawNode       = nullptr;
     HitboxesDrawNode* m_trailDrawNode  = nullptr;
-    PlayerObject* m_deathPlayer        = nullptr;
-    GameObject* m_deathObject          = nullptr;
 
     bool _enabled = false;
 
@@ -58,14 +56,11 @@ class Hitboxes {
         ConfigValue<bool>::create("hitboxes.enabled", &_enabled);
     ConfigValuePtr<bool> m_trailEnabled = ConfigValue<bool>::create(
         "hitboxes.trail_enabled", &GrapeSettings::get()->hitboxes.trailEnabled);
-    ConfigValuePtr<bool> m_showOnDeath = ConfigValue<bool>::create(
-        "hitboxes.show_on_death", &GrapeSettings::get()->hitboxes.showOnDeath);
     ConfigValuePtr<double> m_width = ConfigValue<double>::create(
         "hitboxes.width", &GrapeSettings::get()->hitboxes.width);
 
     void init(GJBaseGameLayer* pl);
     void clearTrail();
-    void captureDeath(PlayerObject* player, GameObject* object);
     void saveToTrail(GJBaseGameLayer* pl);
     void draw(GJBaseGameLayer* pl);
     void destroy();

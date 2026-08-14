@@ -199,13 +199,12 @@ execution ещё не проверен.**
   прошли; `.text`, seal, repeated seal, signed-directory и truncated-input fixtures
   отклонены. Native Windows runtime execution/debugger/hook fixtures не запускались,
   поэтому Windows runtime readiness не заявляется.
-- Интеграция Grape/Geode 5.7.1 — PASS на local Linux cross-build с
-  Clang/LLVM 19.1.7: `build.sh` собрал matching host pass и PE sealer, сгенерировал
-  material для 6 sites, слинковал Windows runtime, запечатал PE32+ DLL и создал
-  `.geode`. `mindguard_seal_pe --verify` и `mindguard-scan artifact-cpp` прошли;
-  6/6 encoded material присутствуют, 5 auditable plaintext sites отсутствуют,
-  DLL внутри пакета byte-identical итоговой DLL. Native Windows execution не
-  запускался.
+- Интеграция Grape/Geode 5.7.1 с Windows runtime временно отозвана 2026-08-14:
+  собранный мод закрывал игру при запуске на PC. Корневой target и `build.sh`
+  возвращены к предыдущему пути без `mindguard_static`, LLVM pass и PE sealer до
+  появления воспроизводимого native Windows runtime-теста. Возможности SDK и его
+  отдельные cross-build проверки этим откатом не объявляются сломанными или
+  подтверждёнными на реальной игре.
 
 ## Выполнено — M2 blob/build/decoder core (частично)
 

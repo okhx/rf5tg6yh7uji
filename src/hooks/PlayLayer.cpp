@@ -617,7 +617,6 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
     void conditionalDestroyPlayer(PlayerObject* player,
                                   GameObject* gameObject) {
         if (gameObject == m_anticheatSpike) {
-            GrapeEngine::get()->hitboxes().captureDeath(player, gameObject);
             return PlayLayer::destroyPlayer(player, gameObject);
         }
 
@@ -633,7 +632,6 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
             // Real death: clear any in-flight noclip tint so it doesn't flash
             // back at full opacity over the death animation.
             this->removeNoclipTint();
-            bot->hitboxes().captureDeath(player, gameObject);
             return PlayLayer::destroyPlayer(player, gameObject);
         }
 

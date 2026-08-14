@@ -166,7 +166,6 @@ class GrapeSettings {
 
     struct HitboxSettings {
         double width = 0.5;
-        bool showOnDeath = false;
         bool trailEnabled = false;
         bool holdingTrailEnabled = true;
         std::array<float, 4> holdingTrailColor = {0.0f, 1.0f, 1.0f, 1.0f};

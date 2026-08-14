@@ -1197,6 +1197,7 @@ void UIManager::draw() {
     const bool customMenu = savedMenuStyle == 0;
     const bool skeetMenu = savedMenuStyle == 1;
 #else
+    const int savedMenuStyle = 2;
     const bool customMenu = false;
     const bool skeetMenu = false;
 #endif
@@ -1293,12 +1294,7 @@ void UIManager::draw() {
     else if (skeetMenu) grape::pc::pushSkeetStyle(m_state.m_opacity->inner());
 #endif
     slui::Config::get().skeetMode = skeetMenu;
-    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv,
-                 [this, bot, popupShaderFn,
-#ifdef GRAPE_PRIVATE_PC
-                  savedMenuStyle,
-#endif
-                  customMenu, skeetMenu]() {
+    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv, [this, bot, popupShaderFn, savedMenuStyle, customMenu, skeetMenu]() {
         if (!skeetMenu && !customMenu) {
             ImGui::GetWindowDrawList()->AddRectFilled(
                 ImGui::GetWindowPos(),
@@ -1313,11 +1309,7 @@ void UIManager::draw() {
                 ImDrawFlags_RoundCornersAll);
         }
 
-        const auto tabButton = [this
-#ifdef GRAPE_PRIVATE_PC
-                                , customMenu, skeetMenu
-#endif
-                               ](
+        const auto tabButton = [this, customMenu, skeetMenu](
                                    const char* label, const char* icon,
                                    UIState::UITab tab) {
             (void)icon;
@@ -1706,10 +1698,6 @@ void UIManager::draw() {
                 slui::checkbox("Toggle##Hitboxes",
                                 GrapeEngine::get()->hitboxes().m_enabled->inner());
                 keybindRightClick("hitboxes.enabled");
-
-                slui::checkbox("Show Death Collision##Hitboxes",
-                                GrapeEngine::get()->hitboxes().m_showOnDeath->inner());
-                keybindRightClick("hitboxes.show_on_death");
 
                 slui::checkbox("Show Trail##Hitboxes",
                                 GrapeEngine::get()->hitboxes().m_trailEnabled->inner());
