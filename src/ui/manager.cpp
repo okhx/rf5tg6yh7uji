@@ -1294,7 +1294,7 @@ void UIManager::draw() {
     else if (skeetMenu) grape::pc::pushSkeetStyle(m_state.m_opacity->inner());
 #endif
     slui::Config::get().skeetMode = skeetMenu;
-    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv, [this, bot, popupShaderFn, savedMenuStyle, customMenu, skeetMenu]() {
+    slui::window(tex, ImVec2((float)logoWidth, (float)logoHeight), logoUv, [&]() {
         if (!skeetMenu && !customMenu) {
             ImGui::GetWindowDrawList()->AddRectFilled(
                 ImGui::GetWindowPos(),
@@ -1309,8 +1309,7 @@ void UIManager::draw() {
                 ImDrawFlags_RoundCornersAll);
         }
 
-        const auto tabButton = [this, customMenu, skeetMenu](
-                                   const char* label, const char* icon,
+        const auto tabButton = [&](const char* label, const char* icon,
                                    UIState::UITab tab) {
             (void)icon;
             const bool active = m_state.m_currentTab == tab;
