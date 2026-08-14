@@ -6,7 +6,16 @@ Setup CPM Cache
 Install Ninja
 1s
 Download bindings repo
-4s
+3s
+Setup bindings enviroment
+0s
+Setup CLI
+1s
+Setup Geode SDK
+21s
+Run CMake and build
+1m 40s
+Run mkdir -p $HOME/.cache
   -- The C compiler identification is AppleClang 21.0.0.21000101
   -- The CXX compiler identification is AppleClang 21.0.0.21000101
   -- Detecting C compiler ABI info
@@ -26,8 +35,8 @@ Download bindings repo
   -- Found Geode: /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/geode-sdk-clone
   -- Version: 5.7.1
   -- Using /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/bindings-repo for bindings repo
-  Not using a caching compiler (ccache/sccache).
   -- Looking for ccache/sccache
+  Not using a caching compiler (ccache/sccache).
   -- Looking for ccache/sccache - not found
   -- Pre-compiled headers - ON
   -- iOS c++ compiler: /usr/bin/clang++
@@ -68,7 +77,7 @@ Download bindings repo
   | Info | Dependency 'geode.node-ids' found on the index, installing (version '1.23.3')
   | Done | All dependencies resolved
   -- Skipping installing grape
-  -- Configuring done (13.6s)
+  -- Configuring done (9.3s)
   -- Generating done (0.2s)
   -- Build files have been written to: /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/build
   [0/2] Re-checking globbed directories...
@@ -109,7 +118,14 @@ Download bindings repo
       9 | $on_mod(Loaded) {
         | ^
   2 warnings generated.
-  [29/82] Building CXX object CMakeFiles/grape.dir/src/engine/timeline.cpp.o
+  [29/82] Building CXX object CMakeFiles/grape.dir/src/assist/autoclicker.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.cpp:1:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:6:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [30/82] Building CXX object CMakeFiles/grape.dir/src/engine/timeline.cpp.o
   In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/timeline.cpp:1:
   In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/timeline.hpp:12:
   /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
@@ -119,6 +135,99 @@ Download bindings repo
     731 | $execute {
         | ^
   2 warnings generated.
+  [31/82] Building CXX object CMakeFiles/grape.dir/src/assist/pathfinder.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/pathfinder.cpp:1:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/pathfinder.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [32/82] Building CXX object CMakeFiles/grape.dir/src/engine/engine.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/engine.cpp:1:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/engine.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [33/82] Building CXX object CMakeFiles/grape.dir/src/assist/cps.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/cps.cpp:3:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/engine.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [34/82] Building CXX object CMakeFiles/grape.dir/src/hooks/CCActionManager.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/CCActionManager.cpp:4:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/engine.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/CCActionManager.cpp:9:7: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+      9 | class $modify(GrapeCCActionManager, CCActionManager) {
+        |       ^
+  2 warnings generated.
+  [35/82] Building CXX object CMakeFiles/grape.dir/src/assist/hitboxes.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/hitboxes.cpp:1:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/hitboxes.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [36/82] Building CXX object CMakeFiles/grape.dir/src/hooks/CCDirector.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/CCDirector.cpp:3:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/engine.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [37/82] Building CXX object CMakeFiles/grape.dir/src/hooks/CCScheduler.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/CCScheduler.cpp:3:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/engine.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [38/82] Building CXX object CMakeFiles/grape.dir/src/hooks/EndLevelLayer.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/EndLevelLayer.cpp:4:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [39/82] Building CXX object CMakeFiles/grape.dir/src/hooks/EnhancedGameObject.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/EnhancedGameObject.cpp:2:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/timeline.hpp:12:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [40/82] Building CXX object CMakeFiles/grape.dir/src/hooks/FMODAudioEngine.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/FMODAudioEngine.cpp:3:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/../render/dsp.hpp:12:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/FMODAudioEngine.cpp:104:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    104 | $execute {
+        | ^
+  2 warnings generated.
+  [41/82] Building CXX object CMakeFiles/grape.dir/src/hooks/GameObject.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GameObject.cpp:8:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/engine.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [42/82] Building CXX object CMakeFiles/grape.dir/src/hooks/GJBaseGameLayer.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:17:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/engine.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJBaseGameLayer.cpp:764:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    764 | $execute {
+        | ^
+  2 warnings generated.
+  [43/82] Building CXX object CMakeFiles/grape.dir/src/hooks/LevelEditorLayer.cpp.o
   In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/LevelEditorLayer.cpp:6:
   In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/autoclicker.hpp:6:
   /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/assist/../config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
@@ -219,6 +328,56 @@ Download bindings repo
   /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
     302 | $on_mod(DataSaved) {
         | ^
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/label/label.cpp:545:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    545 | $on_mod(Loaded) { GrapeEngine::get()->labels().readFromConfig(); }
+        | ^
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/label/label.cpp:547:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    547 | $on_mod(DataSaved) { GrapeEngine::get()->labels().writeToConfig(); }
+        | ^
+  3 warnings generated.
+  [60/82] Building CXX object CMakeFiles/grape.dir/src/checkpoint/fix.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.cpp:5:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.hpp:17:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/checkpoint/fix.cpp:294:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    294 | $execute {
+        | ^
+  2 warnings generated.
+  [61/82] Building CXX object CMakeFiles/grape.dir/src/render/pass.cpp.o
+  [62/82] Building CXX object CMakeFiles/grape.dir/src/util/crash_log.cpp.o
+  [63/82] Building CXX object CMakeFiles/grape.dir/src/trajectory/trajectory.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.cpp:1:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/trajectory.hpp:11:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/trajectory/../config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [64/82] Building CXX object CMakeFiles/grape.dir/src/render/dsp.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.cpp:1:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/dsp.hpp:12:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [65/82] Building CXX object CMakeFiles/grape.dir/src/render/renderer.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.cpp:1:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/renderer.hpp:4:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/render/../config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [66/82] Building CXX object CMakeFiles/grape.dir/src/hooks/GJEffectManager.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/hooks/GJEffectManager.cpp:7:
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/engine/engine.hpp:7:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
+    302 | $on_mod(DataSaved) {
+        | ^
+  1 warning generated.
+  [67/82] Building CXX object CMakeFiles/grape.dir/src/ui/touch_overlay.cpp.o
+  In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/touch_overlay.cpp:2:
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
     302 | $on_mod(DataSaved) {
         | ^
   1 warning generated.
@@ -231,10 +390,16 @@ Download bindings repo
   /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/../config/config.hpp:302:1: warning: '$' in identifier [-Wdollar-in-identifier-extension]
     302 | $on_mod(DataSaved) {
         | ^
-  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.cpp:1200:15: error: unused variable 'savedMenuStyle' [-Werror,-Wunused-variable]
-   1200 |     const int savedMenuStyle = 2;
-        |               ^~~~~~~~~~~~~~
-  1 warning and 1 error generated.
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.cpp:380:13: error: unused function 'pushDefaultMenuStyle' [-Werror,-Wunused-function]
+    380 | static void pushDefaultMenuStyle() {
+        |             ^~~~~~~~~~~~~~~~~~~~
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.cpp:431:13: error: unused function 'popDefaultMenuStyle' [-Werror,-Wunused-function]
+    431 | static void popDefaultMenuStyle() {
+        |             ^~~~~~~~~~~~~~~~~~~
+  /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/manager.cpp:436:13: error: unused function 'defaultMenuTab' [-Werror,-Wunused-function]
+    436 | static bool defaultMenuTab(const char* label, bool selected) {
+        |             ^~~~~~~~~~~~~~
+  1 warning and 3 errors generated.
   [69/82] Building CXX object CMakeFiles/grape.dir/src/ui/hook.cpp.o
   In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/hook.cpp:1:
   In file included from /Users/runner/work/rf5tg6yh7uji/rf5tg6yh7uji/src/ui/hook.hpp:20:

@@ -377,6 +377,7 @@ static void applyAmethystStyle() {
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.45f, 0.90f, 1.00f);
 }
 
+#ifdef GRAPE_PRIVATE_PC
 static void pushDefaultMenuStyle() {
     const auto color = [](int r, int g, int b, float alpha = 1.0f) {
         return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, alpha);
@@ -454,6 +455,7 @@ static bool defaultMenuTab(const char* label, bool selected) {
     }
     return pressed;
 }
+#endif
 
 static bool saveImGuiTheme(const std::filesystem::path& path) {
     std::ofstream out(path, std::ios::trunc);
