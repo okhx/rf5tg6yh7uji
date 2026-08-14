@@ -1197,7 +1197,6 @@ void UIManager::draw() {
     const bool customMenu = savedMenuStyle == 0;
     const bool skeetMenu = savedMenuStyle == 1;
 #else
-    const int savedMenuStyle = 2;
     const bool customMenu = false;
     const bool skeetMenu = false;
 #endif
