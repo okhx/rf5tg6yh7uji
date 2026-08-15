@@ -2,7 +2,6 @@
 #include "util/storage.hpp"
 
 #include <Geode/Geode.hpp>
-#include <Geode/modify/CCKeyboardDispatcher.hpp>
 #include <filesystem>
 #include <algorithm>
 
