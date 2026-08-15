@@ -386,6 +386,9 @@ static void pushDefaultMenuStyle() {
     const auto& savedAccent = GrapeSettings::get()->grapeAccent;
     const ImVec4 accent(savedAccent[0], savedAccent[1], savedAccent[2],
                         savedAccent[3]);
+    const ImVec4 accentBright(std::min(accent.x * 1.15f, 1.0f),
+                              std::min(accent.y * 1.15f, 1.0f),
+                              std::min(accent.z * 1.15f, 1.0f), accent.w);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 4.0f);
@@ -419,18 +422,20 @@ static void pushDefaultMenuStyle() {
     ImGui::PushStyleColor(ImGuiCol_TabHovered, color(255, 255, 255, .20f));
     ImGui::PushStyleColor(ImGuiCol_TabActive, color(255, 255, 255, .14f));
     ImGui::PushStyleColor(ImGuiCol_NavHighlight, accent);
-    ImGui::PushStyleColor(ImGuiCol_SliderGrab, accent);
     ImGui::PushStyleColor(
-        ImGuiCol_SliderGrabActive,
-        ImVec4(std::min(accent.x * 1.15f, 1.0f),
-               std::min(accent.y * 1.15f, 1.0f),
-               std::min(accent.z * 1.15f, 1.0f), accent.w));
+        ImGuiCol_TextSelectedBg,
+        ImVec4(accent.x, accent.y, accent.z, accent.w * .35f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, accent);
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, accentBright);
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, accentBright);
+    ImGui::PushStyleColor(ImGuiCol_SliderGrab, accent);
+    ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, accentBright);
     ImGui::PushStyleColor(ImGuiCol_Border, color(0x22, 0x22, 0x22));
     ImGui::PushStyleColor(ImGuiCol_Separator, color(0x22, 0x22, 0x22));
 }
 
 static void popDefaultMenuStyle() {
-    ImGui::PopStyleColor(23);
+    ImGui::PopStyleColor(27);
     ImGui::PopStyleVar(14);
 }
 
@@ -1698,6 +1703,11 @@ void UIManager::draw() {
                 slui::checkbox("Toggle##Hitboxes",
                                 GrapeEngine::get()->hitboxes().m_enabled->inner());
                 keybindRightClick("hitboxes.enabled");
+
+                slui::checkbox(
+                    "Isolate Death##Hitboxes",
+                    GrapeEngine::get()->hitboxes().m_deathOnly->inner());
+                keybindRightClick("hitboxes.death_only");
 
                 slui::checkbox("Show Trail##Hitboxes",
                                 GrapeEngine::get()->hitboxes().m_trailEnabled->inner());

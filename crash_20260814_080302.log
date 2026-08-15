@@ -1,0 +1,29 @@
+========================================
+  Grape Crash Log
+  Time: 2026-08-14 08:03:02
+========================================
+
+Reason: Unhandled SEH exception
+
+Exception: EXCEPTION_ACCESS_VIOLATION (0xc0000005)
+Address:   0x7ffb4f54c097
+Access:    READ at 0x0
+
+Registers:
+  RAX=0  RBX=7ffb6adec280  RCX=1  RDX=1c7ad637030
+  RSI=1c76a6cbd40  RDI=1c7d59ac090  RSP=24b72fd440  RBP=24b72fd4c0
+  R8 =20  R9 =0  R10=8000  R11=24b72fd450
+  R12=11  R13=1c7c0dcbe10  R14=1c768b1b840  R15=0
+  RIP=7ffb4f54c097
+
+Stack Trace:
+  #0  0x7ffb4f54c097  okhx.grape.dll!?
+  #1  0x1c76a0f0e09  <unknown module>!?
+  #2  0x4  GeometryDash.exe!?
+  #3  0x101  GeometryDash.exe!?
+  #4  0x1c7d5259eb0  <unknown module>!?
+  #5  0x1c7d5259ea0  <unknown module>!?
+
+========================================
+  End of crash log
+========================================

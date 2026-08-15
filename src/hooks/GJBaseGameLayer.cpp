@@ -247,7 +247,10 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
 #ifdef GEODE_IS_ANDROID
     void processCommands(float dt, bool isHalfTick, bool isLastTick) {
         GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick);
-        GrapeEngine::get()->timeline().portableFrameUpdate(PlayLayer::get(), dt);
+        auto& timeline = GrapeEngine::get()->timeline();
+        if (!timeline.isPaused() || isLastTick) {
+            timeline.portableFrameUpdate(PlayLayer::get(), dt);
+        }
     }
 #endif
 

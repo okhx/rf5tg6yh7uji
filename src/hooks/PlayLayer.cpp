@@ -73,6 +73,10 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
     }
 
     void loadFromCheckpoint(CheckpointObject* obj) {
+        // Practice-mode respawns go through here instead of resetLevel(), so
+        // clear any pending death isolation (the player is alive again).
+        GrapeEngine::get()->hitboxes().clearDeath();
+
         if (!GrapeEngine::get()->isEnabled()) {
             return PlayLayer::loadFromCheckpoint(obj);
         }
@@ -415,6 +419,7 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
         // Drop any leftover noclip tint overlay before the level restarts so
         // it can't linger into the fresh attempt.
         this->removeNoclipTint();
+        bot->hitboxes().clearDeath();
 
         if (!bot->isEnabled()) {
             m_player1->releaseAllButtons();
@@ -617,6 +622,7 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
     void conditionalDestroyPlayer(PlayerObject* player,
                                   GameObject* gameObject) {
         if (gameObject == m_anticheatSpike) {
+            GrapeEngine::get()->hitboxes().showDeath(player, gameObject);
             return PlayLayer::destroyPlayer(player, gameObject);
         }
 
@@ -632,6 +638,7 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
             // Real death: clear any in-flight noclip tint so it doesn't flash
             // back at full opacity over the death animation.
             this->removeNoclipTint();
+            bot->hitboxes().showDeath(player, gameObject);
             return PlayLayer::destroyPlayer(player, gameObject);
         }
 

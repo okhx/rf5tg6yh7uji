@@ -259,38 +259,42 @@ class MobileFeaturePopup final : public geode::Popup {
         number("Line width", 0, hitboxes->m_width->inner(),
                [hitboxes](double value) { hitboxes->m_width->inner() = value; },
                .01, 5.0);
-        toggle("Trail", 1, hitboxes->m_trailEnabled->inner(),
+        toggle("Isolate death", 1, hitboxes->m_deathOnly->inner(),
+               [hitboxes](bool value) {
+                   hitboxes->m_deathOnly->inner() = value;
+               });
+        toggle("Trail", 2, hitboxes->m_trailEnabled->inner(),
                [hitboxes](bool value) {
                    hitboxes->m_trailEnabled->inner() = value;
                });
-        toggle("Holding trail", 2, settings->hitboxes.holdingTrailEnabled,
+        toggle("Holding trail", 3, settings->hitboxes.holdingTrailEnabled,
                [settings](bool value) {
                    settings->hitboxes.holdingTrailEnabled = value;
                }, 155.f);
-        button("Color", 325.f, rowY(2), [settings] {
+        button("Color", 325.f, rowY(3), [settings] {
             openColorPicker(&settings->hitboxes.holdingTrailColor);
         }, 62.f);
-        number("Trail frames", 3, settings->hitboxes.trailMaxLength,
+        number("Trail frames", 4, settings->hitboxes.trailMaxLength,
                [settings](double value) {
                    settings->hitboxes.trailMaxLength =
                        std::max(1, static_cast<int>(value));
                },
                1, 100000, 0);
-        label(names[m_category], 185.f, rowY(4), .35f, {255, 220, 90});
-        button("<", 55.f, rowY(4), [this] {
+        label(names[m_category], 185.f, rowY(5), .35f, {255, 220, 90});
+        button("<", 55.f, rowY(5), [this] {
             m_category = (m_category + 8) % 9;
             rebuild();
         }, 32.f);
-        button(">", 315.f, rowY(4), [this] {
+        button(">", 315.f, rowY(5), [this] {
             m_category = (m_category + 1) % 9;
             rebuild();
         }, 32.f);
-        toggle("Category visible", 5, state->enabled,
+        toggle("Category visible", 6, state->enabled,
                [state](bool value) { state->enabled = value; });
-        number("Fill opacity", 6, state->fillOpacity,
+        number("Fill opacity", 7, state->fillOpacity,
                [state](double value) { state->fillOpacity = value; }, 0, 1,
                2, 155.f);
-        button("Color", 325.f, rowY(6),
+        button("Color", 325.f, rowY(7),
                [state] { openColorPicker(&state->colors); }, 62.f);
     }
 
