@@ -5,8 +5,8 @@
 
 class TouchOverlay : public cocos2d::CCLayer {
 protected:
-    cocos2d::CCSprite* m_leftArrow = nullptr;
-    cocos2d::CCSprite* m_rightArrow = nullptr;
+    cocos2d::CCDrawNode* m_leftArrow = nullptr;
+    cocos2d::CCDrawNode* m_rightArrow = nullptr;
     cocos2d::CCSprite* m_toggleSprite = nullptr;
 
     CCMenuItemSpriteExtra* m_leftBtn = nullptr;
@@ -16,6 +16,7 @@ protected:
 
     bool m_active = false;
     bool m_togglePaused = false;
+    float m_arrowOpacity = -1.f;
 
     float m_leftHeld = 0.f;
     float m_rightHeld = 0.f;
@@ -24,6 +25,7 @@ protected:
 
     bool init() override;
 
+    void redrawArrows(float alpha);
     void redrawToggle(bool paused);
 
 public:
