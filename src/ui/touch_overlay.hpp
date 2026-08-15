@@ -2,25 +2,29 @@
 #define TOUCH_OVERLAY_HPP
 
 #include <Geode/Geode.hpp>
-#include <Geode/ui/BasedButtonSprite.hpp>
 
 class TouchOverlay : public cocos2d::CCLayer {
 protected:
-    geode::CircleButtonSprite* m_leftSprite;
-    geode::CircleButtonSprite* m_toggleSprite;
-    geode::CircleButtonSprite* m_rightSprite;
-    cocos2d::CCLabelBMFont* m_toggleLabel;
-    CCMenuItemSpriteExtra* m_leftBtn;
-    CCMenuItemSpriteExtra* m_toggleBtn;
-    CCMenuItemSpriteExtra* m_rightBtn;
-    cocos2d::CCMenu* m_menu;
+    cocos2d::CCSprite* m_leftArrow = nullptr;
+    cocos2d::CCSprite* m_rightArrow = nullptr;
+    cocos2d::CCDrawNode* m_toggleCircle = nullptr;
+
+    CCMenuItemSpriteExtra* m_leftBtn = nullptr;
+    CCMenuItemSpriteExtra* m_toggleBtn = nullptr;
+    CCMenuItemSpriteExtra* m_rightBtn = nullptr;
+    cocos2d::CCMenu* m_menu = nullptr;
+
     bool m_active = false;
+    bool m_togglePaused = false;
+
     float m_leftHeld = 0.f;
     float m_rightHeld = 0.f;
     float m_leftRepeat = 0.f;
     float m_rightRepeat = 0.f;
 
     bool init() override;
+
+    void redrawToggle(bool paused);
 
 public:
     static TouchOverlay* create();
