@@ -5,24 +5,48 @@
 #include "render/renderer.hpp"
 
 #include <algorithm>
-#include <array>
+#include <cmath>
+#include <vector>
 
 using namespace geode::prelude;
 
 namespace {
-constexpr float kBoxWidth = 148.f;
-constexpr float kBoxHeight = 54.f;
+// Rounded panel in the bottom-left corner.
+constexpr float kBoxWidth = 160.f;
+constexpr float kBoxHeight = 56.f;
+constexpr float kCornerRadius = 10.f;
+constexpr float kBoxX = 8.f;
+constexpr float kBoxY = 8.f;
 
-constexpr float kLeftX = 34.f;
-constexpr float kToggleX = 82.f;
-constexpr float kRightX = 130.f;
-constexpr float kCenterY = 35.f;
+// Buttons laid out symmetrically around the box center (kToggleX).
+constexpr float kLeftX = 32.f;
+constexpr float kToggleX = 80.f;
+constexpr float kRightX = 128.f;
+constexpr float kCenterY = 28.f;
 
-constexpr float kCircleRadius = 16.f;
-constexpr cocos2d::ccColor4F kCircleFill = {0.16f, 0.48f, 0.90f, 1.0f};
-constexpr cocos2d::ccColor4F kCircleLine = {0.85f, 0.92f, 1.0f, 0.9f};
-constexpr cocos2d::ccColor4F kIconFill = {1.0f, 1.0f, 1.0f, 1.0f};
+constexpr cocos2d::ccColor4F kBoxFill = {0.0f, 0.0f, 0.0f, 0.8f};
 constexpr cocos2d::ccColor4F kTransparent = {0.0f, 0.0f, 0.0f, 0.0f};
+
+constexpr float kPi = 3.14159265358979f;
+
+// Builds the perimeter of a rounded rectangle, tracing each corner arc in
+// order so the straight edges are implied by the connections between arcs.
+std::vector<cocos2d::CCPoint> roundedRectPoints(float w, float h, float r,
+                                                int segments) {
+    std::vector<cocos2d::CCPoint> pts;
+    const auto addArc = [&](float cx, float cy, float start, float end) {
+        for (int i = 0; i <= segments; ++i) {
+            const float a = start + (end - start) * i / segments;
+            pts.push_back(cocos2d::CCPoint(cx + r * std::cos(a),
+                                            cy + r * std::sin(a)));
+        }
+    };
+    addArc(w - r, h - r, 0.f, kPi * 0.5f);       // top-right
+    addArc(r, h - r, kPi * 0.5f, kPi);           // top-left
+    addArc(r, r, kPi, kPi * 1.5f);               // bottom-left
+    addArc(w - r, r, kPi * 1.5f, kPi * 2.f);     // bottom-right
+    return pts;
+}
 }  // namespace
 
 static TouchOverlay* g_instance = nullptr;
@@ -48,37 +72,41 @@ TouchOverlay* TouchOverlay::create() {
 bool TouchOverlay::init() {
     if (!CCLayer::init()) return false;
 
-    // Semi-transparent black panel in the bottom-left corner.
-    auto* background =
-        CCLayerColor::create(ccc4(0, 0, 0, 204), kBoxWidth, kBoxHeight);
-    background->setPosition(ccp(8.f, 8.f));
+    // Semi-transparent black panel with rounded corners, drawn
+    // programmatically so it can't break on missing textures.
+    auto* background = CCDrawNode::create();
+    auto pts = roundedRectPoints(kBoxWidth, kBoxHeight, kCornerRadius, 6);
+    background->drawPolygon(pts.data(), static_cast<unsigned int>(pts.size()),
+                            kBoxFill, 0.f, kTransparent);
+    background->setContentSize({kBoxWidth, kBoxHeight});
+    background->setAnchorPoint(CCPointZero);
+    background->setPosition(ccp(kBoxX, kBoxY));
     this->addChild(background);
 
-    // Blue left/right arrows straight from the game atlas.
-    m_leftArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
+    // Blue page-switch arrows from the level list.
+    m_leftArrow = CCSprite::createWithSpriteFrameName("navArrowBtn_001.png");
     if (m_leftArrow) m_leftArrow->setFlipX(true);
     m_leftBtn = CCMenuItemSpriteExtra::create(
         m_leftArrow, this, menu_selector(TouchOverlay::onLeft));
 
-    m_rightArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
+    m_rightArrow = CCSprite::createWithSpriteFrameName("navArrowBtn_001.png");
     m_rightBtn = CCMenuItemSpriteExtra::create(
         m_rightArrow, this, menu_selector(TouchOverlay::onRight));
 
-    // Center circular play/pause button, drawn programmatically so it can't
-    // break on missing textures.
-    m_toggleCircle = CCDrawNode::create();
-    m_toggleCircle->setContentSize(
-        {kCircleRadius * 2.f, kCircleRadius * 2.f});
+    // Editor play/stop button for the pause/play toggle.
+    m_toggleSprite =
+        CCSprite::createWithSpriteFrameName("GJ_playEditorBtn_001.png");
     m_toggleBtn = CCMenuItemSpriteExtra::create(
-        m_toggleCircle, this, menu_selector(TouchOverlay::onToggle));
+        m_toggleSprite, this, menu_selector(TouchOverlay::onToggle));
 
     m_menu = CCMenu::create();
     m_menu->addChild(m_leftBtn);
     m_menu->addChild(m_toggleBtn);
     m_menu->addChild(m_rightBtn);
 
-    m_leftBtn->setSizeMult(2.0f);
-    m_rightBtn->setSizeMult(2.0f);
+    m_leftBtn->setSizeMult(1.5f);
+    m_toggleBtn->setSizeMult(1.5f);
+    m_rightBtn->setSizeMult(1.5f);
 
     m_leftBtn->setPosition(ccp(kLeftX, kCenterY));
     m_toggleBtn->setPosition(ccp(kToggleX, kCenterY));
@@ -95,32 +123,11 @@ bool TouchOverlay::init() {
 }
 
 void TouchOverlay::redrawToggle(bool paused) {
-    if (!m_toggleCircle) return;
-
-    m_toggleCircle->clear();
-
-    const float r = kCircleRadius;
-    m_toggleCircle->drawCircle(ccp(0.f, 0.f), r, kCircleFill, 1.5f, kCircleLine,
-                               48);
-
-    if (paused) {
-        // Play triangle pointing right.
-        std::array<cocos2d::CCPoint, 3> tri = {
-            cocos2d::CCPoint{-r * 0.4f, -r * 0.5f},
-            cocos2d::CCPoint{-r * 0.4f, r * 0.5f},
-            cocos2d::CCPoint{r * 0.6f, 0.f},
-        };
-        m_toggleCircle->drawPolygon(tri.data(), tri.size(), kIconFill, 0.f,
-                                    kTransparent);
-    } else {
-        // Pause bars.
-        const float bw = r * 0.26f;
-        const float bh = r * 1.0f;
-        m_toggleCircle->drawRect({-bw * 1.5f, -bh * 0.5f, bw, bh}, kIconFill,
-                                 0.f, kTransparent);
-        m_toggleCircle->drawRect({bw * 0.5f, -bh * 0.5f, bw, bh}, kIconFill,
-                                 0.f, kTransparent);
-    }
+    if (!m_toggleSprite) return;
+    m_toggleSprite->setDisplayFrame(
+        CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName(
+            paused ? "GJ_playEditorBtn_001.png"
+                   : "GJ_stopEditorBtn_001.png"));
 }
 
 void TouchOverlay::update(float dt) {
