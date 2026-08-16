@@ -5,8 +5,8 @@
 
 class TouchOverlay : public cocos2d::CCLayer {
 protected:
-    cocos2d::CCDrawNode* m_leftArrow = nullptr;
-    cocos2d::CCDrawNode* m_rightArrow = nullptr;
+    cocos2d::CCSprite* m_leftArrow = nullptr;
+    cocos2d::CCSprite* m_rightArrow = nullptr;
     cocos2d::CCSprite* m_toggleSprite = nullptr;
 
     CCMenuItemSpriteExtra* m_leftBtn = nullptr;

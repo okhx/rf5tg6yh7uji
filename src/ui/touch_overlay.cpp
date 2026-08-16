@@ -24,11 +24,6 @@ constexpr float kToggleX = kBoxX + kBoxWidth * 0.5f;
 constexpr float kRightX = kBoxX + kBoxWidth - 32.f;
 constexpr float kCenterY = kBoxY + kBoxHeight * 0.5f;
 
-// Blue arrow geometry (drawn programmatically, matching the level-list arrow).
-constexpr float kArrowWidth = 20.f;
-constexpr float kArrowHeight = 28.f;
-constexpr cocos2d::ccColor4F kArrowFill = {0.16f, 0.48f, 0.90f, 1.0f};
-
 constexpr cocos2d::ccColor4F kBoxFill = {0.0f, 0.0f, 0.0f, 0.8f};
 constexpr cocos2d::ccColor4F kTransparent = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -88,16 +83,13 @@ bool TouchOverlay::init() {
     background->setPosition(ccp(kBoxX, kBoxY));
     this->addChild(background);
 
-    // Blue chevron arrows, drawn programmatically.
-    m_leftArrow = CCDrawNode::create();
-    m_leftArrow->setContentSize({kArrowWidth, kArrowHeight});
-    m_leftArrow->setAnchorPoint(ccp(0.5f, 0.5f));
+    // Teal navigation arrows, using the standard level-list arrow sprite.
+    m_leftArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png");
     m_leftBtn = CCMenuItemSpriteExtra::create(
         m_leftArrow, this, menu_selector(TouchOverlay::onLeft));
 
-    m_rightArrow = CCDrawNode::create();
-    m_rightArrow->setContentSize({kArrowWidth, kArrowHeight});
-    m_rightArrow->setAnchorPoint(ccp(0.5f, 0.5f));
+    m_rightArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png");
+    m_rightArrow->setFlipX(true);
     m_rightBtn = CCMenuItemSpriteExtra::create(
         m_rightArrow, this, menu_selector(TouchOverlay::onRight));
 
@@ -136,25 +128,10 @@ bool TouchOverlay::init() {
 }
 
 void TouchOverlay::redrawArrows(float alpha) {
-    const float hw = kArrowWidth * 0.5f;
-    const float hh = kArrowHeight * 0.5f;
-    const cocos2d::ccColor4F fill = {kArrowFill.r, kArrowFill.g, kArrowFill.b,
-                                     alpha};
-
-    const auto drawOne = [&](CCDrawNode* node, bool left) {
-        if (!node) return;
-        node->clear();
-        const float dir = left ? -1.f : 1.f;
-        cocos2d::CCPoint tri[3] = {
-            cocos2d::CCPoint(-dir * hw, -hh),
-            cocos2d::CCPoint(-dir * hw, hh),
-            cocos2d::CCPoint(dir * hw, 0.f),
-        };
-        node->drawPolygon(tri, 3, fill, 0.f, kTransparent);
-    };
-
-    drawOne(m_leftArrow, true);
-    drawOne(m_rightArrow, false);
+    const GLubyte opacity =
+        static_cast<GLubyte>(std::clamp(alpha, 0.f, 1.f) * 255.f);
+    if (m_leftArrow) m_leftArrow->setOpacity(opacity);
+    if (m_rightArrow) m_rightArrow->setOpacity(opacity);
 }
 
 void TouchOverlay::redrawToggle(bool paused) {
