@@ -37,6 +37,7 @@ class Hitboxes {
 
     HitboxesDrawNode* m_drawNode       = nullptr;
     HitboxesDrawNode* m_trailDrawNode  = nullptr;
+    GJBaseGameLayer* m_layer           = nullptr;
 
     bool _enabled = false;
     bool _deathOnly = false;
@@ -71,5 +72,5 @@ class Hitboxes {
     void clearDeath();
     void saveToTrail(GJBaseGameLayer* pl);
     void draw(GJBaseGameLayer* pl);
-    void destroy();
+    void destroy(GJBaseGameLayer* layer = nullptr);
 };

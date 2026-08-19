@@ -149,6 +149,7 @@ class Trajectory {
 
     bool drawing() const { return m_drawing; }
     bool enabled() const { return m_state->m_enabled->inner(); }
+    bool isFor(GJBaseGameLayer* layer) const { return m_layer == layer; }
     void setEnabled(bool enabled) {
         m_state->m_enabled->inner() = enabled;
         m_state->m_enabled->notifyChange();
@@ -349,7 +350,8 @@ class TrajectoryManager {
         if (m_trajectory) m_trajectory->m_state = &m_state;
     }
 
-    void uninit() {
+    void uninit(GJBaseGameLayer* layer = nullptr) {
+        if (layer && m_trajectory && !m_trajectory->isFor(layer)) return;
 #ifdef GEODE_IS_MOBILE
         crash_log::breadcrumb("Trajectory teardown");
 #endif

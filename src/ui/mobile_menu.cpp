@@ -1099,7 +1099,7 @@ void MobileMenu::buildRecordPage() {
             updater.m_tps->inner() = value;
             updater.m_tps->notifyChange();
         },
-        1.0, 10000.0, 0);
+        1.0, std::numeric_limits<double>::max(), 0);
     addAdjuster(
         "Speed", 2, 1, [&] { return updater.m_speedhack->inner(); },
         [&](double value) {

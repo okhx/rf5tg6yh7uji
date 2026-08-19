@@ -95,7 +95,7 @@ static double trajectoryPredictionTps(double actualTps,
     }
     if (!std::isfinite(actualTps) || actualTps <= 0.0) actualTps = 240.0;
 
-    return std::clamp(actualTps, 240.0, 480.0);
+    return std::max(actualTps, 240.0);
 }
 #endif
 
@@ -434,16 +434,28 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
                                (isRight && realPlayer->m_holdingLeft);
 
     const int platformerMask = pl->m_isPlatformer ? TrajectoryMode::Platformer : 0;
+    const int categoryMode = mode &
+        ~(TrajectoryMode::Player1 | TrajectoryMode::Player2);
 
-    if (!config.m_bypassConfig) {
-        auto& cats = ts.categories;
-        const bool mainEnabled   = cats[mode | platformerMask].enabled;
-        const bool followEnabled = cats[(mode & CLICK_MASK) | TrajectoryMode::FollowPlayer |
-                                        platformerMask].enabled && holdingDir;
-        const bool oppEnabled    = cats[(mode & CLICK_MASK) | TrajectoryMode::FollowOpposite |
-                                        platformerMask].enabled && holdingOpp;
-        if (!(mainEnabled || followEnabled || oppEnabled)) return {};
-    }
+    auto& cats = ts.categories;
+    const int mainKey = categoryMode | platformerMask;
+    const int followKey = (categoryMode & CLICK_MASK) |
+                          TrajectoryMode::FollowPlayer | platformerMask;
+    const int oppositeKey = (categoryMode & CLICK_MASK) |
+                            TrajectoryMode::FollowOpposite | platformerMask;
+    const bool mainEnabled = cats.at(mainKey).enabled;
+    const bool followEnabled = pl->m_isPlatformer &&
+                               cats.at(followKey).enabled && holdingDir;
+    const bool oppositeEnabled = pl->m_isPlatformer &&
+                                 cats.at(oppositeKey).enabled && holdingOpp;
+    if (!config.m_bypassConfig &&
+        !(mainEnabled || followEnabled || oppositeEnabled))
+        return {};
+
+    const int colorKey = mainEnabled ? mainKey
+                         : followEnabled ? followKey
+                                         : oppositeEnabled ? oppositeKey
+                                                           : mainKey;
 
     const GJGameState savedState = pl->m_gameState;
     EffectManagerState ems;
@@ -465,16 +477,7 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     m_deadP1 = false;
     m_deadP2 = false;
 
-    const bool holding = realPlayer->m_isDart
-                             ? isHoldingJump(realPlayer)
-                             : (p1 ? m_p1Holding : m_p2Holding);
-    const bool current =
-        (holding && (mode & CLICK_MASK) == TrajectoryMode::Hold) ||
-        (!holding && (mode & CLICK_MASK) == TrajectoryMode::Release);
-    std::array<float, 4> trajectoryColors =
-        current ? std::array<float, 4>{0.f, 1.f, 0.f, 1.f}
-                : std::array<float, 4>{0.f, 1.f, 1.f, 1.f};
-    float* colors = trajectoryColors.data();
+    float* colors = cats.at(colorKey).colors.data();
     auto predicted = runPrediction(pl, player, otherPlayer, mode, colors,
                                    clickBothPlayers, config);
 

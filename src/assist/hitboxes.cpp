@@ -10,17 +10,6 @@
 #include "trajectory/trajectory.hpp"
 
 
-#define CC_COLOR(color_type)                \
-    *reinterpret_cast<cocos2d::ccColor4F*>( \
-        settings.categories[color_type].colors.data())
-#define CC_FILL_COLOR(color_type)                               \
-    {                                                           \
-        settings.categories[color_type].colors.data()[0],       \
-        settings.categories[color_type].colors.data()[1],       \
-        settings.categories[color_type].colors.data()[2],       \
-        settings.categories[color_type].colors.data()[3] *      \
-            (float)settings.categories[color_type].fillOpacity, \
-    }
 #define HB_ENABLED(_t) settings.categories[_t].enabled
 
 static cocos2d::CCRect usingWidth(const cocos2d::CCRect& old,
@@ -81,31 +70,30 @@ static void drawPlayerHitbox(cocos2d::CCDrawNode*       node,
     const float width  = settings.width / pl->m_gameState.m_cameraZoom;
     const auto  rect   = usingWidth(player->getObjectRect(), width);
     const auto  scaled = usingWidth(player->getObjectRect(0.3f, 0.3f), width);
+    const auto rotated = resolveHB(settings, Type::PlayerRotated);
+    const auto circle  = resolveHB(settings, Type::PlayerCircle);
+    const auto outer   = resolveHB(settings, Type::Player);
+    const auto inner   = resolveHB(settings, Type::PlayerInner);
 
-    if (auto ob = player->getOrientedBox();
-        ob && HB_ENABLED(Type::PlayerRotated)) {
-        node->drawPolygon(ob->m_corners.data(), 4,
-                          CC_FILL_COLOR(Type::PlayerRotated), width,
-                          CC_COLOR(Type::PlayerRotated));
+    if (auto ob = player->getOrientedBox(); ob && rotated.enabled) {
+        node->drawPolygon(ob->m_corners.data(), 4, rotated.fill, width,
+                          rotated.line);
     }
 
-    if (HB_ENABLED(Type::PlayerCircle)) {
+    if (circle.enabled) {
         float radius = player->getObjectRect().size.width * 0.5f;
         if (radius > 0.0f) {
             node->drawCircle(player->getPosition(), radius,
-                             {0.0f, 0.0f, 0.0f, 0.0f}, width,
-                             CC_COLOR(Type::PlayerCircle),
+                             {0.0f, 0.0f, 0.0f, 0.0f}, width, circle.line,
                              circleSegments(radius));
         }
     }
 
-    if (HB_ENABLED(Type::Player))
-        node->drawRect(rect, CC_FILL_COLOR(Type::Player), width,
-                       CC_COLOR(Type::Player));
+    if (outer.enabled)
+        node->drawRect(rect, outer.fill, width, outer.line);
 
-    if (HB_ENABLED(Type::PlayerInner))
-        node->drawRect(scaled, CC_FILL_COLOR(Type::PlayerInner), width,
-                       CC_COLOR(Type::PlayerInner));
+    if (inner.enabled)
+        node->drawRect(scaled, inner.fill, width, inner.line);
 }
 
 
@@ -291,6 +279,7 @@ void Hitboxes::init(GJBaseGameLayer* pl) {
     m_drawNode      = makeNode(base + 10000, "hitbox-node"_spr);
     m_trailDrawNode = makeNode(base + 9998,  "hitbox-trail-node"_spr);
 
+    m_layer = pl;
     m_trailDirty = true;
     m_initialized = true;
 }
@@ -492,13 +481,15 @@ void Hitboxes::clearDeath() {
     m_deathObject = nullptr;
 }
 
-void Hitboxes::destroy() {
+void Hitboxes::destroy(GJBaseGameLayer* layer) {
+    if (layer && m_layer != layer) return;
     this->clearDeath();
     if (!m_initialized) return;
 
     safeRelease(m_drawNode);
     safeRelease(m_trailDrawNode);
 
+    m_layer = nullptr;
     m_trailDirty = true;
     m_initialized = false;
 }

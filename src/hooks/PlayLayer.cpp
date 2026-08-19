@@ -511,6 +511,13 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
         PlayLayer::updateAttempts();
     }
 
+    void onExit() override {
+        auto bot = GrapeEngine::get();
+        bot->trajectory().uninit(this);
+        bot->hitboxes().destroy(this);
+        PlayLayer::onExit();
+    }
+
     void onQuit() {
 #ifdef GEODE_IS_MOBILE
         if (auto overlay = TouchOverlay::get()) {
@@ -524,9 +531,6 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
         auto bot = GrapeEngine::get();
         bot->timeline().setPaused(false);
         bot->timeline().m_stepOnce->inner() = false;
-
-        bot->trajectory().uninit();
-        bot->hitboxes().destroy();
 
         PlayLayer::onQuit();
 
