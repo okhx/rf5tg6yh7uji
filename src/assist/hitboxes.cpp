@@ -285,6 +285,9 @@ void Hitboxes::init(GJBaseGameLayer* pl) {
 }
 
 void Hitboxes::draw(GJBaseGameLayer* pl) {
+    if (!m_initialized && pl && pl->isRunning() &&
+        (m_enabled->inner() || m_trailEnabled->inner()))
+        init(pl);
     if (!m_initialized || !pl || !m_drawNode || !m_trailDrawNode) return;
 
     m_drawNode->clear();

@@ -443,11 +443,11 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
                           TrajectoryMode::FollowPlayer | platformerMask;
     const int oppositeKey = (categoryMode & CLICK_MASK) |
                             TrajectoryMode::FollowOpposite | platformerMask;
-    const bool mainEnabled = cats.at(mainKey).enabled;
+    const bool mainEnabled = cats[mainKey].enabled;
     const bool followEnabled = pl->m_isPlatformer &&
-                               cats.at(followKey).enabled && holdingDir;
+                               cats[followKey].enabled && holdingDir;
     const bool oppositeEnabled = pl->m_isPlatformer &&
-                                 cats.at(oppositeKey).enabled && holdingOpp;
+                                 cats[oppositeKey].enabled && holdingOpp;
     if (!config.m_bypassConfig &&
         !(mainEnabled || followEnabled || oppositeEnabled))
         return {};
@@ -477,7 +477,7 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     m_deadP1 = false;
     m_deadP2 = false;
 
-    float* colors = cats.at(colorKey).colors.data();
+    float* colors = cats[colorKey].colors.data();
     auto predicted = runPrediction(pl, player, otherPlayer, mode, colors,
                                    clickBothPlayers, config);
 

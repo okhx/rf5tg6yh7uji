@@ -307,11 +307,7 @@ class TrajectoryManager {
     }
 
     bool enabled() const {
-        if (m_trajectory) {
-            return m_trajectory->enabled();
-        }
-
-        return false;
+        return m_state.m_enabled->inner();
     }
 
     PlayerObject* getOtherPlayer(PlayerObject* player) {
@@ -329,19 +325,19 @@ class TrajectoryManager {
     }
 
     void update(GJBaseGameLayer* pl) {
+        if (!m_trajectory && pl && pl->isRunning() &&
+            m_state.m_enabled->inner())
+            init(pl);
         if (m_trajectory) m_trajectory->update(pl);
     }
 
     void toggle() {
-        if (m_trajectory) {
-            m_trajectory->setEnabled(!m_trajectory->enabled());
-        }
+        setEnabled(!enabled());
     }
 
     void setEnabled(bool enabled) {
-        if (m_trajectory) {
-            m_trajectory->setEnabled(enabled);
-        }
+        m_state.m_enabled->inner() = enabled;
+        m_state.m_enabled->notifyChange();
     }
 
     void init(GJBaseGameLayer* layer) {
