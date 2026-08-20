@@ -282,7 +282,6 @@ void Hitboxes::init(GJBaseGameLayer* pl) {
 
 void Hitboxes::draw(GJBaseGameLayer* pl) {
     if (!m_initialized || !pl || !m_drawNode || !m_trailDrawNode) return;
-    if (auto* play = PlayLayer::get(); play == pl && play->m_isPaused) return;
 
     m_drawNode->clear();
 
