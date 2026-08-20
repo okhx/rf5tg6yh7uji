@@ -78,15 +78,11 @@ static size_t hashTrajectoryCategories() {
         size_t e = std::hash<int>{}(key);
         e = e * 31 + (state.enabled ? 1u : 0u);
         for (const float c : state.colors) e = e * 31 + std::hash<float>{}(c);
-        for (const float c : state.player2Colors)
-            e = e * 31 + std::hash<float>{}(c);
         h ^= e + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
     }
     const auto& settings = GrapeSettings::get()->trajectory;
     h ^= std::hash<bool>{}(settings.straightEnabled);
     for (float color : settings.straightColor)
-        h ^= std::hash<float>{}(color) + 0x9e3779b9 + (h << 6) + (h >> 2);
-    for (float color : settings.straightPlayer2Color)
         h ^= std::hash<float>{}(color) + 0x9e3779b9 + (h << 6) + (h >> 2);
     return h;
 }
@@ -267,8 +263,7 @@ bool Trajectory::iterate(GJBaseGameLayer* pl, PlayerObject* player, int mode,
 TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
                                                PlayerObject* player,
                                                PlayerObject* other, int mode,
-                                               float* player1Colors,
-                                               float* player2Colors, bool both,
+                                               float* colors, bool both,
                                                PredictionConfig config) {
     auto   bot       = GrapeEngine::get();
     int iterations = getPredictionLength(pl);
@@ -282,9 +277,6 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
 
     std::array<PlayerObject*, 2> activePlayers = {player, other};
     const int activeCount = dualBoth ? 2 : 1;
-    const auto colorsFor = [&](PlayerObject* p) {
-        return p == m_fakePlayer1 ? player1Colors : player2Colors;
-    };
 
 #ifdef GEODE_IS_MOBILE
     {
@@ -331,7 +323,7 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
             PlayerObject* plr = activePlayers[i];
             const CCPoint pos = plr->getPosition();
             m_node->drawSegment(pos, plr->getPosition(), width,
-                                toCocosColor(colorsFor(plr)));
+                                toCocosColor(colors));
         }
     }
 
@@ -395,8 +387,7 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
 
         if (!breakP1) {
             breakP1 =
-                iterate(pl, player, mode | playerMask, colorsFor(player),
-                        stepP1, config);
+                iterate(pl, player, mode | playerMask, colors, stepP1, config);
             const auto rect = player->getObjectRect();
             minY = std::min(minY, rect.getMinY());
             maxY = std::max(maxY, rect.getMaxY());
@@ -404,7 +395,7 @@ TrajectoryPlayerData Trajectory::runPrediction(GJBaseGameLayer* pl,
         }
         if (dualBoth && !breakP2) {
             breakP2 = iterate(pl, other, mode | TrajectoryMode::Player2,
-                              colorsFor(other), stepP2, config);
+                              colors, stepP2, config);
         }
     }
 
@@ -443,23 +434,16 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
                                (isRight && realPlayer->m_holdingLeft);
 
     const int platformerMask = pl->m_isPlatformer ? TrajectoryMode::Platformer : 0;
-    auto& cats = ts.categories;
-    const int mainKey = mode | platformerMask;
-    const int followKey = (mode & CLICK_MASK) |
-                          TrajectoryMode::FollowPlayer | platformerMask;
-    const int oppositeKey = (mode & CLICK_MASK) |
-                            TrajectoryMode::FollowOpposite | platformerMask;
-    const bool mainEnabled = cats[mainKey].enabled;
-    const bool followEnabled = cats[followKey].enabled && holdingDir;
-    const bool oppositeEnabled = cats[oppositeKey].enabled && holdingOpp;
-    if (!config.m_bypassConfig &&
-        !(mainEnabled || followEnabled || oppositeEnabled))
-        return {};
 
-    const int colorKey = mainEnabled ? mainKey
-                         : followEnabled ? followKey
-                                         : oppositeEnabled ? oppositeKey
-                                                           : mainKey;
+    if (!config.m_bypassConfig) {
+        auto& cats = ts.categories;
+        const bool mainEnabled   = cats[mode | platformerMask].enabled;
+        const bool followEnabled = cats[(mode & CLICK_MASK) | TrajectoryMode::FollowPlayer |
+                                        platformerMask].enabled && holdingDir;
+        const bool oppEnabled    = cats[(mode & CLICK_MASK) | TrajectoryMode::FollowOpposite |
+                                        platformerMask].enabled && holdingOpp;
+        if (!(mainEnabled || followEnabled || oppEnabled)) return {};
+    }
 
     const GJGameState savedState = pl->m_gameState;
     EffectManagerState ems;
@@ -481,10 +465,17 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     m_deadP1 = false;
     m_deadP2 = false;
 
-    auto& colors = cats[colorKey];
-    auto predicted = runPrediction(pl, player, otherPlayer, mode,
-                                   colors.colors.data(),
-                                   colors.player2Colors.data(),
+    const bool holding = realPlayer->m_isDart
+                             ? isHoldingJump(realPlayer)
+                             : (p1 ? m_p1Holding : m_p2Holding);
+    const bool current =
+        (holding && (mode & CLICK_MASK) == TrajectoryMode::Hold) ||
+        (!holding && (mode & CLICK_MASK) == TrajectoryMode::Release);
+    std::array<float, 4> trajectoryColors =
+        current ? std::array<float, 4>{0.f, 1.f, 0.f, 1.f}
+                : std::array<float, 4>{0.f, 1.f, 1.f, 1.f};
+    float* colors = trajectoryColors.data();
+    auto predicted = runPrediction(pl, player, otherPlayer, mode, colors,
                                    clickBothPlayers, config);
 
     player->setVisible(false);
@@ -565,10 +556,8 @@ void Trajectory::update(GJBaseGameLayer* pl) {
                 const float width = m_state->m_width->inner() /
                                     pl->m_gameState.m_cameraZoom;
                 const auto origin = player->getPosition();
-                const auto& color = p1 ? settings.straightColor
-                                       : settings.straightPlayer2Color;
                 m_node->drawSegment(origin, {straightX, origin.y}, width,
-                    toCocosColor(color.data()));
+                    toCocosColor(settings.straightColor.data()));
             }
         };
 

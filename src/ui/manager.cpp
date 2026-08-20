@@ -1760,10 +1760,15 @@ void UIManager::draw() {
                                                              .selectedIndex];
 
                     auto& category = GrapeSettings::get()->hitboxes.categories[h];
+                    const bool playerCategory =
+                        h <= GrapeSettings::HitboxSettings::PlayerCircle;
 
                     m_state.m_hitboxColorState.colors = category.colors;
+                    m_state.m_hitboxPlayer2ColorState.colors =
+                        category.player2Colors;
 
-                    if (ImGui::BeginTable("SpecificHitboxRow", 2,
+                    if (ImGui::BeginTable("SpecificHitboxRow",
+                                          playerCategory ? 3 : 2,
                                           ImGuiTableFlags_SizingStretchSame,
                                           skeetMenu ? ImVec2(220.0f, 0.0f)
                                                     : ImVec2())) {
@@ -1771,16 +1776,27 @@ void UIManager::draw() {
                         slui::checkbox("Enabled##SpecificHitbox",
                                        category.enabled);
                         ImGui::TableNextColumn();
-                        slui::color("Color##SpecificHitbox",
+                        slui::color(playerCategory
+                                        ? "P1 Color##SpecificHitbox"
+                                        : "Color##SpecificHitbox",
                                     m_state.m_hitboxColorState, [&]() {
                                         renderBlurBg(
                                             12.0f, 1.5f,
                                             m_state.m_useShader->inner());
                                     });
+                        if (playerCategory) {
+                            ImGui::TableNextColumn();
+                            slui::color("P2 Color##SpecificHitbox",
+                                        m_state.m_hitboxPlayer2ColorState,
+                                        popupShaderFn);
+                        }
                         ImGui::EndTable();
                     }
 
                     category.colors = m_state.m_hitboxColorState.colors;
+                    if (playerCategory)
+                        category.player2Colors =
+                            m_state.m_hitboxPlayer2ColorState.colors;
 
                     slui::drag("Fill Opacity##SpecificHitbox",
                                 category.fillOpacity, 0.0, 1.0, 0.01, "{:.2f}");
@@ -1905,7 +1921,9 @@ void UIManager::draw() {
                 auto& trajectorySettings = GrapeSettings::get()->trajectory;
                 m_state.m_straightTrajectoryColorState.colors =
                     trajectorySettings.straightColor;
-                if (ImGui::BeginTable("StraightTrajectoryRow", 2,
+                m_state.m_straightTrajectoryPlayer2ColorState.colors =
+                    trajectorySettings.straightPlayer2Color;
+                if (ImGui::BeginTable("StraightTrajectoryRow", 3,
                                       ImGuiTableFlags_SizingStretchSame,
                                       skeetMenu ? ImVec2(220.0f, 0.0f)
                                                 : ImVec2())) {
@@ -1913,13 +1931,19 @@ void UIManager::draw() {
                     slui::checkbox("Straight Wave##Trajectory",
                                    trajectorySettings.straightEnabled);
                     ImGui::TableNextColumn();
-                    slui::color("Straight Color##Trajectory",
+                    slui::color("P1 Color##StraightTrajectory",
                                 m_state.m_straightTrajectoryColorState,
+                                popupShaderFn);
+                    ImGui::TableNextColumn();
+                    slui::color("P2 Color##StraightTrajectory",
+                                m_state.m_straightTrajectoryPlayer2ColorState,
                                 popupShaderFn);
                     ImGui::EndTable();
                 }
                 trajectorySettings.straightColor =
                     m_state.m_straightTrajectoryColorState.colors;
+                trajectorySettings.straightPlayer2Color =
+                    m_state.m_straightTrajectoryPlayer2ColorState.colors;
 
                 slui::dropdown(
                     "Trajectory##Selector", m_state.m_trajectoryState,
@@ -1935,8 +1959,10 @@ void UIManager::draw() {
                         GrapeSettings::get()->trajectory.categories[t];
 
                     m_state.m_trajectoryColorState.colors = category.colors;
+                    m_state.m_trajectoryPlayer2ColorState.colors =
+                        category.player2Colors;
 
-                    if (ImGui::BeginTable("SpecificTrajectoryRow", 2,
+                    if (ImGui::BeginTable("SpecificTrajectoryRow", 3,
                                           ImGuiTableFlags_SizingStretchSame,
                                           skeetMenu ? ImVec2(220.0f, 0.0f)
                                                     : ImVec2())) {
@@ -1944,16 +1970,22 @@ void UIManager::draw() {
                         slui::checkbox("Enabled##SpecificTrajectory",
                                        category.enabled);
                         ImGui::TableNextColumn();
-                        slui::color("Color##SpecificTrajectory",
+                        slui::color("P1 Color##SpecificTrajectory",
                                     m_state.m_trajectoryColorState, [&]() {
                                         renderBlurBg(
                                             12.0f, 1.5f,
                                             m_state.m_useShader->inner());
                                     });
+                        ImGui::TableNextColumn();
+                        slui::color("P2 Color##SpecificTrajectory",
+                                    m_state.m_trajectoryPlayer2ColorState,
+                                    popupShaderFn);
                         ImGui::EndTable();
                     }
 
                     category.colors = m_state.m_trajectoryColorState.colors;
+                    category.player2Colors =
+                        m_state.m_trajectoryPlayer2ColorState.colors;
                 };
 
                 slui::divider();

@@ -111,6 +111,7 @@ class GrapeSettings {
         struct State {
             bool enabled = false;
             std::array<float, 4> colors = {0.0, 1.0, 0.0, 1.0};
+            std::array<float, 4> player2Colors = {0.0, 1.0, 1.0, 1.0};
         };
 
         enum Mode {
@@ -136,6 +137,7 @@ class GrapeSettings {
         int maxSteps = 0;
         bool straightEnabled = false;
         std::array<float, 4> straightColor = {0.54f, 0.81f, 0.94f, 1.0f};
+        std::array<float, 4> straightPlayer2Color = {0.0f, 1.0f, 1.0f, 1.0f};
 
         std::unordered_map<int, State> categories = {
             {Mode::Hold, {true}},
@@ -190,19 +192,25 @@ class GrapeSettings {
             bool enabled = true;
             double fillOpacity = 0.00;
             std::array<float, 4> colors;
+            std::array<float, 4> player2Colors;
         };
 
         std::unordered_map<int, HBState> categories = {
-            {Type::Player, {true, 0.0, {1.0, 0.0, 0.0, 1.0}}},
-            {Type::PlayerInner, {true, 0.0, {0.0, 0.0, 1.0, 1.0}}},
-            {Type::PlayerRotated, {true, 0.0, {0.5, 0.0, 0.0, 1.0}}},
-            {Type::PlayerCircle, {true, 0.0, {1.0, 0.0, 0.0, 1.0}}},
+            {Type::Player,
+             {true, 0.0, {1.0, 0.0, 0.0, 1.0}, {1.0, 0.0, 0.0, 1.0}}},
+            {Type::PlayerInner,
+             {true, 0.0, {0.0, 0.0, 1.0, 1.0}, {0.0, 0.0, 1.0, 1.0}}},
+            {Type::PlayerRotated,
+             {true, 0.0, {0.5, 0.0, 0.0, 1.0}, {0.5, 0.0, 0.0, 1.0}}},
+            {Type::PlayerCircle,
+             {true, 0.0, {1.0, 0.0, 0.0, 1.0}, {1.0, 0.0, 0.0, 1.0}}},
 
-            {Type::Solid, {true, 0.0, {0.0, 0.0, 1.0, 1.0}}},
-            {Type::Hazard, {true, 0.0, {1.0, 0.0, 0.0, 1.0}}},
-            {Type::Passable, {true, 0.0, {0.0, 1.0, 1.0, 1.0}}},
-            {Type::Interactable, {true, 0.0, {1.0, 1.0, 0.0, 1.0}}},
-            {Type::InteractableActive, {true, 0.0, {0.2, 1.0, 0.0, 1.0}}},
+            {Type::Solid, {true, 0.0, {0.0, 0.0, 1.0, 1.0}, {}}},
+            {Type::Hazard, {true, 0.0, {1.0, 0.0, 0.0, 1.0}, {}}},
+            {Type::Passable, {true, 0.0, {0.0, 1.0, 1.0, 1.0}, {}}},
+            {Type::Interactable, {true, 0.0, {1.0, 1.0, 0.0, 1.0}, {}}},
+            {Type::InteractableActive,
+             {true, 0.0, {0.2, 1.0, 0.0, 1.0}, {}}},
         };
     } hitboxes;
 

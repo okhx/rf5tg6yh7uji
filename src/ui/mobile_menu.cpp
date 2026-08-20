@@ -294,8 +294,16 @@ class MobileFeaturePopup final : public geode::Popup {
         number("Fill opacity", 7, state->fillOpacity,
                [state](double value) { state->fillOpacity = value; }, 0, 1,
                2, 155.f);
-        button("Color", 325.f, rowY(7),
-               [state] { openColorPicker(&state->colors); }, 62.f);
+        if (categories[m_category] <=
+            GrapeSettings::HitboxSettings::PlayerCircle) {
+            button("P1", 285.f, rowY(7),
+                   [state] { openColorPicker(&state->colors); }, 50.f);
+            button("P2", 345.f, rowY(7),
+                   [state] { openColorPicker(&state->player2Colors); }, 50.f);
+        } else {
+            button("Color", 325.f, rowY(7),
+                   [state] { openColorPicker(&state->colors); }, 62.f);
+        }
     }
 
     void buildTrajectory() {
@@ -355,12 +363,22 @@ class MobileFeaturePopup final : public geode::Popup {
         }, 32.f);
         toggle("Show category", 4, state->enabled,
                [state](bool value) { state->enabled = value; });
-        color("Category color", 5, &state->colors);
+        settingLabel("Category colors", rowY(5));
+        button("P1", 285.f, rowY(5),
+               [state] { openColorPicker(&state->colors); }, 50.f);
+        button("P2", 345.f, rowY(5),
+               [state] { openColorPicker(&state->player2Colors); }, 50.f);
         toggle("Straight wave", 6, settings->trajectory.straightEnabled,
                [settings](bool value) {
                    settings->trajectory.straightEnabled = value;
                });
-        color("Straight color", 7, &settings->trajectory.straightColor);
+        settingLabel("Straight colors", rowY(7));
+        button("P1", 285.f, rowY(7), [settings] {
+            openColorPicker(&settings->trajectory.straightColor);
+        }, 50.f);
+        button("P2", 345.f, rowY(7), [settings] {
+            openColorPicker(&settings->trajectory.straightPlayer2Color);
+        }, 50.f);
     }
 
     void buildAutoclicker() {

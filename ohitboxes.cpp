@@ -10,6 +10,17 @@
 #include "trajectory/trajectory.hpp"
 
 
+#define CC_COLOR(color_type)                \
+    *reinterpret_cast<cocos2d::ccColor4F*>( \
+        settings.categories[color_type].colors.data())
+#define CC_FILL_COLOR(color_type)                               \
+    {                                                           \
+        settings.categories[color_type].colors.data()[0],       \
+        settings.categories[color_type].colors.data()[1],       \
+        settings.categories[color_type].colors.data()[2],       \
+        settings.categories[color_type].colors.data()[3] *      \
+            (float)settings.categories[color_type].fillOpacity, \
+    }
 #define HB_ENABLED(_t) settings.categories[_t].enabled
 
 static cocos2d::CCRect usingWidth(const cocos2d::CCRect& old,
@@ -48,14 +59,13 @@ struct ResolvedObjectHB {
 };
 
 static ResolvedHBCategory resolveHB(GrapeSettings::HitboxSettings& s,
-                                    int type, bool player2 = false) noexcept {
+                                    int type) noexcept {
     auto& c = s.categories[type];
-    const auto& colors = player2 ? c.player2Colors : c.colors;
-    const float a = colors[3];
+    const float a = c.colors[3];
     return {
         .enabled = c.enabled,
-        .line    = {colors[0], colors[1], colors[2], a},
-        .fill    = {colors[0], colors[1], colors[2],
+        .line    = {c.colors[0], c.colors[1], c.colors[2], a},
+        .fill    = {c.colors[0], c.colors[1], c.colors[2],
                     a * static_cast<float>(c.fillOpacity)},
     };
 }
@@ -64,38 +74,38 @@ static ResolvedHBCategory resolveHB(GrapeSettings::HitboxSettings& s,
 static void drawPlayerHitbox(cocos2d::CCDrawNode*       node,
                              GJBaseGameLayer*            pl,
                              PlayerObject*               player,
-                             GrapeSettings::HitboxSettings& settings,
-                             bool player2) {
+                             GrapeSettings::HitboxSettings& settings) {
     using Type = GrapeSettings::HitboxSettings::Type;
     if (!player) return;
 
     const float width  = settings.width / pl->m_gameState.m_cameraZoom;
     const auto  rect   = usingWidth(player->getObjectRect(), width);
     const auto  scaled = usingWidth(player->getObjectRect(0.3f, 0.3f), width);
-    const auto rotated = resolveHB(settings, Type::PlayerRotated, player2);
-    const auto circle  = resolveHB(settings, Type::PlayerCircle, player2);
-    const auto outer   = resolveHB(settings, Type::Player, player2);
-    const auto inner   = resolveHB(settings, Type::PlayerInner, player2);
 
-    if (auto ob = player->getOrientedBox(); ob && rotated.enabled) {
-        node->drawPolygon(ob->m_corners.data(), 4, rotated.fill, width,
-                          rotated.line);
+    if (auto ob = player->getOrientedBox();
+        ob && HB_ENABLED(Type::PlayerRotated)) {
+        node->drawPolygon(ob->m_corners.data(), 4,
+                          CC_FILL_COLOR(Type::PlayerRotated), width,
+                          CC_COLOR(Type::PlayerRotated));
     }
 
-    if (circle.enabled) {
+    if (HB_ENABLED(Type::PlayerCircle)) {
         float radius = player->getObjectRect().size.width * 0.5f;
         if (radius > 0.0f) {
             node->drawCircle(player->getPosition(), radius,
-                             {0.0f, 0.0f, 0.0f, 0.0f}, width, circle.line,
+                             {0.0f, 0.0f, 0.0f, 0.0f}, width,
+                             CC_COLOR(Type::PlayerCircle),
                              circleSegments(radius));
         }
     }
 
-    if (outer.enabled)
-        node->drawRect(rect, outer.fill, width, outer.line);
+    if (HB_ENABLED(Type::Player))
+        node->drawRect(rect, CC_FILL_COLOR(Type::Player), width,
+                       CC_COLOR(Type::Player));
 
-    if (inner.enabled)
-        node->drawRect(scaled, inner.fill, width, inner.line);
+    if (HB_ENABLED(Type::PlayerInner))
+        node->drawRect(scaled, CC_FILL_COLOR(Type::PlayerInner), width,
+                       CC_COLOR(Type::PlayerInner));
 }
 
 
@@ -257,8 +267,6 @@ void Hitboxes::safeRelease(HitboxesDrawNode*& node) {
 
 void Hitboxes::init(GJBaseGameLayer* pl) {
     if (m_initialized) this->destroy();
-    this->clearDeath();
-    if (!pl || !pl->m_aboveShaderObjectLayer || !pl->m_uiLayer) return;
 
     auto* parent   = pl->m_aboveShaderObjectLayer;
     const int base = pl->m_uiLayer->getZOrder();
@@ -275,13 +283,12 @@ void Hitboxes::init(GJBaseGameLayer* pl) {
     m_drawNode      = makeNode(base + 10000, "hitbox-node"_spr);
     m_trailDrawNode = makeNode(base + 9998,  "hitbox-trail-node"_spr);
 
-    m_layer = pl;
     m_trailDirty = true;
     m_initialized = true;
 }
 
 void Hitboxes::draw(GJBaseGameLayer* pl) {
-    if (!m_initialized || !pl || !m_drawNode || !m_trailDrawNode) return;
+    if (!m_initialized) return;
 
     m_drawNode->clear();
 
@@ -306,12 +313,16 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
         const bool eInner   = HB_ENABLED(Type::PlayerInner);
 
         if (eRotated || eSolid || eCircle || eInner) {
+            auto resolve = [&](int t) -> ResolvedHBCategory {
+                return resolveHB(hbs, t);
+            };
+            const auto rRot  = resolve(Type::PlayerRotated);
+            const auto rSol  = resolve(Type::Player);
+            const auto rCirc = resolve(Type::PlayerCircle);
+            const auto rInner= resolve(Type::PlayerInner);
+
             auto drawTrail = [&](std::deque<HitboxTrailUnit>& trail,
-                                 bool drawInner, bool player2) {
-                const auto rRot = resolveHB(hbs, Type::PlayerRotated, player2);
-                const auto rSol = resolveHB(hbs, Type::Player, player2);
-                const auto rCirc = resolveHB(hbs, Type::PlayerCircle, player2);
-                const auto rInner = resolveHB(hbs, Type::PlayerInner, player2);
+                                 bool drawInner) {
                 bool hasLast = false;
                 int  lastPx  = 0, lastPy = 0;
 
@@ -370,10 +381,10 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
                 }
             };
 
-            drawTrail(m_trailP1, false, false);
-            drawTrail(m_trailP2, false, true);
-            drawTrail(m_trailP1, true, false);
-            drawTrail(m_trailP2, true, true);
+            drawTrail(m_trailP1, false);
+            drawTrail(m_trailP2, false);
+            drawTrail(m_trailP1, true);
+            drawTrail(m_trailP2, true);
         }
     }
 
@@ -383,13 +394,12 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
         auto& hbs = GrapeSettings::get()->hitboxes;
         using Type = GrapeSettings::HitboxSettings::Type;
         const ResolvedObjectHB objHB{
-            .width = static_cast<float>(hbs.width /
-                                        pl->m_gameState.m_cameraZoom),
-            .interactable = resolveHB(hbs, Type::Interactable),
+            .width              = static_cast<float>(hbs.width / pl->m_gameState.m_cameraZoom),
+            .interactable       = resolveHB(hbs, Type::Interactable),
             .interactableActive = resolveHB(hbs, Type::InteractableActive),
-            .solid = resolveHB(hbs, Type::Solid),
-            .passable = resolveHB(hbs, Type::Passable),
-            .hazard = resolveHB(hbs, Type::Hazard),
+            .solid              = resolveHB(hbs, Type::Solid),
+            .passable           = resolveHB(hbs, Type::Passable),
+            .hazard             = resolveHB(hbs, Type::Hazard),
         };
 
         iterateObjects(pl, [&](GameObject* object) {
@@ -398,9 +408,9 @@ void Hitboxes::draw(GJBaseGameLayer* pl) {
     }
 
     auto& hbs = GrapeSettings::get()->hitboxes;
-    drawPlayerHitbox(m_drawNode, pl, pl->m_player1, hbs, false);
+    drawPlayerHitbox(m_drawNode, pl, pl->m_player1, hbs);
     if (pl->m_gameState.m_isDualMode)
-        drawPlayerHitbox(m_drawNode, pl, pl->m_player2, hbs, true);
+        drawPlayerHitbox(m_drawNode, pl, pl->m_player2, hbs);
 }
 
 static void appendTrailUnit(std::deque<HitboxTrailUnit>& trail,
@@ -457,26 +467,12 @@ void Hitboxes::clearTrail() {
     m_trailDirty = true;
 }
 
-void Hitboxes::showDeath(PlayerObject* player, GameObject* object) {
-    if (!player) return;
-    m_deathPlayer = player;
-    m_deathObject = object;
-}
-
-void Hitboxes::clearDeath() {
-    m_deathPlayer = nullptr;
-    m_deathObject = nullptr;
-}
-
-void Hitboxes::destroy(GJBaseGameLayer* layer) {
-    if (layer && m_layer != layer) return;
-    this->clearDeath();
+void Hitboxes::destroy() {
     if (!m_initialized) return;
 
     safeRelease(m_drawNode);
     safeRelease(m_trailDrawNode);
 
-    m_layer = nullptr;
     m_trailDirty = true;
     m_initialized = false;
 }

@@ -259,7 +259,8 @@ class Trajectory {
     TrajectoryPlayerData runPrediction(GJBaseGameLayer* pl,
                                        PlayerObject* player,
                                        PlayerObject* other, int mode,
-                                       float* colors, bool both,
+                                       float* player1Colors,
+                                       float* player2Colors, bool both,
                                        PredictionConfig config);
     TrajectoryPlayerData simulate(GJBaseGameLayer* pl, bool p1, int mode,
                                   bool clickBothPlayers,
