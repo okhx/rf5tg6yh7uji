@@ -510,6 +510,8 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
 void Trajectory::update(GJBaseGameLayer* pl) {
     if (!pl || pl != m_layer)
         return;
+    if (auto* play = PlayLayer::get(); play == pl && play->m_isPaused)
+        return;
     m_fakePlayer1->setVisible(false);
     m_fakePlayer2->setVisible(false);
 
