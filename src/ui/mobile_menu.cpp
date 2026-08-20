@@ -126,6 +126,7 @@ class MobileFeaturePopup final : public geode::Popup {
     CCNode* m_content = nullptr;
     CCMenu* m_menu = nullptr;
     int m_category = 0;
+    bool m_player2 = false;
 
     float rowY(int row) const { return 215.f - row * 29.f; }
 
@@ -255,6 +256,10 @@ class MobileFeaturePopup final : public geode::Popup {
             GrapeSettings::HitboxSettings::InteractableActive};
         m_category = std::clamp(m_category, 0, 8);
         auto* state = &settings->hitboxes.categories[categories[m_category]];
+        button(m_player2 ? "Player 2" : "Player 1", 185.f, 230.f, [this] {
+            m_player2 = !m_player2;
+            rebuild();
+        }, 120.f);
 
         number("Line width", 0, hitboxes->m_width->inner(),
                [hitboxes](double value) { hitboxes->m_width->inner() = value; },
@@ -296,10 +301,9 @@ class MobileFeaturePopup final : public geode::Popup {
                2, 155.f);
         if (categories[m_category] <=
             GrapeSettings::HitboxSettings::PlayerCircle) {
-            button("P1", 285.f, rowY(7),
-                   [state] { openColorPicker(&state->colors); }, 50.f);
-            button("P2", 345.f, rowY(7),
-                   [state] { openColorPicker(&state->player2Colors); }, 50.f);
+            auto* colors = m_player2 ? &state->player2Colors : &state->colors;
+            button("Color", 325.f, rowY(7),
+                   [colors] { openColorPicker(colors); }, 62.f);
         } else {
             button("Color", 325.f, rowY(7),
                    [state] { openColorPicker(&state->colors); }, 62.f);
@@ -335,6 +339,10 @@ class MobileFeaturePopup final : public geode::Popup {
             M::Release | M::FollowOpposite | M::Platformer};
         m_category = std::clamp(m_category, 0, 17);
         auto* state = &settings->trajectory.categories[categories[m_category]];
+        button(m_player2 ? "Player 2" : "Player 1", 185.f, 230.f, [this] {
+            m_player2 = !m_player2;
+            rebuild();
+        }, 120.f);
 
         number("Line width", 0, manager->m_state.m_width->inner(),
                [manager](double value) {
@@ -363,22 +371,15 @@ class MobileFeaturePopup final : public geode::Popup {
         }, 32.f);
         toggle("Show category", 4, state->enabled,
                [state](bool value) { state->enabled = value; });
-        settingLabel("Category colors", rowY(5));
-        button("P1", 285.f, rowY(5),
-               [state] { openColorPicker(&state->colors); }, 50.f);
-        button("P2", 345.f, rowY(5),
-               [state] { openColorPicker(&state->player2Colors); }, 50.f);
+        color("Category color", 5,
+              m_player2 ? &state->player2Colors : &state->colors);
         toggle("Straight wave", 6, settings->trajectory.straightEnabled,
                [settings](bool value) {
                    settings->trajectory.straightEnabled = value;
                });
-        settingLabel("Straight colors", rowY(7));
-        button("P1", 285.f, rowY(7), [settings] {
-            openColorPicker(&settings->trajectory.straightColor);
-        }, 50.f);
-        button("P2", 345.f, rowY(7), [settings] {
-            openColorPicker(&settings->trajectory.straightPlayer2Color);
-        }, 50.f);
+        color("Straight color", 7,
+              m_player2 ? &settings->trajectory.straightPlayer2Color
+                        : &settings->trajectory.straightColor);
     }
 
     void buildAutoclicker() {

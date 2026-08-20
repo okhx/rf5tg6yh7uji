@@ -4,13 +4,11 @@
 #include <ui/manager.hpp>
 #endif
 
-#include "assist/hitboxes.hpp"
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
 #include "checkpoint/fix.hpp"
 #include "render/renderer.hpp"
 #include "replay/macro.hpp"
-#include "trajectory/trajectory.hpp"
 
 #ifdef GEODE_IS_WINDOWS
 #include <safetyhook.hpp>
@@ -30,9 +28,6 @@ struct GrapePauseLayer : Modify<GrapePauseLayer, PauseLayer> {
         auto bot = GrapeEngine::get();
 
         bot->timeline().setPaused(false);
-
-        bot->trajectory().uninit();
-        bot->hitboxes().destroy();
 
         PauseLayer::goEdit();
         bot->practiceFix().removeAll();

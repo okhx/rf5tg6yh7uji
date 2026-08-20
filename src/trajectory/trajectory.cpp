@@ -481,10 +481,19 @@ TrajectoryPlayerData Trajectory::simulate(GJBaseGameLayer* pl, bool p1,
     m_deadP1 = false;
     m_deadP2 = false;
 
-    auto& colors = cats[colorKey];
+    const bool holding = realPlayer->m_isDart
+                             ? isHoldingJump(realPlayer)
+                             : (p1 ? m_p1Holding : m_p2Holding);
+    const bool current =
+        (holding && (mode & CLICK_MASK) == TrajectoryMode::Hold) ||
+        (!holding && (mode & CLICK_MASK) == TrajectoryMode::Release);
+    std::array<float, 4> alternate = {0.f, 1.f, 1.f, 1.f};
+    auto& category = cats[colorKey];
     auto predicted = runPrediction(pl, player, otherPlayer, mode,
-                                   colors.colors.data(),
-                                   colors.player2Colors.data(),
+                                   current ? category.colors.data()
+                                           : alternate.data(),
+                                   current ? category.player2Colors.data()
+                                           : alternate.data(),
                                    clickBothPlayers, config);
 
     player->setVisible(false);

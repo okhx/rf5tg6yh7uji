@@ -131,9 +131,8 @@ struct UIState {
     };
 
     slui::ColorState m_trajectoryColorState;
-    slui::ColorState m_trajectoryPlayer2ColorState;
     slui::ColorState m_straightTrajectoryColorState;
-    slui::ColorState m_straightTrajectoryPlayer2ColorState;
+    bool m_trajectoryPlayer2 = false;
 
     slui::DropdownState m_lockDeltaState = {
         .options = {"Performance", "Accuracy"},
@@ -198,7 +197,7 @@ struct UIState {
                                  HitboxType::InteractableActive};
 
     slui::ColorState m_hitboxColorState;
-    slui::ColorState m_hitboxPlayer2ColorState;
+    bool m_hitboxPlayer2 = false;
     slui::ColorState m_holdingTrailColorState;
     slui::ColorState m_groundColorState;
     slui::ColorState m_bgColorState;
