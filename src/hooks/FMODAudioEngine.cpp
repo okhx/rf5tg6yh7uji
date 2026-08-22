@@ -39,20 +39,15 @@ struct GrapeAudioEngine : Modify<GrapeAudioEngine, FMODAudioEngine> {
     }
 };
 
-void FMOD_System_update(FMOD::System* self) {
-    if (!shouldUpdateAudio()) {
-        return;
-    }
+FMOD_RESULT FMOD_System_update(FMOD::System* self) {
+    if (!shouldUpdateAudio()) return FMOD_OK;
 
     auto audio = AudioRecorder::get();
-    if (!audio->m_attached) {
-        self->update();
-        return;
-    }
+    if (!audio->m_attached) return self->update();
     if (audio->m_sampleRate <= 0 || audio->m_channels <= 0) {
         geode::log::error("Invalid renderer audio format; stopping render");
         Renderer::get()->signalStop();
-        return;
+        return FMOD_ERR_INVALID_PARAM;
     }
 
     unsigned int bufferLength;
@@ -61,17 +56,20 @@ void FMOD_System_update(FMOD::System* self) {
         bufferLength == 0) {
         geode::log::error("Invalid FMOD DSP buffer; stopping render");
         Renderer::get()->signalStop();
-        return;
+        return FMOD_ERR_INVALID_PARAM;
     }
 
     const double requiredDt = std::max(audio->m_fmodTime - audio->m_time, 0.0);
-
     const int requiredSamples =
         static_cast<int>(requiredDt * audio->m_sampleRate);
 
     int processedSamples = 0;
     while (requiredSamples > processedSamples) {
-        self->update();
+        const auto result = self->update();
+        if (result != FMOD_OK) {
+            Renderer::get()->signalStop();
+            return result;
+        }
         processedSamples += bufferLength;
     }
 
@@ -89,7 +87,7 @@ void FMOD_System_update(FMOD::System* self) {
         if (result.isErr()) {
             geode::log::error("Failed to write audio! Stopping render");
             renderer->signalStop();
-            return;
+            return FMOD_ERR_INTERNAL;
         }
 
         audio->m_buffer.erase(audio->m_buffer.begin(),
@@ -99,6 +97,7 @@ void FMOD_System_update(FMOD::System* self) {
                         ((double)frameSize / (double)audio->m_sampleRate);
 #endif
     }
+    return FMOD_OK;
 }
 
 $execute {

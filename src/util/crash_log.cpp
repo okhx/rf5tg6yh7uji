@@ -59,6 +59,7 @@ void installSessionMarker() {
 
 #include <chrono>
 #include <cstdio>
+#include <cstring>
 #include <ctime>
 #include <exception>
 #include <filesystem>
@@ -82,29 +83,13 @@ using SymGetModuleBase64_t      = DWORD64(WINAPI*)(HANDLE, DWORD64);
 
 namespace {
 
-HMODULE             g_dbgHelpMod                = nullptr;
-SymInitialize_t     g_SymInitialize             = nullptr;
-SymCleanup_t        g_SymCleanup                = nullptr;
-SymSetOptions_t     g_SymSetOptions             = nullptr;
-StackWalk64_t       g_StackWalk64               = nullptr;
-SymFromAddr_t       g_SymFromAddr               = nullptr;
-SymGetLineFromAddr64_t     g_SymGetLineFromAddr64      = nullptr;
-SymFunctionTableAccess64_t g_SymFunctionTableAccess64  = nullptr;
-SymGetModuleBase64_t       g_SymGetModuleBase64        = nullptr;
-
-void initDbgHelp() {
-    if (g_dbgHelpMod) return;
-    g_dbgHelpMod = LoadLibraryA("DbgHelp.dll");
-    if (!g_dbgHelpMod) return;
-
-    g_SymInitialize             = (SymInitialize_t)GetProcAddress(g_dbgHelpMod, "SymInitialize");
-    g_SymCleanup                = (SymCleanup_t)GetProcAddress(g_dbgHelpMod, "SymCleanup");
-    g_SymSetOptions             = (SymSetOptions_t)GetProcAddress(g_dbgHelpMod, "SymSetOptions");
-    g_StackWalk64               = (StackWalk64_t)GetProcAddress(g_dbgHelpMod, "StackWalk64");
-    g_SymFromAddr               = (SymFromAddr_t)GetProcAddress(g_dbgHelpMod, "SymFromAddr");
-    g_SymGetLineFromAddr64      = (SymGetLineFromAddr64_t)GetProcAddress(g_dbgHelpMod, "SymGetLineFromAddr64");
-    g_SymFunctionTableAccess64  = (SymFunctionTableAccess64_t)GetProcAddress(g_dbgHelpMod, "SymFunctionTableAccess64");
-    g_SymGetModuleBase64        = (SymGetModuleBase64_t)GetProcAddress(g_dbgHelpMod, "SymGetModuleBase64");
+template <class Function>
+Function loadProcedure(HMODULE module, const char* name) {
+    const auto address = GetProcAddress(module, name);
+    static_assert(sizeof(Function) == sizeof(address));
+    Function function = nullptr;
+    std::memcpy(&function, &address, sizeof(function));
+    return function;
 }
 
 std::filesystem::path makeLogPath() {
@@ -155,16 +140,24 @@ void writeStackTrace(std::ofstream& out, CONTEXT* ctx) {
         return;
     }
 
-#define LOAD(fn) auto fn##_ = reinterpret_cast<fn##_t>(GetProcAddress(hDbgHelp, #fn))
-    LOAD(SymInitialize);
-    LOAD(SymCleanup);
-    LOAD(SymSetOptions);
-    LOAD(StackWalk64);
-    LOAD(SymFunctionTableAccess64);
-    LOAD(SymGetModuleBase64);
-    LOAD(SymFromAddr);
-    LOAD(SymGetLineFromAddr64);
-#undef LOAD
+    const auto SymInitialize_ =
+        loadProcedure<SymInitialize_t>(hDbgHelp, "SymInitialize");
+    const auto SymCleanup_ =
+        loadProcedure<SymCleanup_t>(hDbgHelp, "SymCleanup");
+    const auto SymSetOptions_ =
+        loadProcedure<SymSetOptions_t>(hDbgHelp, "SymSetOptions");
+    const auto StackWalk64_ =
+        loadProcedure<StackWalk64_t>(hDbgHelp, "StackWalk64");
+    const auto SymFunctionTableAccess64_ =
+        loadProcedure<SymFunctionTableAccess64_t>(
+            hDbgHelp, "SymFunctionTableAccess64");
+    const auto SymGetModuleBase64_ =
+        loadProcedure<SymGetModuleBase64_t>(hDbgHelp, "SymGetModuleBase64");
+    const auto SymFromAddr_ =
+        loadProcedure<SymFromAddr_t>(hDbgHelp, "SymFromAddr");
+    const auto SymGetLineFromAddr64_ =
+        loadProcedure<SymGetLineFromAddr64_t>(
+            hDbgHelp, "SymGetLineFromAddr64");
 
     if (!SymInitialize_ || !StackWalk64_ || !SymFromAddr_) {
         out << "  [DbgHelp symbols not available]\n";

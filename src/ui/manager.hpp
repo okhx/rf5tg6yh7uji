@@ -37,17 +37,21 @@ class UIManager {
 
     void drawKeybindContextMenu();
 
+    void openKeybindEditor(const std::string& tag) {
+        auto& ctx               = m_state.m_keybindCtx;
+        ctx.tag                 = tag;
+        ctx.open                = true;
+        ctx.capturing           = false;
+        ctx.capturedKey         = 0;
+        ctx.capturedMod         = 0;
+        ctx.pendingValue        = "1";
+        ctx.pendingType         = KeybindType::Toggle;
+        ctx.typeState.selectedIndex = 0;
+    }
+
     void keybindRightClick(const std::string& tag) {
         if (ImGui::BeginPopupContextItem(nullptr, ImGuiPopupFlags_MouseButtonRight)) {
-            auto& ctx               = m_state.m_keybindCtx;
-            ctx.tag                 = tag;
-            ctx.open                = true;
-            ctx.capturing           = false;
-            ctx.capturedKey         = 0;
-            ctx.capturedMod         = 0;
-            ctx.pendingValue        = "1";
-            ctx.pendingType         = KeybindType::Toggle;
-            ctx.typeState.selectedIndex = 0;
+            openKeybindEditor(tag);
             ImGui::CloseCurrentPopup();
             ImGui::EndPopup();
         }

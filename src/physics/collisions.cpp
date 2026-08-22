@@ -9,232 +9,6 @@
 #include "trajectory/trajectory.hpp"
 
 namespace phys {
-int checkPlayerCollisions(GJBaseGameLayer* gameLayer, PlayerObject* player) {
-    // bool wasJustTeleported = player->m_wasTeleported;
-    player->m_wasTeleported = false;
-    player->m_ringJumpRelated = false;
-    player->m_collidedTopMinY = 0.0;
-    player->m_collidedBottomMaxY = 0.0;
-    player->m_collidedLeftMaxX = 0.0;
-    player->m_collidedRightMinX = 0.0;
-
-    player->m_wasOnSlope = player->m_isOnSlope;
-    player->m_isOnSlope = false;
-
-    bool isOnGround = player->m_isOnGround2;
-    player->m_isOnGround4 = isOnGround;
-    if (isOnGround && !player->m_platformerMovingLeft &&
-        !player->m_platformerMovingRight && player->m_maybeSlidingTime > 0) {
-        player->m_maybeSlidingTime = 0;
-        player->m_maybeSlidingStartTime = player->m_totalTime;
-    }
-
-    if (player->m_unk669) {
-        player->m_currentPotentialSlope = nullptr;
-    }
-    [[maybe_unused]] GameObject* addedSlope;
-    player->m_unk669 = true;
-    player->m_potentialSlopeMap.clear();
-    GameObject* currentSlope = player->m_currentPotentialSlope;
-    if (currentSlope) {
-        player->m_potentialSlopeMap.insert(
-            {currentSlope->m_uniqueID, currentSlope});
-        addedSlope = currentSlope;
-    }
-
-    currentSlope = player->m_currentSlope;
-    if (currentSlope) {
-        player->m_potentialSlopeMap.insert(
-            {currentSlope->m_uniqueID, currentSlope});
-        addedSlope = currentSlope;
-    }
-
-    float someValue = 0.0;
-    float vehicleSize = player->m_vehicleSize;
-    float unkAngle = player->m_unkAngle1;
-    if (vehicleSize != 1.0) {
-        someValue = (1.0 - vehicleSize) * unkAngle * 0.5;
-    }
-    float unkAngleHalved = unkAngle * 0.5;
-    float angleTransformed = (unkAngleHalved + 90.0) - someValue;
-
-    bool groundExists =
-        !gameLayer->m_gameState.m_isFreeMode &&
-        (player->m_isShip || player->m_isBird || player->m_isDart ||
-         player->m_isSwing || player->m_isBall || player->m_isSpider ||
-         gameLayer->m_gameState.m_isDualMode);
-
-    // bool isOutOfBounds = player->m_isOutOfBounds;
-    player->m_isOutOfBounds = false;
-
-    [[maybe_unused]] bool exceededBounds = false;
-
-    if (gameLayer->m_isPlatformer) {
-        auto playerPosition = player->getPosition();
-        if (playerPosition.x < -30.0) {
-            player->m_platformerXVelocity = 0.0;
-            player->setPosition({-30.0, playerPosition.y});
-        }
-    } else if (player->m_isGoingLeft) {
-        exceededBounds = player->getPosition().x < -30.0;
-    }
-
-    if (angleTransformed <= player->getPosition().y ||
-        (groundExists &&
-         (player->m_isShip || player->m_isBird || player->m_isDart ||
-          player->m_isSwing || player->m_isBall || player->m_isSpider ||
-          gameLayer->m_gameState.m_isDualMode))) {
-        if (player->getPosition().y >
-            (float)(someValue + gameLayer->m_maxGameplayY)) {
-            exceededBounds = true;
-        }
-    } else if (player->m_isUpsideDown) {
-        if (player->m_lastFlipTime != 0 &&
-            player->m_totalTime - player->m_lastFlipTime < 0.1) {
-            auto playerPosition = player->getPosition();
-            player->setPosition({-1.0842022e-19, playerPosition.x});
-            player->hitGround(nullptr, true);
-            player->updateCollide(PlayerCollisionDirection::Top, nullptr);
-            player->m_isOnGround2 = false;
-            return 0;
-        }
-        exceededBounds = true;
-    } else if (!player->m_maybeIsBoosted) {
-        // i don't know
-    }
-
-    if (!groundExists || player->m_wasTeleported) {
-        // some goto
-    }
-
-    // TODO
-    return 0;
-}
-
-int collidedWithObjectInternal(PlayerObject* player, float, GameObject* object,
-                               CCRect* p4, bool) {
-    [[maybe_unused]] bool holdingLeft = player->m_holdingLeft;
-    [[maybe_unused]] bool holdingRight = player->m_holdingLeft;
-    if (player->m_leftPressedFirst) {
-        holdingRight = false;
-    } else {
-        holdingLeft = false;
-    }
-
-    GameObject* someObj = nullptr;
-    cocos2d::CCRect playerRect;
-    // cocos2d::CCRect objectRect =
-    //     object ? object->getObjectRect() : cocos2d::CCRect{0, 0, 0, 0};
-    if (p4->equals(cocos2d::CCRect{0.0, 0.0, 0.0, 0.0})) {
-        someObj = object;
-        playerRect = player->getObjectRect();
-        if (object) {
-            *p4 = object->getObjectRect();
-            playerRect = object->getObjectRect();  // yea idk either
-        }
-    } else {
-        someObj = nullptr;
-        playerRect = player->getObjectRect();
-    }
-
-    float unk1 = 5.0;
-    if (!player->m_isPlatformer || player->m_wasOnSlope ||
-        player->m_isOnSlope) {
-        unk1 = 10.0;
-    }
-    unk1 = player->m_stateScale > 0 ? 15.0 : unk1;
-
-    double unk2 = player->m_isUpsideDown ? -unk1 : unk1;
-    if ((player->m_isShip || player->m_isBird || player->m_isDart ||
-         player->m_isSwing) &&
-        !player->m_isPlatformer) {
-        unk2 = player->m_isUpsideDown ? -6.0 : 6.0;
-    }
-    if (player->m_wasOnSlope) {
-        unk2 = unk2 + (player->m_isUpsideDown ? -1.0 : 1.0) * player->unk_584;
-    }
-
-    // bool idk = false;
-    if (someObj) {
-        // idk = someObj->m
-    }
-
-    return 0;
-}
-
-void preSlopeCollision(PlayerObject* player, float dt, GameObject* slope) {
-    if (slope->m_uniqueID == player->m_collidingWithSlopeId) return;
-
-    cocos2d::CCRect playerRect = player->getObjectRect();
-    cocos2d::CCRect slopeRect = slope->getObjectRect();
-
-    int slopeDir = slope->m_slopeDirection;
-
-    [[maybe_unused]] bool someBool = false;
-
-    bool unk1 = false;
-    if ((slopeDir < 5) || slopeDir == 6) {
-        unk1 = true;
-    }
-
-    [[maybe_unused]] bool unk2 = false;
-    if ((slopeDir < 7) && ((0x6aU >> (slopeDir & 0x1f) & 1) != 0)) {
-        unk2 = true;
-    }
-
-    float unk3 = 5.0;
-    if (!player->m_isPlatformer ||
-        (!player->m_wasOnSlope && !player->m_isOnSlope)) {
-        unk3 = 0.0;
-    }
-
-    cocos2d::CCPoint pos = slope->getRealPosition();
-    cocos2d::CCPoint diff = pos - slope->m_lastPosition;
-
-    if (player->m_isSideways) {
-        diff.x = diff.y;
-    }
-
-    float playerSpeed = player->m_playerSpeed * player->m_speedMultiplier * dt;
-    float slopePosX = slope->getPosition().x;
-    int unk4 = 0;
-    if (unk1) {
-        if ((!player->m_isGoingLeft || player->m_isPlatformer ||
-             diff.x < playerSpeed) &&
-            slopePosX < slopeRect.origin.x) {
-            unk4 = (!player->m_isGoingLeft || player->m_isPlatformer) ? 0 : 1;
-            unk3 += unk4;
-            float heightDiff = slopeRect.size.height - (unk3 * 2);
-            playerSpeed = slopeRect.origin.x;
-            cocos2d::CCRect newPlayerRect = {
-                playerSpeed, unk3 + slopeRect.origin.y, 1.0, heightDiff};
-            someBool = true;
-            if (newPlayerRect.intersectsRect(playerRect)) {
-                player->collidedWithObjectInternal(dt, slope, newPlayerRect,
-                                                   false);
-            }
-        }
-    } else if (player->m_isGoingLeft || player->m_isPlatformer ||
-               (playerSpeed < diff.x)) {
-        playerSpeed = slopeRect.getMaxX();
-        if (playerSpeed < slopePosX) {
-            unk4 = (!player->m_isGoingLeft && !player->m_isPlatformer) ? 1 : 0;
-            playerSpeed = (slopeRect.size.width + slopeRect.origin.x) - 1.0;
-            unk3 += unk4;
-            float heightDiff = slopeRect.size.height - (unk3 * 2);
-            cocos2d::CCRect newPlayerRect = {
-                playerSpeed, unk3 + slopeRect.origin.y, 1.0, heightDiff};
-            someBool = true;
-            if (newPlayerRect.intersectsRect(playerRect)) {
-                player->collidedWithObjectInternal(dt, slope, newPlayerRect,
-                                                   false);
-            }
-        }
-    }
-}
-
-void collidedWithSlopeInternal(PlayerObject*) {}
-
 void activateForTrajectory(EffectGameObject* obj, PlayerObject* player) {
     auto bot = GrapeEngine::get();
 
@@ -244,7 +18,6 @@ void activateForTrajectory(EffectGameObject* obj, PlayerObject* player) {
 void bumpPlayerFromGJBGL(GJBaseGameLayer* pl, PlayerObject* player,
                          EffectGameObject* object) {
     if (pl->canBeActivatedByPlayer(player, object)) {
-        // cocos2d::CCPoint p = cocos2d::CCPoint{0, -10};
         cocos2d::CCPoint objPos = object->getPosition();
 
         player->m_lastPortalPos = objPos;
@@ -284,51 +57,6 @@ void bumpPlayerFromGJBGL(GJBaseGameLayer* pl, PlayerObject* player,
         phys::bumpPlayer(player, force, static_cast<int>(object->m_objectType),
                          false, object);
     }
-}
-
-// int handleRotatedCollisionInternal(
-//     PlayerObject* player,
-//     float dt,
-//     GameObject* object,
-//     cocos2d::CCRect* rect,
-//     bool p3,
-//     bool p4,
-//     bool isSlope
-// ) {
-//     cocos2d::CCPoint p1 = player->getPosition();
-//     player->rotateGameplayObject(object);
-//     for (auto& obj : player->m_maybeRotatedObjectsMap) {
-//         player->rotateGameplayObject(obj.second);
-//     }
-
-//     int ret = 0;
-//     if (isSlope) {
-//         player->collidedWithSlopeInternal(dt, object, p4);
-//     } else {
-//         ret = player->collidedWithObjectInternal(dt, object, *rect, p3);
-//     }
-
-//     cocos2d::CCPoint newPos = {
-//         player->getPosition().y - p1.y + p1.x,
-//         p1.y - player->getPosition().x + p1.x,
-//     };
-//     player->setPosition(newPos);
-//     player->unrotateGameplayObject(object);
-//     for (auto& obj : player->m_maybeRotatedObjectsMap) {
-//         player->unrotateGameplayObject(obj.second);
-//     }
-
-//     return ret;
-// }
-
-static void* g_PlayerObject_getOrientedBox = nullptr;
-static void* g_PlayerObject_updateOrientedBox = nullptr;
-
-$execute {
-    g_PlayerObject_getOrientedBox =
-        reinterpret_cast<void*>(geode::base::get() + 0x38a8c0);
-    g_PlayerObject_updateOrientedBox =
-        reinterpret_cast<void*>(geode::base::get() + 0x19e5f0);
 }
 
 void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
@@ -581,10 +309,6 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
                         player->m_jumpPadRelated.insert({forceID, true});
                     }
 
-                    // void* fnPtr = reinterpret_cast<void*>(geode::base::get()
-                    // + 0x4a9370); CCPoint force =
-                    // (reinterpret_cast<CCPoint(*)(ForceBlockGameObject*,
-                    // CCPoint)>(fnPtr))(forceBlock, player->getPosition());
                     CCPoint force = forceBlock->calculateForceToTarget(player);
                     player->m_stateForceVector += force;
                 }
@@ -604,10 +328,7 @@ void collisionCheckObjects(GJBaseGameLayer* pl, PlayerObject* player,
                 obj->activatedByPlayer(player);
 
                 if (obj->m_isTouchTriggered) {
-                    // GrapeEngine::get()->trajectory().scheduleAction(
-                    //     [player, pl, obj]() {
                     phys::triggerObject(obj, pl, player);
-                    // }, 1);
                 }
                 break;
             default:
@@ -691,11 +412,6 @@ void triggerObject(EffectGameObject* object, GJBaseGameLayer* pl,
             phys::teleportPlayer(pl, (TeleportPortalObject*)object, player);
             break;
         }
-        // case 901: {
-        //     // geode::log::info("Triggering move command for object ID 901");
-        //     pl->triggerMoveCommand(object);
-        //     break;
-        // }
         default: {
             break;
         }

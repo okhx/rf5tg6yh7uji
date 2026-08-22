@@ -63,26 +63,20 @@ constexpr int VK_OEM_7 = 0xDE;
 #include "render/renderer.hpp"
 #include "replay/macro.hpp"
 #include "config/config.hpp"
-#include "shared/keys.hpp"
 #include "trajectory/trajectory.hpp"
 
 #include "imgui.h"
 #include "util/storage.hpp"
 #include "imgui_helpers.hpp"
 
-#ifdef GRAPE_PRIVATE_PC
-#include "license.hpp"
+#ifdef GRAPE_PC
 #include "script_engine.hpp"
 #include "skeet_menu.hpp"
 #endif
 
-#ifdef SILICATE_PROTECT
-#include "VMProtect/VMProtectSDK.h"
-#endif
-
 using namespace geode::prelude;
 
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
 static std::optional<int> s_pendingMenuStyle;
 #endif
 
@@ -377,7 +371,7 @@ static void applyAmethystStyle() {
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.45f, 0.90f, 1.00f);
 }
 
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
 static void pushDefaultMenuStyle() {
     const auto color = [](int r, int g, int b, float alpha = 1.0f) {
         return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, alpha);
@@ -512,7 +506,7 @@ static std::pair<bool, bool> drawSkeetActionRow(
     return {leftPressed, rightPressed};
 }
 
-static void drawImGuiThemeEditor(ImFont* headingFont) {
+static void drawImGuiThemeEditor(UIManager& manager, ImFont* headingFont) {
     if (slui::Config::get().customMode) {
         auto* settings = GrapeSettings::get();
         static slui::ColorState accent;
@@ -520,6 +514,24 @@ static void drawImGuiThemeEditor(ImFont* headingFont) {
         slui::text("Menu Accent", headingFont);
         if (slui::color("Accent", accent).changed)
             settings->grapeAccent = accent.colors;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(0.0f, 0.0f));
+        if (ImGui::BeginTable("MenuOpenKeybind", 2,
+                              ImGuiTableFlags_SizingStretchSame)) {
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted("Menu Open");
+            ImGui::TableNextColumn();
+            const float buttonWidth = ImGui::CalcTextSize("Set Keybind").x +
+                ImGui::GetStyle().FramePadding.x * 2.0f;
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
+                ImGui::GetContentRegionAvail().x - buttonWidth);
+            if (slui::raw_button("Set Keybind##MenuOpen",
+                                 ImVec2(buttonWidth, 0.0f)))
+                manager.openKeybindEditor("ui.visible");
+            manager.keybindRightClick("ui.visible");
+            ImGui::EndTable();
+        }
+        ImGui::PopStyleVar();
         return;
     }
     if (slui::Config::get().skeetMode) {
@@ -633,7 +645,7 @@ void UIManager::setup() {
 
     ImFontGlyphRangesBuilder builder;
     builder.AddChar(0xf192);
-    builder.AddChar(0xefba);
+    builder.AddChar(0xf06e);
     builder.AddChar(0xf03d);
     builder.AddChar(0xf121);
     builder.AddChar(0xf013);
@@ -690,9 +702,9 @@ void UIManager::setup() {
         geode::utils::string::pathToString(
             Mod::get()->getResourcesDir() / "font_bold.ttf").c_str(), 32.0f);
 
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     const auto menuFontPath = geode::utils::string::pathToString(
-        Mod::get()->getResourcesDir() / "Arboria-Medium.ttf");
+        Mod::get()->getResourcesDir() / "font_medium.ttf");
     const auto loadMenuFont = [&](float size) {
         ImFontConfig config;
         config.OversampleH = 3;
@@ -795,7 +807,7 @@ void UIManager::setup() {
     m_replayAutocomplete.suggestions = m_state.m_replayNames;
     m_state.m_presetAutocomplete.suggestions = m_state.m_presetNames;
     m_state.m_scriptAutocomplete.suggestions = m_state.m_scriptNames;
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     auto& scripts = grape::pc::ScriptEngine::get();
     scripts.refresh();
     for (const auto& script : scripts.scripts()) scripts.load(script.name);
@@ -1036,6 +1048,7 @@ void UIManager::drawKeybindContextMenu() {
 
     if (ctx.capturing) {
         if (bm->hasNewKey()) {
+            ctx.capturedMod = bm->getNewModifiers();
             ctx.capturedKey = static_cast<int>(bm->getNewKey());
             ctx.capturing   = false;
             ctx.open        = true;
@@ -1066,8 +1079,7 @@ void UIManager::drawKeybindContextMenu() {
                     if (slui::button("Close").pressed) {
                         ctx.capturing = false;
                         ctx.open      = true;
-                        bm->wantNewKey();
-                        bm->getNewKey();
+                        bm->cancelNewKey();
                     }
                     verticalSpacer(6.0f);
                 }, contentWidth);
@@ -1187,14 +1199,10 @@ void UIManager::drawKeybindContextMenu() {
 }
 
 void UIManager::draw() {
-#ifdef SILICATE_PROTECT
-    VMProtectBegin("UIDraw");
-#endif
-
     auto bot = GrapeEngine::get();
     auto& cfg = slui::Config::get();
 
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (s_pendingMenuStyle) {
         Mod::get()->setSavedValue("pc-menu-style", *s_pendingMenuStyle);
         s_pendingMenuStyle.reset();
@@ -1214,22 +1222,7 @@ void UIManager::draw() {
     cfg.boldFont = m_bold;
     cfg.customBoldFont = m_menuBoldFont;
 
-#ifdef GRAPE_PRIVATE_PC
-    auto& license = grape::pc::License::get();
-    license.tick();
-    if (!license.authorized()) {
-        m_state.m_visible->inner() = true;
-        CCEGLView::get()->showCursor(true);
-        if (customMenu) {
-            pushDefaultMenuStyle();
-            slui::ScopedFont loginFont(m_font);
-            license.draw(true);
-            popDefaultMenuStyle();
-        } else {
-            license.draw(false);
-        }
-        return;
-    }
+#ifdef GRAPE_PC
     grape::pc::ScriptEngine::get().update(
         cocos2d::CCDirector::get()->getDeltaTime());
     grape::pc::ScriptEngine::get().overlay();
@@ -1264,9 +1257,6 @@ void UIManager::draw() {
     CCEGLView::get()->showCursor(true);
 #endif
 
-#ifdef GRAPE_PRIVATE_PC
-    cfg.username = license.username();
-#endif
     slui::ScopedFont s(m_font);
     
     static GLuint logoTex = 0;
@@ -1295,7 +1285,7 @@ void UIManager::draw() {
     }
 
     ImTextureID tex = (logoTex != 0 && logoTex != (GLuint)-1) ? (ImTextureID)(intptr_t)logoTex : (ImTextureID)(intptr_t)0;
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (customMenu) pushDefaultMenuStyle();
     else if (skeetMenu) grape::pc::pushSkeetStyle(m_state.m_opacity->inner());
 #endif
@@ -1319,7 +1309,7 @@ void UIManager::draw() {
                                    UIState::UITab tab) {
             (void)icon;
             const bool active = m_state.m_currentTab == tab;
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
             if (customMenu) {
                 if (defaultMenuTab(label, active))
                     m_state.m_currentTab = tab;
@@ -1350,7 +1340,7 @@ void UIManager::draw() {
         }
         tabButton("Record", "\uf192", UIState::UITab::Record);
         tabButton("Assist", "\uf004", UIState::UITab::Assist);
-        tabButton("Prediction", "\uefba", UIState::UITab::Prediction);
+        tabButton("Prediction", "\uf06e", UIState::UITab::Prediction);
         tabButton("Edit", "\uf044", UIState::UITab::Edit);
         tabButton("Render", "\uf03d", UIState::UITab::Render);
         tabButton("Settings", "\uf013", UIState::UITab::Settings);
@@ -1389,6 +1379,8 @@ void UIManager::draw() {
                     }
                 }
 
+                ImGui::EndChild();
+                if (skeetMenu) ImGui::EndGroup();
                 return;
             }
 
@@ -2619,7 +2611,7 @@ void UIManager::draw() {
 
                 slui::text("Interface", m_medium);
 
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
                 int menuStyle = savedMenuStyle == 1 ? 2
                     : savedMenuStyle == 2 ? 1 : 0;
                 static slui::DropdownState menuStyleState{
@@ -2662,7 +2654,7 @@ void UIManager::draw() {
 
                 slui::divider();
 
-                drawImGuiThemeEditor(m_bold);
+                drawImGuiThemeEditor(*this, m_bold);
 
                 slui::divider();
 
@@ -2839,7 +2831,7 @@ void UIManager::draw() {
             });
 
             slui::tab(m_state.m_currentTab, UIState::UITab::Scripts, [&]() {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
                 auto& scripts = grape::pc::ScriptEngine::get();
                 static std::string selectedScript;
                 slui::divider(false);
@@ -2927,26 +2919,20 @@ void UIManager::draw() {
             m_medium);
 
         slui::text(
-            "\uf192    \uefba    \uf03d    \uf121    \uf013    \uf078    "
-            "\uf054    \uf00c    \uf044    \uf51b    \uf004    \uf05f    "
-            "\uf01f");
+            "\uf192    \uf06e    \uf03d    \uf121    \uf013    \uf078    "
+            "\uf054    \uf00c    \uf044    \uf51b    \uf004");
         slui::text(
-            "\uf192    \uefba    \uf03d    \uf121    \uf013    \uf078    "
-            "\uf054    \uf00c    \uf044    \uf51b    \uf004    \uf05f    "
-            "\uf01f",
+            "\uf192    \uf06e    \uf03d    \uf121    \uf013    \uf078    "
+            "\uf054    \uf00c    \uf044    \uf51b    \uf004",
             m_medium);
     });
 
     drawKeybindContextMenu();
 
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (customMenu) popDefaultMenuStyle();
     else if (skeetMenu) grape::pc::popSkeetStyle();
 #endif
     slui::Config::get().customMode = false;
     slui::Config::get().skeetMode = false;
-
-#ifdef SILICATE_PROTECT
-    VMProtectEnd();
-#endif
 }

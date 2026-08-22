@@ -4,10 +4,6 @@
 #include <Geode/binding/PlayLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 
-#ifdef SILICATE_PROTECT
-#include "VMProtect/VMProtectSDK.h"
-#endif
-
 using namespace cocos2d;
 
 #ifdef GEODE_IS_ANDROID
@@ -34,10 +30,6 @@ static void silentChangeSize(CCSize size, float /* wOffset */,
 }
 
 void RenderTexture::init(std::unique_ptr<Colorspace> colorspace) {
-#ifdef SILICATE_PROTECT
-    VMProtectBegin("RenderTexture::init");
-#endif
-
     m_colorspace = std::move(colorspace);
     m_colorspace->m_alignedWidth = m_alignedWidth;
     m_colorspace->m_alignedHeight = m_alignedHeight;
@@ -91,10 +83,6 @@ void RenderTexture::init(std::unique_ptr<Colorspace> colorspace) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, m_old_fbo);
-
-#ifdef SILICATE_PROTECT
-    VMProtectEnd();
-#endif
 }
 
 bool RenderTexture::capture(uint8_t** data) {

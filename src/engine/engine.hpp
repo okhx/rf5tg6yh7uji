@@ -81,6 +81,10 @@ class GrapeEngine {
    private:
     bool m_hasInitialized = false;
 
+    void prepareStorage();
+    void loadSettings();
+    void loadPreset();
+
     GrapeEngine();
     ~GrapeEngine();
 

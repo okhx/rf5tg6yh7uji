@@ -21,7 +21,7 @@
 #include "physics/gjbasegamelayer.hpp"
 #include "replay/macro.hpp"
 #include "trajectory/trajectory.hpp"
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
 #include "script_engine.hpp"
 #endif
 #ifdef GEODE_IS_WINDOWS
@@ -247,10 +247,7 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
 #ifdef GEODE_IS_ANDROID
     void processCommands(float dt, bool isHalfTick, bool isLastTick) {
         GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick);
-        auto& timeline = GrapeEngine::get()->timeline();
-        if (!timeline.isPaused() || isLastTick) {
-            timeline.portableFrameUpdate(PlayLayer::get(), dt);
-        }
+        GrapeEngine::get()->timeline().portableFrameUpdate(PlayLayer::get(), dt);
     }
 #endif
 
@@ -405,7 +402,7 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
     }
 
     void handleButton(bool pressed, int button, bool player1) {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
         grape::pc::ScriptEngine::get().input(
             player1 ? 1 : 2, button, pressed);
 #endif
@@ -528,7 +525,7 @@ struct GrapeGJBaseGameLayer : Modify<GrapeGJBaseGameLayer, GJBaseGameLayer> {
         } else if (bot->isPlaying()) {
             uint32_t frame = bot->timeline().getFrame();
 
-            if (auto input = bot->macro().getCurrentQueuedInput();
+            if (auto input = bot->macro().peekQueuedInput();
                 input.has_value()) {
                 uint32_t delayInFrames = bot->timeline().m_tps->inner() * 0.5;
 

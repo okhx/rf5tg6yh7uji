@@ -247,7 +247,6 @@ struct SavedPlayerCheckpoint {
     bool m_inputsLocked;
     bool m_gv0123;
     int m_iconRequestID;
-    // cocos2d::CCArray* m_unk958;
     int m_unkUnused;
     bool m_isOutOfBounds;
     float m_fallStartY;

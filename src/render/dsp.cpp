@@ -7,29 +7,28 @@
 #include "engine/engine.hpp"
 #include "renderer.hpp"
 
-#ifdef SL_DEV_MODE
-static int collected = 0;
-static int waiting = 0;
-#endif
-
 FMOD_RESULT F_CALLBACK AudioRecorder::writeCallback(FMOD_DSP_STATE*,
                                                     float* inBuffer,
                                                     float* outBuffer,
                                                     unsigned int length,
-                                                    int inChannels, int*) {
+                                                    int inChannels,
+                                                    int* outChannels) {
     AudioRecorder* recorder = AudioRecorder::get();
 
     if (!recorder->m_shouldUpdateFmod) {
         return FMOD_OK;
     }
 
+    const int outputChannels = outChannels ? *outChannels : inChannels;
     GRAPE_LOG_DEV("length: {}, inChannels: {}, outChannels: {}", length,
-               inChannels, *outChannels);
+                  inChannels, outputChannels);
 
-    recorder->m_lastCollectedLength = length;
-    recorder->haltWithData(inBuffer, length * inChannels);
+    recorder->appendSamples(inBuffer, length * inChannels);
 
-    std::memset(outBuffer, 0, length * inChannels * sizeof(float));
+    if (outBuffer && outputChannels > 0) {
+        std::memset(outBuffer, 0,
+                    length * outputChannels * sizeof(float));
+    }
 
     if (recorder->m_audioPreview->inner() && recorder->m_monSystem) {
         recorder->m_monRing.push(inBuffer, length * inChannels);
@@ -56,47 +55,56 @@ FMOD_RESULT F_CALLBACK AudioRecorder::monitorReadCallback(
     return FMOD_OK;
 }
 
-void AudioRecorder::haltWithData(float* data, unsigned int length) {
+void AudioRecorder::appendSamples(const float* data, size_t length) {
     if (!data || length == 0) return;
-
-    GRAPE_LOG_DEV("Collected data, unpausing... {}", collected++);
 
     m_buffer.insert(m_buffer.end(), data, data + length);
 
     for (size_t i = m_buffer.size() - length; i < m_buffer.size(); i++) {
         m_buffer[i] = std::clamp(m_buffer[i], -1.0f, 1.0f);
     }
-
-    GRAPE_LOG_DEV("Setting collected data to true");
-    m_collectedData = true;
 }
 
-void AudioRecorder::init() {
+bool AudioRecorder::init() {
+    uninit();
+
+    auto* engine = FMODAudioEngine::get();
+    auto* system = engine ? engine->m_system : nullptr;
+    if (!system ||
+        system->getMasterChannelGroup(&m_master) != FMOD_OK || !m_master) {
+        geode::log::error("Cannot initialize renderer audio: no FMOD master");
+        m_master = nullptr;
+        return false;
+    }
+
     FMOD_DSP_DESCRIPTION desc = {};
-    std::strncpy(desc.name, "silly dsp", sizeof(desc.name) - 1);
+    std::strncpy(desc.name, "Grape capture", sizeof(desc.name) - 1);
     desc.version = 0x00020000;
     desc.numinputbuffers = 1;
     desc.numoutputbuffers = 1;
     desc.read = AudioRecorder::writeCallback;
     desc.numparameters = 0;
 
-    auto engine = FMODAudioEngine::get();
-    FMOD::System* system = engine->m_system;
-    system->getMasterChannelGroup(&m_master);
-    system->createDSP(&desc, &m_dsp);
-    system->setDSPBufferSize(1024, 2);
-
+    if (system->createDSP(&desc, &m_dsp) != FMOD_OK || !m_dsp) {
+        geode::log::error("Cannot initialize renderer audio DSP");
+        m_dsp = nullptr;
+        m_master = nullptr;
+        return false;
+    }
+    if (system->setDSPBufferSize(1024, 2) != FMOD_OK) {
+        geode::log::warn("Could not set renderer audio DSP buffer size");
+    }
 
     m_time = 0.0;
-    m_lastPulse = 0.0;
     m_index = 0;
     m_fmodTime = 0.0;
-    m_systemTime = 0.0;
     m_buffer.clear();
+    return true;
 }
 
 bool AudioRecorder::refreshFormat() {
-    auto* system = FMODAudioEngine::get()->m_system;
+    auto* engine = FMODAudioEngine::get();
+    auto* system = engine ? engine->m_system : nullptr;
     if (!system) return false;
 
     int sampleRate = 0;
@@ -120,34 +128,46 @@ bool AudioRecorder::refreshFormat() {
     return true;
 }
 
-void AudioRecorder::attach(double musicVolume, double sfxVolume) {
+bool AudioRecorder::attach(double musicVolume, double sfxVolume) {
+    if (!m_master || !m_dsp) {
+        geode::log::error("Cannot attach renderer audio: DSP is unavailable");
+        return false;
+    }
     if (!refreshFormat()) {
         geode::log::error("Cannot attach renderer audio: invalid FMOD format");
-        return;
+        return false;
     }
 
-    int numDsps;
-    m_master->getNumDSPs(&numDsps);
-    m_master->addDSP(numDsps, m_dsp);
+    auto* engine = FMODAudioEngine::get();
+    if (!engine || !engine->m_system) return false;
+
+    int numDsps = 0;
+    if (m_master->getNumDSPs(&numDsps) != FMOD_OK ||
+        m_master->addDSP(numDsps, m_dsp) != FMOD_OK) {
+        geode::log::error("Cannot attach renderer audio DSP");
+        return false;
+    }
+    m_attached = true;
     m_dsp->setMeteringEnabled(true, false);
 
-    auto engine = FMODAudioEngine::get();
-
     m_previousMusicVolume = engine->getBackgroundMusicVolume();
-
     m_previousSFXVolume = engine->getEffectsVolume();
     m_master->setPaused(false);
     engine->setEffectsVolume(sfxVolume);
     engine->setBackgroundMusicVolume(musicVolume);
 
-    engine->m_system->setOutput(FMOD_OUTPUTTYPE_NOSOUND_NRT);
+    if (engine->m_system->setOutput(FMOD_OUTPUTTYPE_NOSOUND_NRT) != FMOD_OK) {
+        geode::log::error("Cannot attach renderer audio: NRT output failed");
+        detach();
+        return false;
+    }
 
     if (m_audioPreview->inner()) {
         startMonitor();
         m_monVolume.store(m_previousMusicVolume, std::memory_order_relaxed);
     }
 
-    m_attached = true;
+    return true;
 }
 
 void AudioRecorder::startMonitor() {
@@ -211,41 +231,35 @@ void AudioRecorder::stopMonitor() {
 
 void AudioRecorder::detach() {
     stopMonitor();
+    if (!m_attached) return;
 
-    m_master->removeDSP(m_dsp);
-    m_master->setPaused(false);
+    if (m_master && m_dsp) m_master->removeDSP(m_dsp);
+    if (m_master) m_master->setPaused(false);
 
-    auto engine = FMODAudioEngine::get();
-
-    engine->setEffectsVolume(m_previousSFXVolume);
-    engine->setBackgroundMusicVolume(m_previousMusicVolume);
-    engine->m_system->setOutput(FMOD_OUTPUTTYPE_AUTODETECT);
+    auto* engine = FMODAudioEngine::get();
+    if (engine) {
+        engine->setEffectsVolume(m_previousSFXVolume);
+        engine->setBackgroundMusicVolume(m_previousMusicVolume);
+        if (engine->m_system) {
+            engine->m_system->setOutput(FMOD_OUTPUTTYPE_AUTODETECT);
+        }
+    }
 
     m_attached = false;
 }
 
-void AudioRecorder::wait() {
-    std::unique_lock lock(m_lock);
-    m_cv.wait(lock, [this] { return m_collectedData; });
-}
-
-void AudioRecorder::proceed() {
-    std::lock_guard lock(m_lock);
-
-    m_collectedData = false;
-    m_master->setPaused(false);
-    m_cv.notify_one();
-}
-
-void AudioRecorder::uninit() { m_dsp->release(); }
-
-float AudioRecorder::calculateTime() {
-    if (m_sampleRate <= 0 || m_channels <= 0) return 0.0f;
-    return static_cast<float>(m_buffer.size()) /
-           static_cast<float>(m_sampleRate * m_channels);
+void AudioRecorder::uninit() {
+    detach();
+    if (m_dsp) {
+        m_dsp->release();
+        m_dsp = nullptr;
+    }
+    m_master = nullptr;
 }
 
 void AudioRecorder::unpause() {
+    if (!m_attached) return;
+
     auto renderer = Renderer::get();
     auto engine = FMODAudioEngine::get();
 
@@ -256,12 +270,4 @@ void AudioRecorder::unpause() {
     if (m_monSystem) {
         m_monSystem->update();
     }
-}
-
-std::vector<float> AudioRecorder::getBuffer() {
-    std::unique_lock lock(m_lock);
-
-    m_cv.wait(lock, [this] { return m_collectedData; });
-
-    return m_buffer;
 }

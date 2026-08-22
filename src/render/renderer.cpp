@@ -405,9 +405,15 @@ geode::Result<> Renderer::startMobile() {
 
 #ifdef GEODE_IS_IOS
     if (m_collectAudio) {
-        AudioRecorder::get()->init();
-        AudioRecorder::get()->attach(m_settings.m_musicVolume,
-                                     m_settings.m_sfxVolume);
+        auto* audio = AudioRecorder::get();
+        if (!audio->init() ||
+            !audio->attach(m_settings.m_musicVolume,
+                           m_settings.m_sfxVolume)) {
+            audio->uninit();
+            m_iosWriter.reset();
+            stopMobile();
+            return geode::Err("Failed to initialize renderer audio");
+        }
     }
 #endif
     m_mobileNextFrameTime = 0.0;
@@ -719,7 +725,7 @@ void Renderer::loadSettings(fs::path& path) {
         return;
     }
 
-    auto& settings = m_settings;
+    auto settings = m_settings;
     auto ec = glz::read_file_json(
         settings, geode::utils::string::pathToString(path), std::string{});
     if (ec) {
@@ -728,8 +734,10 @@ void Renderer::loadSettings(fs::path& path) {
         return;
     }
 
+    m_settings = std::move(settings);
 #ifndef GEODE_IS_ANDROID
-    GrapeEngine::get()->ui().m_state.m_bitrate = settings.m_bitrate / 1000000.0;
+    GrapeEngine::get()->ui().m_state.m_bitrate =
+        m_settings.m_bitrate / 1000000.0;
 #endif
     GrapeSettings::get()->lastLoadedPreset = path.stem().string();
 }
@@ -787,6 +795,30 @@ static void resizeShaderLayer(CCSize size, CCSize original) {
     geode::log::info("State texture scale: {}", sh->m_scaleFactor);
     geode::log::info("m_state.m_textureScaleX={}", sh->m_state.m_textureScaleX);
     geode::log::info("m_state.m_textureScaleY={}", sh->m_state.m_textureScaleY);
+}
+
+void Renderer::discardDesktopStart() {
+    AudioRecorder::get()->uninit();
+    m_recording = false;
+    m_frame.reset();
+    m_audioFrame.reset();
+    m_pkt.reset();
+    m_audioPkt.reset();
+    m_videoCodecCtx.reset();
+    m_audioCodecCtx.reset();
+    if (m_swrCtx) ff->swr_free(&m_swrCtx);
+    if (m_formatCtx) {
+        if (m_formatCtx->pb) {
+            ff->avio_close(m_formatCtx->pb);
+            m_formatCtx->pb = nullptr;
+        }
+        ff->avformat_free_context(m_formatCtx);
+        m_formatCtx = nullptr;
+    }
+    m_videoStream = nullptr;
+    m_audioStream = nullptr;
+    m_videoCodec = nullptr;
+    m_audioCodec = nullptr;
 }
 
 geode::Result<> Renderer::start() {
@@ -849,34 +881,29 @@ geode::Result<> Renderer::start() {
         grape::paths::directory("videos") /
         std::filesystem::path(fileName));
 
-    if (m_formatCtx) {
-        ff->avformat_free_context(m_formatCtx);
-        m_formatCtx = nullptr;
-    }
+    discardDesktopStart();
+    const auto fail = [this, &outPath](std::string message) -> geode::Result<> {
+        discardDesktopStart();
+        std::error_code ignored;
+        std::filesystem::remove(outPath, ignored);
+        return geode::Err(std::move(message));
+    };
 
     {
         ff->avformat_alloc_output_context2(&m_formatCtx, nullptr, nullptr,
                                            outPath.c_str());
     }
-    if (!m_formatCtx) {
-        return geode::Err("Failed to allocate output context");
-    }
+    if (!m_formatCtx) return fail("Failed to allocate output context");
 
     m_videoCodec = ff->avcodec_find_encoder_by_name(m_settings.m_codec.c_str());
-    if (!m_videoCodec) {
-        return geode::Err("Failed to find codec");
-    }
+    if (!m_videoCodec) return fail("Failed to find codec");
 
     m_audioCodec =
         ff->avcodec_find_encoder_by_name(m_settings.m_audioCodec.c_str());
-    if (!m_audioCodec) {
-        return geode::Err("Failed to find audio codec");
-    }
+    if (!m_audioCodec) return fail("Failed to find audio codec");
 
     m_videoCodecCtx.reset(ff->avcodec_alloc_context3(m_videoCodec));
-    if (!m_videoCodecCtx) {
-        return geode::Err("Failed to allocate codec context");
-    }
+    if (!m_videoCodecCtx) return fail("Failed to allocate codec context");
 
     AVPixelFormat* outPixFmts;
     int outPixFmtCount;
@@ -885,7 +912,7 @@ geode::Result<> Renderer::start() {
     if (ff->avcodec_get_supported_config(
             m_videoCodecCtx.get(), m_videoCodec, AV_CODEC_CONFIG_PIX_FORMAT, 0,
             (const void**)&outPixFmts, &outPixFmtCount) < 0) {
-        return geode::Err("Failed to query codec pix fmt capabilities");
+        return fail("Failed to query codec pix fmt capabilities");
     }
 
     std::unique_ptr<Colorspace> colorspace;
@@ -928,9 +955,9 @@ geode::Result<> Renderer::start() {
     }
 
     if (m_settings.m_pixFmt == AV_PIX_FMT_NONE) {
-        return geode::Err(
+        return fail(fmt::format(
             "couldn't find a proper pixel format to use for codec {}",
-            m_settings.m_codec);
+            m_settings.m_codec));
     }
 
     m_videoCodecCtx->codec_id = m_videoCodec->id;
@@ -967,15 +994,15 @@ geode::Result<> Renderer::start() {
     }
 
     geode::log::info("Opening video codec `{}`...", m_settings.m_codec);
-    if (ff->avcodec_open2(m_videoCodecCtx.get(), m_videoCodec, &video_opts) <
-        0) {
-        return geode::Err("Failed to open codec");
-    }
+    const int videoOpen =
+        ff->avcodec_open2(m_videoCodecCtx.get(), m_videoCodec, &video_opts);
+    ff->av_dict_free(&video_opts);
+    if (videoOpen < 0) return fail("Failed to open codec");
 
     geode::log::info("Allocating audio context...");
     m_audioCodecCtx.reset(ff->avcodec_alloc_context3(m_audioCodec));
-    if (!m_audioCodecCtx.get()) {
-        return geode::Err("Failed to allocate audio codec context");
+    if (!m_audioCodecCtx) {
+        return fail("Failed to allocate audio codec context");
     }
 
     m_audioCodecCtx->codec_tag = 0;
@@ -996,76 +1023,62 @@ geode::Result<> Renderer::start() {
     ff->av_dict_set(&opts, "compression_level", "0", 0);
 
     geode::log::info("Opening audio codec `{}`...", m_settings.m_audioCodec);
-    if (ff->avcodec_open2(m_audioCodecCtx.get(), m_audioCodec, &opts) < 0) {
-        return geode::Err("Failed to open audio codec");
-    }
-
-    geode::log::info("Trying to free opts...");
+    const int audioOpen =
+        ff->avcodec_open2(m_audioCodecCtx.get(), m_audioCodec, &opts);
     ff->av_dict_free(&opts);
+    if (audioOpen < 0) return fail("Failed to open audio codec");
 
     geode::log::info("Creating video stream...");
     m_videoStream = ff->avformat_new_stream(m_formatCtx, m_videoCodec);
-    if (!m_videoStream) {
-        return geode::Err("Failed to create stream");
-    }
+    if (!m_videoStream) return fail("Failed to create stream");
 
     if (ff->avcodec_parameters_from_context(m_videoStream->codecpar,
                                             m_videoCodecCtx.get()) < 0) {
-        return geode::Err("Failed to copy codec parameters");
+        return fail("Failed to copy codec parameters");
     }
 
     geode::log::info("Creating audio stream...");
     m_audioStream = ff->avformat_new_stream(m_formatCtx, m_audioCodec);
-    if (!m_audioStream) {
-        return geode::Err("Failed to create audio stream");
-    }
+    if (!m_audioStream) return fail("Failed to create audio stream");
 
     if (ff->avcodec_parameters_from_context(m_audioStream->codecpar,
                                             m_audioCodecCtx.get()) < 0) {
-        return geode::Err("Failed to copy audio codec parameters");
+        return fail("Failed to copy audio codec parameters");
     }
 
     m_audioStream->time_base = m_audioCodecCtx->time_base;
 
     if (ff->avio_open(&m_formatCtx->pb, outPath.c_str(), AVIO_FLAG_WRITE) < 0) {
-        return geode::Err("Failed to open output file");
+        return fail("Failed to open output file");
     }
 
     if (ff->avformat_write_header(m_formatCtx, nullptr) < 0) {
-        return geode::Err("Failed to write header");
+        return fail("Failed to write header");
     }
 
     m_frame.reset(ff->av_frame_alloc());
-    if (!m_frame) {
-        return geode::Err("Failed to allocate frame");
-    }
+    if (!m_frame) return fail("Failed to allocate frame");
 
     m_frame->format = m_settings.m_pixFmt;
     m_frame->width = m_settings.m_width;
     m_frame->height = m_settings.m_height;
 
     m_audioFrame.reset(ff->av_frame_alloc());
-    if (!m_audioFrame) {
-        return geode::Err("Failed to allocate audio frame");
-    }
+    if (!m_audioFrame) return fail("Failed to allocate audio frame");
 
     m_audioFrame->nb_samples = m_audioCodecCtx->frame_size;
     m_audioFrame->sample_rate = m_audioCodecCtx->sample_rate;
     m_audioFrame->format = m_audioCodecCtx->sample_fmt;
     m_audioFrame->ch_layout = m_audioCodecCtx->ch_layout;
     if (ff->av_frame_get_buffer(m_audioFrame.get(), 0) < 0) {
-        return geode::Err("Failed to get audio frame buffer");
+        return fail("Failed to get audio frame buffer");
     }
 
     m_pkt.reset(ff->av_packet_alloc());
-    if (!m_pkt) {
-        return geode::Err("Failed to allocate packet");
-    }
+    if (!m_pkt) return fail("Failed to allocate packet");
 
     m_audioPkt.reset(ff->av_packet_alloc());
-    if (!m_audioPkt) {
-        return geode::Err("Failed to allocate packet (audio)");
-    }
+    if (!m_audioPkt) return fail("Failed to allocate packet (audio)");
 
     m_time = 0.0;
     m_endTime = 0.0;
@@ -1106,9 +1119,18 @@ geode::Result<> Renderer::start() {
 
     m_audioStream->time_base = m_audioCodecCtx->time_base;
 
-    AudioRecorder::get()->init();
-    AudioRecorder::get()->attach(m_settings.m_musicVolume,
-                                 m_settings.m_sfxVolume);
+    auto* audio = AudioRecorder::get();
+    if (!audio->init() ||
+        !audio->attach(m_settings.m_musicVolume,
+                       m_settings.m_sfxVolume)) {
+        audio->uninit();
+        auto cleanup = stop();
+        if (cleanup.isErr()) {
+            geode::log::error("Audio startup cleanup failed: {}",
+                              cleanup.unwrapErr());
+        }
+        return geode::Err("Failed to initialize renderer audio");
+    }
 
     m_recordThread = std::thread(&Renderer::recordLoop, this);
 
@@ -1274,9 +1296,9 @@ geode::Result<> Renderer::writeAudio(std::vector<float>& data, uint64_t pts) {
 geode::Result<> Renderer::stop() {
     m_recording = false;
     geode::log::info("Detaching audio and stopping all streams...");
-    AudioRecorder::get()->detach();
     AudioRecorder::get()->uninit();
 
+    std::string error;
     if (m_pkt && m_videoCodecCtx && m_formatCtx && m_videoStream) {
         ff->avcodec_send_frame(m_videoCodecCtx.get(), nullptr);
         while (ff->avcodec_receive_packet(m_videoCodecCtx.get(), m_pkt.get()) ==
@@ -1284,12 +1306,10 @@ geode::Result<> Renderer::stop() {
             ff->av_packet_rescale_ts(m_pkt.get(), m_videoCodecCtx->time_base,
                                      m_videoStream->time_base);
             m_pkt->stream_index = m_videoStream->index;
-
-            int ret = ff->av_interleaved_write_frame(m_formatCtx, m_pkt.get());
-            if (ret < 0) {
-                return geode::Err("Failed to write frame");
+            if (ff->av_interleaved_write_frame(m_formatCtx, m_pkt.get()) < 0) {
+                error = "Failed to write final video frame";
+                break;
             }
-
             ff->av_packet_unref(m_pkt.get());
         }
     }
@@ -1302,42 +1322,31 @@ geode::Result<> Renderer::stop() {
                                      m_audioCodecCtx->time_base,
                                      m_audioStream->time_base);
             m_audioPkt->stream_index = m_audioStream->index;
-
-            int ret =
-                ff->av_interleaved_write_frame(m_formatCtx, m_audioPkt.get());
-            if (ret < 0) {
-                return geode::Err("Failed to write frame");
+            if (ff->av_interleaved_write_frame(m_formatCtx,
+                                               m_audioPkt.get()) < 0) {
+                if (error.empty()) error = "Failed to write final audio frame";
+                break;
             }
-
             ff->av_packet_unref(m_audioPkt.get());
         }
     }
 
-    int ret = ff->av_write_trailer(m_formatCtx);
-    if (ret < 0) {
-        return geode::Err("Failed to write trailer");
+    if (m_formatCtx && ff->av_write_trailer(m_formatCtx) < 0 && error.empty()) {
+        error = "Failed to write trailer";
     }
 
     m_halting = false;
     m_collected = false;
-
     geode::log::info("Rendering has stopped. Cleaning up");
 
-    if (m_frame) {
-        m_frame->data[0] = nullptr;
-        m_frame->data[1] = nullptr;
+    if (m_texture.m_colorspace) {
+        m_texture.destroy();
+        m_texture.m_colorspace.reset();
+        m_texture.m_passes.clear();
     }
+    discardDesktopStart();
 
-    ff->avio_close(m_formatCtx->pb);
-    ff->swr_free(&m_swrCtx);
-
-    ff->avformat_free_context(m_formatCtx);
-    m_formatCtx = nullptr;
-    m_videoStream = nullptr;
-    m_audioStream = nullptr;
-
-    m_texture.destroy();
-
+    if (!error.empty()) return geode::Err(std::move(error));
     return geode::Ok();
 }
 
@@ -1416,7 +1425,7 @@ void Renderer::update(PlayLayer* pl) {
     m_time = ++m_updateIndex * this->getDt();
 
     if (pl->m_hasCompletedLevel &&
-        !GrapeEngine::get()->macro().getNextQueuedInput().has_value()) {
+        !GrapeEngine::get()->macro().peekQueuedInput().has_value()) {
         if (this->m_endTime >= this->m_settings.m_afterEndTime) {
             this->signalStop();
             return;

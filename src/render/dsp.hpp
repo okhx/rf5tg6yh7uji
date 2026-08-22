@@ -4,9 +4,6 @@
 #include <Geode/Geode.hpp>
 #include <algorithm>
 #include <atomic>
-#include <condition_variable>
-#include <functional>
-#include <mutex>
 #include <vector>
 
 #include "config/config.hpp"
@@ -63,23 +60,14 @@ class AudioRecorder {
         return &instance;
     }
 
-    void init();
+    bool init();
     bool refreshFormat();
-    void attach(double musicVolume, double sfxVolume);
+    bool attach(double musicVolume, double sfxVolume);
     void detach();
     void uninit();
 
-    void wait();
-    void proceed();
-
-    float calculateTime();
-    void haltWithData(float* data, unsigned int length);
-    void gatherOne();
-
+    void appendSamples(const float* data, size_t length);
     void unpause();
-
-    std::vector<float> getBuffer();
-    std::vector<float> collectData(double videoTime);
 
     void startMonitor();
     void stopMonitor();
@@ -95,41 +83,20 @@ class AudioRecorder {
     ConfigValuePtr<bool> m_audioPreview = ConfigValue<bool>::create(
         "audio.preview", &GrapeSettings::get()->previewAudio);
     bool m_attached = false;
-    bool m_collectedData = false;
-    std::mutex m_lock;
-    std::condition_variable m_cv;
 
-    FMOD::ChannelGroup* m_master;
+    FMOD::ChannelGroup* m_master = nullptr;
 
-    float m_pulse1 = 0.0;
-    float m_pulse2 = 0.0;
-    float m_pulse3 = 0.0;
-    float m_pulseCounter = 0.0;
-
-    float m_lastPulse = 0.0;
-    bool m_collectPulses = false;
     std::atomic_bool m_shouldUpdateFmod = false;
 
-    double m_systemTime = 0.0;
     double m_fmodTime = 0.0;
     double m_time = 0.0;
     uint32_t m_index = 0;
     int m_sampleRate = 0;
     int m_channels = 0;
-    size_t m_lastCollectedLength = 0;
-
     std::vector<float> m_buffer;
 
-    struct FmodQueuedFn {
-        float time;
-        std::function<void()> fn;
-    };
-
-    std::vector<FmodQueuedFn> m_queuedFmod;
-
    private:
-    FMOD::DSP* m_dsp;
-    size_t m_lastBufferSize = 0;
+    FMOD::DSP* m_dsp = nullptr;
 
     float m_previousMusicVolume = 0.0;
     float m_previousSFXVolume = 0.0;

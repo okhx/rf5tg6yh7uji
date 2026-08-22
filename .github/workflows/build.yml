@@ -8,7 +8,22 @@ on:
       - master
 
 jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Run standalone tests
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/stephenberry/glaze.git /tmp/glaze
+          git -C /tmp/glaze checkout 3bfd53e70db09247f3726a65abd7c7c2414a1601
+          g++ -std=c++23 -Wall -Wextra -pedantic -Isrc tests/atomic_file.cpp -o /tmp/atomic-file-test
+          g++ -std=c++23 -Wall -Wextra -pedantic -Isrc -I/tmp/glaze/include tests/keybind.cpp -o /tmp/keybind-test
+          /tmp/atomic-file-test
+          /tmp/keybind-test
+
   build:
+    needs: unit-tests
     strategy:
       fail-fast: false
       matrix:
@@ -30,13 +45,13 @@ jobs:
     runs-on: ${{ matrix.config.os }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
     - name: Build Mod
-      uses: geode-sdk/build-geode-mod@main
+      uses: geode-sdk/build-geode-mod@963ac394ad1773b6ea5b0f96aade52a44c6a4770
       with:
         bindings: geode-sdk/bindings
-        bindings-ref: main
+        bindings-ref: 7f6c2a75742856de88dad354e576dcff8a28e881
         combine: true
         target: ${{ matrix.config.target }}
 
@@ -46,10 +61,10 @@ jobs:
     needs: build
 
     steps:
-      - uses: geode-sdk/build-geode-mod/combine@main
+      - uses: geode-sdk/build-geode-mod/combine@963ac394ad1773b6ea5b0f96aade52a44c6a4770
         id: build
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Mod Output
           path: ${{ steps.build.outputs.build-output }}

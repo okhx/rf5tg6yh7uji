@@ -11,9 +11,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /FS")
 
 project(grape VERSION 1.0.1)
+include(CTest)
 
-if (WIN32 AND NOT GRAPE_PRIVATE_PC)
-    message(FATAL_ERROR "Windows sources are private. Configure from the pc directory.")
+if (WIN32 AND NOT GRAPE_PC)
+    message(FATAL_ERROR "Configure Windows builds from the pc directory.")
 endif()
 
 if (GEODE_TARGET_PLATFORM STREQUAL "iOS")
@@ -58,7 +59,6 @@ add_library(${PROJECT_NAME} SHARED
     src/hooks/ShaderLayer.cpp
     src/ui/mobile_menu.cpp
 
-    src/replay/replay.cpp
     src/replay/macro.cpp
 
     src/physics/collisions.cpp
@@ -120,27 +120,18 @@ if (WIN32)
         ${IMGUI_VENDOR_DIR}/backends/imgui_impl_win32.cpp
         src/util/midhook.cpp
     )
-    if (GRAPE_PRIVATE_PC)
-        if (NOT GRAPE_LICENSE_URL)
-            message(FATAL_ERROR "Set GRAPE_LICENSE_URL to the invitation server")
-        endif()
-        if (NOT GRAPE_LICENSE_URL MATCHES "^https://")
-            message(FATAL_ERROR "GRAPE_LICENSE_URL must use HTTPS")
-        endif()
+    if (GRAPE_PC)
         target_sources(${PROJECT_NAME} PRIVATE
-            ${GRAPE_PRIVATE_PC_DIR}/src/license.cpp
-            ${GRAPE_PRIVATE_PC_DIR}/src/imgui_menu.cpp
-            ${GRAPE_PRIVATE_PC_DIR}/src/skeet_menu.cpp
-            ${GRAPE_PRIVATE_PC_DIR}/src/skrt_ui.cpp
+            ${GRAPE_PC_DIR}/src/imgui_menu.cpp
+            ${GRAPE_PC_DIR}/src/skeet_menu.cpp
+            ${GRAPE_PC_DIR}/src/skrt_ui.cpp
         )
         target_include_directories(${PROJECT_NAME} PRIVATE
-            ${GRAPE_PRIVATE_PC_DIR}/src
+            ${GRAPE_PC_DIR}/src
         )
         target_compile_definitions(${PROJECT_NAME} PRIVATE
-            GRAPE_PRIVATE_PC=1
-            GRAPE_LICENSE_URL="${GRAPE_LICENSE_URL}"
+            GRAPE_PC=1
         )
-        target_link_libraries(${PROJECT_NAME} bcrypt advapi32)
         set_property(TARGET ${PROJECT_NAME} PROPERTY
             INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
         target_compile_options(${PROJECT_NAME} PRIVATE
@@ -199,14 +190,16 @@ CPMAddPackage("gh:stephenberry/glaze#3bfd53e70db09247f3726a65abd7c7c2414a1601")
 target_link_libraries(${PROJECT_NAME} glaze::glaze)
 
 if (WIN32)
-    CPMAddPackage("gh:zyantific/zydis#bffbb61")
+    CPMAddPackage("gh:zyantific/zydis#bffbb610cfea643b98e87658b9058382f7522807")
     target_link_libraries(${PROJECT_NAME} Zydis)
 
-    CPMAddPackage("gh:cursey/safetyhook#main")
+    CPMAddPackage("gh:cursey/safetyhook#f44cc070a8340f2f26649553c49533475417304d")
     target_link_libraries(${PROJECT_NAME} safetyhook)
 endif()
 
-CPMAddPackage("gh:peonii/slc#main")
+add_library(libslc INTERFACE)
+target_include_directories(libslc INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/slc/include)
 
 if (WIN32)
     target_link_libraries(${PROJECT_NAME} libslc dbghelp)
@@ -237,4 +230,15 @@ if (APPLE)
         PROPERTIES COMPILE_OPTIONS
         "-Wno-error=unused-variable;-Wno-error=unused-parameter"
     )
+endif()
+
+if (BUILD_TESTING AND NOT ANDROID AND NOT APPLE)
+    add_executable(grape_atomic_file_test tests/atomic_file.cpp)
+    target_include_directories(grape_atomic_file_test PRIVATE src)
+    add_test(NAME grape.atomic_file COMMAND grape_atomic_file_test)
+
+    add_executable(grape_keybind_test tests/keybind.cpp)
+    target_include_directories(grape_keybind_test PRIVATE src)
+    target_link_libraries(grape_keybind_test PRIVATE glaze::glaze)
+    add_test(NAME grape.keybind COMMAND grape_keybind_test)
 endif()

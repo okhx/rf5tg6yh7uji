@@ -92,14 +92,6 @@ class Label {
         m_display = display;
         m_config = cfg;
     }
-    // Label(RawLabel raw) {
-    //     m_id = raw.m_id;
-    //     m_font = raw.m_font;
-    //     m_anchor = static_cast<LabelAnchor>(raw.m_anchor);
-    //     m_display = raw.m_display;
-    //     m_tag = g_labelTag++;
-    // }
-
     CCNode* get();
 
     void calculatePosition(float& currentHeight, CCNode* label);

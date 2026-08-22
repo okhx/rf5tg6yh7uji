@@ -20,15 +20,8 @@
 #include "ui/manager.hpp"
 #endif
 #include "timeline.hpp"
-#ifdef GRAPE_PRIVATE_PC
-#include "license.hpp"
-#endif
 #ifdef GEODE_IS_MOBILE
 #include "ui/touch_overlay.hpp"
-#endif
-
-#ifdef SILICATE_PROTECT
-#include "VMProtect/VMProtectSDK.h"
 #endif
 
 using namespace geode::prelude;
@@ -93,46 +86,13 @@ void GrapeEngine::setMode(Mode mode) {
     }
 }
 
-void GrapeEngine::initialize() {
-#ifdef SILICATE_PROTECT
-    VMProtectBegin("BotInitialize");
-
-    if (!VMProtectIsProtected()) {
-        MessageBoxA(NULL, "IMPORTANT NOTICE",
-                    "You're running an unprotected version of Grape. Be "
-                    "careful about sharing this file with other users.",
-                    1);
-    }
-
-    VMProtectEnd();
-#endif
-    namespace fs = std::filesystem;
-
-    fs::path dir = grape::paths::dataRoot();
-
-    fs::create_directories(dir / "replays");
-    fs::create_directories(dir / "videos");
-    fs::create_directories(dir / "logs");
-    fs::create_directories(dir / "presets");
-    fs::create_directories(dir / "scripts");
-    fs::create_directories(dir / "backups");
-    fs::create_directories(dir / "libraries");
-    fs::create_directories(dir / "fonts");
-
-    geode::Mod* cbf =
-        Loader::get()->getInstalledMod("syzzi.click_between_frames");
-    if (cbf) {
-        cbf->setSettingValue("soft-toggle", true);
-        cbf->setSettingValue("physics-bypass", false);
-    }
-
-    std::filesystem::path settingsPath =
-        grape::paths::file("settings.json");
+void GrapeEngine::loadSettings() {
+    const auto settingsPath = grape::paths::file("settings.json");
     auto& settings = *GrapeSettings::get();
-    auto ec =
-        glz::read_file_json(settings, settingsPath.string(), std::string{});
-    if (ec) {
-        geode::log::error("Failed to read settings");
+    if (auto error = glz::read_file_json(
+            settings, settingsPath.string(), std::string{})) {
+        geode::log::error("Failed to read settings: {}",
+                          glz::format_error(error, std::string{}));
     }
 
     settings.stepsToSave = std::max<uint32_t>(2, settings.stepsToSave);
@@ -148,49 +108,85 @@ void GrapeEngine::initialize() {
         std::max(1, settings.autoclickerHoldFrames);
     settings.autoclickerReleaseFrames =
         std::max(1, settings.autoclickerReleaseFrames);
-    this->autoclicker().m_holdFrames = settings.autoclickerHoldFrames;
-    this->autoclicker().m_releaseFrames = settings.autoclickerReleaseFrames;
-    this->autoclicker().m_performSwifts = settings.autoclickerSwifts;
-    this->autoclicker().m_movingGap = settings.autoclickerMovingGap;
-    this->autoclicker().m_movingGapLookahead = std::clamp(
-        settings.autoclickerMovingGapLookahead, 1, 30);
-    this->autoclicker().m_player = static_cast<Autoclicker::PlayerToggle>(
-        std::clamp(settings.autoclickerPlayer, 0, 2));
-    this->pathfinder().m_proportional = settings.autoclickerProportional;
-    this->pathfinder().m_holdPct = settings.autoclickerHoldPct;
-    this->pathfinder().m_releasePct = settings.autoclickerReleasePct;
-    this->pathfinder().m_swiftPct = settings.autoclickerSwiftPct;
-    this->pathfinder().m_cycleFrames =
-        std::max(2, settings.autoclickerCycleFrames);
-    this->pathfinder().m_stuckDeaths =
-        std::max(1, settings.pathfinderStuckDeaths);
-    this->timeline().m_noclipType = static_cast<FrameEngine::NoclipType>(
-        std::clamp(settings.noclipPlayer, 0, 2));
 
+    auto& clicker = autoclicker();
+    clicker.m_holdFrames = settings.autoclickerHoldFrames;
+    clicker.m_releaseFrames = settings.autoclickerReleaseFrames;
+    clicker.m_performSwifts = settings.autoclickerSwifts;
+    clicker.m_movingGap = settings.autoclickerMovingGap;
+    clicker.m_movingGapLookahead = std::clamp(
+        settings.autoclickerMovingGapLookahead, 1, 30);
+    clicker.m_player = static_cast<Autoclicker::PlayerToggle>(
+        std::clamp(settings.autoclickerPlayer, 0, 2));
+
+    auto& finder = pathfinder();
+    finder.m_proportional = settings.autoclickerProportional;
+    finder.m_holdPct = settings.autoclickerHoldPct;
+    finder.m_releasePct = settings.autoclickerReleasePct;
+    finder.m_swiftPct = settings.autoclickerSwiftPct;
+    finder.m_cycleFrames = std::max(2, settings.autoclickerCycleFrames);
+    finder.m_stuckDeaths = std::max(1, settings.pathfinderStuckDeaths);
+
+    timeline().m_noclipType = static_cast<FrameEngine::NoclipType>(
+        std::clamp(settings.noclipPlayer, 0, 2));
 #ifdef GEODE_IS_MOBILE
     settings.useAlternateHook = true;
 #endif
 
-    std::filesystem::path keybindsPath =
-        grape::paths::file("keybinds.json");
-    BindingManager::get()->readFromFile(keybindsPath);
+    BindingManager::get()->readFromFile(
+        grape::paths::file("keybinds.json"));
+}
 
-    if (settings.lastLoadedPreset != "") {
-        auto presetPath = grape::paths::directory("presets") /
-                          std::string(settings.lastLoadedPreset + ".json");
-        if (std::filesystem::exists(presetPath)) {
-            geode::log::info("Loading preset {}", settings.lastLoadedPreset);
-            Renderer::get()->loadSettings(presetPath);
-#ifndef GEODE_IS_ANDROID
-            GrapeEngine::get()->ui().m_state.m_presetName = settings.lastLoadedPreset;
-#endif
-        } else {
-            geode::log::error("Preset {} does not exist",
-                              settings.lastLoadedPreset);
-        }
-    } else {
-        Renderer::get()->initializeDefaults();
+void GrapeEngine::loadPreset() {
+    auto* renderer = Renderer::get();
+    renderer->initializeDefaults();
+
+    auto& settings = *GrapeSettings::get();
+    if (settings.lastLoadedPreset.empty()) return;
+
+    auto presetPath = grape::paths::directory("presets") /
+        (settings.lastLoadedPreset + ".json");
+    if (!std::filesystem::exists(presetPath)) {
+        geode::log::error("Preset {} does not exist",
+                          settings.lastLoadedPreset);
+        return;
     }
+
+    geode::log::info("Loading preset {}", settings.lastLoadedPreset);
+    renderer->loadSettings(presetPath);
+#ifndef GEODE_IS_ANDROID
+    ui().m_state.m_presetName = settings.lastLoadedPreset;
+#endif
+}
+
+void GrapeEngine::prepareStorage() {
+    const auto& root = grape::paths::dataRoot();
+    static constexpr std::array directories = {
+        "replays", "videos", "logs", "presets", "scripts",
+        "backups", "libraries", "fonts"};
+
+    for (const auto* name : directories) {
+        std::error_code error;
+        std::filesystem::create_directories(root / name, error);
+        if (error) {
+            geode::log::error("Could not create {}/{}: {}", root, name,
+                              error.message());
+        }
+    }
+}
+
+void GrapeEngine::initialize() {
+    prepareStorage();
+
+    geode::Mod* cbf =
+        Loader::get()->getInstalledMod("syzzi.click_between_frames");
+    if (cbf) {
+        cbf->setSettingValue("soft-toggle", true);
+        cbf->setSettingValue("physics-bypass", false);
+    }
+
+    loadSettings();
+    loadPreset();
 
     m_enabled->handle([&](bool& enabled) {
 #ifdef GEODE_IS_MOBILE
@@ -292,9 +288,5 @@ void GrapeEngine::initialize() {
 }
 
 bool GrapeEngine::isEnabled() {
-#ifdef GRAPE_PRIVATE_PC
-    return m_enabled->inner() && grape::pc::License::get().authorized();
-#else
     return m_enabled->inner();
-#endif
 }

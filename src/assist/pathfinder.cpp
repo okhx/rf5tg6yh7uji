@@ -1,5 +1,6 @@
 #include "pathfinder.hpp"
 
+#include "assist/nearby_objects.hpp"
 #include "checkpoint/fix.hpp"
 #include "engine/engine.hpp"
 #include "engine/timeline.hpp"
@@ -34,41 +35,6 @@ constexpr bool shouldJump(float hazard, float block, float hazardWindow,
 static_assert(shouldJump(7.0f, 100.0f, 8.0f, 60.0f));
 static_assert(shouldJump(100.0f, 50.0f, 8.0f, 60.0f));
 static_assert(!shouldJump(9.0f, 61.0f, 8.0f, 60.0f));
-
-// Walk the level's loaded section grid and hand every live nearby object to the
-// callback -- this is how we "see all the hitboxes" around the player. Mirrors
-// the scan the moving-gap assist already uses.
-template <class Callback>
-void visitNearbyObjects(PlayLayer* layer, Callback&& callback) {
-    const int left = std::max(0, layer->m_leftSectionIndex);
-    const int right = std::min(
-        layer->m_rightSectionIndex,
-        static_cast<int>(layer->m_sections.size()) - 1);
-    for (int x = left; x <= right; ++x) {
-        auto* column = layer->m_sections[x];
-        if (!column || static_cast<size_t>(x) >= layer->m_sectionSizes.size() ||
-            !layer->m_sectionSizes[x])
-            continue;
-        const int bottom = std::max(0, layer->m_bottomSectionIndex);
-        const int top = std::min({
-            layer->m_topSectionIndex,
-            static_cast<int>(column->size()) - 1,
-            static_cast<int>(layer->m_sectionSizes[x]->size()) - 1});
-        for (int y = bottom; y <= top; ++y) {
-            auto* section = column->at(y);
-            if (!section) continue;
-            const int count = std::min(
-                layer->m_sectionSizes[x]->at(y),
-                static_cast<int>(section->size()));
-            for (int i = 0; i < count; ++i) {
-                auto* object = section->at(i);
-                if (object && !object->m_isDisabled &&
-                    !object->m_isGroupDisabled)
-                    callback(object);
-            }
-        }
-    }
-}
 
 bool isRing(GameObjectType type) {
     return type == GameObjectType::CustomRing ||
@@ -106,7 +72,7 @@ NearbyObjects inspectNearby(PlayLayer* pl, PlayerObject* player) {
     const float horizontalSpeed =
         FrameEngine::playerSpeedUnits(player->m_playerSpeed);
     const float emergencyAhead = horizontalSpeed * .06f + 12.0f;
-    visitNearbyObjects(pl, [&](GameObject* object) {
+    grape::assist::forEachNearbyObject(pl, [&](GameObject* object) {
         const auto type = object->m_objectType;
         const auto rect = object->getObjectRect();
         const float ahead = dir > 0 ? rect.getMinX() - playerRect.getMaxX()

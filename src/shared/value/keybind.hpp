@@ -1,8 +1,13 @@
 #pragma once
 
 #include <glaze/glaze.hpp>
+#include <algorithm>
+#include <concepts>
 #include <memory>
 #include <sstream>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 enum class KeybindType { Hold = 0, Toggle, Override };
 
@@ -14,6 +19,52 @@ struct RawKeybind {
     KeybindType m_type;
     bool m_active = true;
     std::string m_value;
+};
+
+namespace grape::keybinds {
+inline constexpr int SHIFT = 0b001;
+inline constexpr int CTRL = 0b010;
+inline constexpr int ALT = 0b100;
+inline constexpr int FRAME_ADVANCE_KEY = 'C';
+inline constexpr int ADVANCE_ONE_KEY = 'V';
+
+inline constexpr int modifierMask(bool ctrl, bool shift, bool alt) {
+    return (ctrl ? CTRL : 0) | (shift ? SHIFT : 0) | (alt ? ALT : 0);
+}
+
+inline constexpr int normalizeModifiers(int key, int modifiers) {
+    if (key == 0x11) modifiers &= ~CTRL;
+    if (key == 0x10) modifiers &= ~SHIFT;
+    if (key == 0x12) modifiers &= ~ALT;
+    return modifiers;
+}
+
+inline void migrateLegacy(RawKeybind& keybind) {
+    if (keybind.m_key == 0x12 && keybind.m_modifiers == SHIFT &&
+        keybind.m_valueTag == "ui.visible") {
+        keybind.m_modifiers = 0;
+    }
+    keybind.m_modifiers =
+        normalizeModifiers(keybind.m_key, keybind.m_modifiers);
+}
+}  // namespace grape::keybinds
+
+class KeyPressTracker {
+    std::unordered_map<int, int> m_pressed;
+
+   public:
+    bool resolve(int key, bool pressed, int& hash) {
+        if (pressed) {
+            auto [active, inserted] = m_pressed.try_emplace(key, hash);
+            if (!inserted) return false;
+            hash = active->second;
+        } else if (const auto active = m_pressed.find(key);
+                   active != m_pressed.end()) {
+            hash = active->second;
+            m_pressed.erase(active);
+        }
+        return true;
+    }
 };
 
 template <>
@@ -42,11 +93,11 @@ class KeybindControl {
    public:
     using HashT = int;
 
-    virtual HashT getHash() = 0;
-    const virtual std::string& getTag() = 0;
-    virtual void applyValue(bool pressed, void* value, void* previous) = 0;
+    virtual HashT getHash() const = 0;
+    virtual const std::string& getTag() const = 0;
+    virtual bool applyValue(bool pressed, void* value, void* previous) = 0;
     virtual void fromString(const std::string& str) = 0;
-    const virtual std::string toString() = 0;
+    virtual std::string toString() const = 0;
 
     virtual ~KeybindControl() = default;
 
@@ -56,6 +107,50 @@ class KeybindControl {
 template <typename T>
 class GrapeKeybind : public KeybindControl {
     using Self = GrapeKeybind<T>;
+
+    struct HoldState {
+        T original;
+        std::vector<Self*> active;
+    };
+    inline static std::unordered_map<T*, HoldState> s_holds;
+
+    T* m_holdValue = nullptr;
+    T* m_holdPrevious = nullptr;
+
+    bool releaseHold() {
+        if (!m_enabled || !m_holdValue) return false;
+
+        const auto stateIt = s_holds.find(m_holdValue);
+        if (stateIt == s_holds.end()) {
+            m_enabled = false;
+            m_holdValue = nullptr;
+            m_holdPrevious = nullptr;
+            return false;
+        }
+
+        auto& state = stateIt->second;
+        const bool wasTop = !state.active.empty() && state.active.back() == this;
+        state.active.erase(
+            std::remove(state.active.begin(), state.active.end(), this),
+            state.active.end());
+
+        bool changed = false;
+        if (wasTop) {
+            const T next = state.active.empty()
+                ? state.original : state.active.back()->m_value;
+            changed = *m_holdValue != next;
+            *m_holdValue = next;
+        }
+        if (state.active.empty()) {
+            if (m_holdPrevious) *m_holdPrevious = m_value;
+            s_holds.erase(stateIt);
+        }
+
+        m_enabled = false;
+        m_holdValue = nullptr;
+        m_holdPrevious = nullptr;
+        return changed;
+    }
 
    public:
     /**
@@ -76,21 +171,23 @@ class GrapeKeybind : public KeybindControl {
      * - Set the value on key press, but don't change it back
      */
 
-    static constexpr bool MODIFIER_SHIFT = 0b001;
-    static constexpr bool MODIFIER_CTRL = 0b010;
-    static constexpr bool MODIFIER_ALT = 0b100;
+    static constexpr int MODIFIER_SHIFT = grape::keybinds::SHIFT;
+    static constexpr int MODIFIER_CTRL = grape::keybinds::CTRL;
+    static constexpr int MODIFIER_ALT = grape::keybinds::ALT;
+    static_assert((MODIFIER_SHIFT | MODIFIER_CTRL | MODIFIER_ALT) == 0b111);
 
    private:
     T m_value;
 
    public:
     GrapeKeybind(int key, int modifiers, KeybindType type, T value,
-              std::string tag)
+                 std::string tag, bool active = true)
         : m_value(value) {
         m_key = key;
         m_modifiers = modifiers;
         m_valueTag = tag;
         m_type = type;
+        m_active = active;
     }
 
     static std::shared_ptr<GrapeKeybind<T>> create(std::string tag, int key,
@@ -99,75 +196,75 @@ class GrapeKeybind : public KeybindControl {
         return std::make_shared<GrapeKeybind<T>>(key, modifiers, type, value, tag);
     }
 
-    static std::shared_ptr<GrapeKeybind<T>> createFromString(std::string tag,
-                                                          int key,
-                                                          KeybindType type,
-                                                          std::string value,
-                                                          int modifiers = 0) {
-        return std::make_shared<GrapeKeybind<T>>(key, modifiers, type,
-                                              Self::readFromString(value), tag);
+    static std::shared_ptr<GrapeKeybind<T>> createFromString(
+        std::string tag, int key, KeybindType type, std::string value,
+        int modifiers = 0, bool active = true) {
+        return std::make_shared<GrapeKeybind<T>>(
+            key, modifiers, type, Self::readFromString(value), tag, active);
     }
 
-    HashT getHash() override { return m_key | (m_modifiers << 20); }
+    HashT getHash() const override { return m_key | (m_modifiers << 20); }
 
-    const std::string& getTag() override { return m_valueTag; }
+    const std::string& getTag() const override { return m_valueTag; }
 
-    void applyValue(bool pressed, void* value, void* previous) override {
-        if (!m_active) return;
+    bool applyValue(bool pressed, void* value, void* previous) override {
+        if (!m_active) return false;
 
-        T& valueRef = *(T*)value;
-        T& previousRef = *(T*)previous;
+        T& valueRef = *static_cast<T*>(value);
+        T& previousRef = *static_cast<T*>(previous);
 
         switch (m_type) {
-            case KeybindType::Toggle: {
-                if (!pressed) return;
-
+            case KeybindType::Toggle:
+                if (!pressed) return false;
                 if (valueRef == m_value) {
                     valueRef = previousRef;
                 } else {
                     previousRef = valueRef;
                     valueRef = m_value;
                 }
+                return true;
 
-                break;
-            }
-            case KeybindType::Hold: {
-                if (!m_enabled && pressed) {
-                    previousRef = valueRef;
-                    valueRef = m_value;
+            case KeybindType::Hold:
+                if (pressed) {
+                    if (m_enabled) return false;
+                    auto [state, inserted] = s_holds.try_emplace(
+                        &valueRef, HoldState{valueRef, {}});
+                    if (inserted) previousRef = valueRef;
+                    state->second.active.push_back(this);
+                    m_holdValue = &valueRef;
+                    m_holdPrevious = &previousRef;
                     m_enabled = true;
-                } else if (m_enabled && !pressed) {
-                    valueRef = previousRef;
-                    previousRef = m_value;
-                    m_enabled = false;
+                    const bool changed = valueRef != m_value;
+                    valueRef = m_value;
+                    return changed;
                 }
+                return releaseHold();
 
-                break;
-            }
-            case KeybindType::Override: {
+            case KeybindType::Override:
+                if (!pressed) return false;
                 previousRef = valueRef;
                 valueRef = m_value;
-                break;
-            }
+                return true;
         }
+        return false;
     }
 
     static T readFromString(const std::string& str) {
-        std::istringstream iss(str);
-        T value;
-        iss >> value;
+        if constexpr (std::same_as<T, std::string>) return str;
+        T value{};
+        std::istringstream(str) >> value;
         return value;
     }
 
     void fromString(const std::string& str) override {
-        std::istringstream iss(str);
-        iss >> m_value;
+        m_value = readFromString(str);
     }
 
-    const std::string toString() override {
-        std::ostringstream oss;
-        oss << m_value;
-        return oss.str();
+    std::string toString() const override {
+        if constexpr (std::same_as<T, std::string>) return m_value;
+        std::ostringstream output;
+        output << m_value;
+        return output.str();
     }
 
     friend glz::meta<GrapeKeybind<T>>;
@@ -189,13 +286,3 @@ struct glz::meta<KeybindControl> {
 
 template <typename T>
 using KeybindPtr = std::shared_ptr<GrapeKeybind<T>>;
-
-template <typename T>
-class KeybindContainer {
-   protected:
-    std::string m_tag;
-    std::vector<GrapeKeybind<T>> m_keybinds;
-
-   public:
-    std::vector<GrapeKeybind<T>>& getKeybinds() { return m_keybinds; }
-};

@@ -1,8 +1,8 @@
 #pragma once
+#include "util/atomic_file.hpp"
 #include "util/storage.hpp"
 
 #include <Geode/Geode.hpp>
-#include <fstream>
 #include <glaze/glaze.hpp>
 #include <string>
 #include <unordered_map>
@@ -308,17 +308,17 @@ struct glz::meta<GrapeSettings> {
 };
 
 $on_mod(DataSaved) {
-    std::filesystem::path settingsPath =
-        grape::paths::file("settings.json");
-    std::ofstream settingsFd(settingsPath);
+    const auto settingsPath = grape::paths::file("settings.json");
+    std::string json;
+    if (glz::write<glz::opts{.prettify = true}>(*GrapeSettings::get(), json)) {
+        geode::log::error("Failed to serialize settings");
+    } else {
+        std::error_code error;
+        if (!grape::files::writeAtomically(settingsPath, json, error)) {
+            geode::log::error("Failed to save settings: {}", error.message());
+        }
+    }
 
-    auto settings = GrapeSettings::get();
-    std::string serialized =
-        glz::write<glz::opts{.prettify = true}>(*settings).value_or(
-            std::string{});
-    settingsFd << serialized;
-
-    std::filesystem::path keybindsPath =
-        grape::paths::file("keybinds.json");
-    BindingManager::get()->writeToFile(keybindsPath);
+    BindingManager::get()->writeToFile(
+        grape::paths::file("keybinds.json"));
 }

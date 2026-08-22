@@ -80,17 +80,9 @@ class MacroEngine {
     uint64_t& getCurrentRandomState();
     uint64_t& getCurrentShakeState();
 
-    [[nodiscard]] const std::optional<slc::Action> getNextQueuedInput() {
-        if (m_inputIndex >= m_actionAtom.m_actions.size())
-            return std::nullopt;
-
-        return m_actionAtom.m_actions.at(m_inputIndex);
-    }
-
-    [[nodiscard]] const std::optional<slc::Action> getCurrentQueuedInput() {
+    [[nodiscard]] std::optional<slc::Action> peekQueuedInput() const {
         if (m_inputIndex >= m_actionAtom.m_actions.size()) return std::nullopt;
-
-        return m_actionAtom.m_actions.at(m_inputIndex);
+        return m_actionAtom.m_actions[m_inputIndex];
     }
 
     [[nodiscard]] const std::optional<slc::Action> getNextInput(uint32_t frame);

@@ -14,10 +14,6 @@
 #include "config/config.hpp"
 #include "util/crash_log.hpp"
 
-#ifdef SILICATE_PROTECT
-#include "VMProtect/VMProtectSDK.h"
-#endif
-
 using namespace geode::prelude;
 
 static cocos2d::ccColor4F toCocosColor(const float colors[4]) {

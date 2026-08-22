@@ -1,7 +1,4 @@
 #include "pass.hpp"
-#ifdef SILICATE_PROTECT
-#include "VMProtect/VMProtectSDK.h"
-#endif
 
 GLuint compileShader(GLenum type, const char* source) {
     GLuint shader = glCreateShader(type);
@@ -25,10 +22,6 @@ void RenderPass::resize() {
 }
 
 void RenderPass::initialize() {
-#ifdef SILICATE_PROTECT
-    VMProtectBegin("RenderPass::initialize");
-#endif
-
     int oldTex;
     glGetIntegerv(GL_TEXTURE_2D, &oldTex);
     glGenTextures(1, &m_tex);
@@ -48,6 +41,8 @@ void RenderPass::initialize() {
                            m_tex, 0);
 
     if (m_vertexShader == 0 || m_fragmentShader == 0) {
+        glBindFramebuffer(GL_FRAMEBUFFER, oldFbo);
+        glBindTexture(GL_TEXTURE_2D, oldTex);
         return;
     }
 
@@ -69,10 +64,6 @@ void RenderPass::initialize() {
     glBindTexture(GL_TEXTURE_2D, oldTex);
 
     geode::log::info("Initialized new render pass {}", m_program);
-
-#ifdef SILICATE_PROTECT
-    VMProtectEnd();
-#endif
 }
 
 void RenderPass::destroy() {

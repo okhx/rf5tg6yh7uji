@@ -43,6 +43,10 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     if ((uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_CHAR) &&
         CCIMEDispatcher::sharedDispatcher()->hasDelegate() &&
         !ImGui::GetIO().WantCaptureKeyboard) {
+        if (uMsg == WM_KEYUP) {
+            BindingManager::get()->processKeyEvent(
+                static_cast<int>(wParam), false, ctrlHeld, shiftHeld, altHeld);
+        }
         return CallWindowProc(ImGuiHookCtx::get().m_oWndProc, hWnd, uMsg,
                               wParam, lParam);
     }
@@ -53,6 +57,11 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         if (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN || uMsg == WM_KEYUP ||
             uMsg == WM_SYSKEYUP || uMsg == WM_CHAR) {
             if (ImGui::GetIO().WantCaptureKeyboard) {
+                if (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP) {
+                    BindingManager::get()->processKeyEvent(
+                        static_cast<int>(wParam), false, ctrlHeld, shiftHeld,
+                        altHeld);
+                }
                 return true;
             }
         }
@@ -71,17 +80,22 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
             if (BindingManager::get()->isWaitingForKey()) {
                 BindingManager::get()->setNewKey(
-                    static_cast<cocos2d::enumKeyCodes>(key));
+                    static_cast<cocos2d::enumKeyCodes>(key), ctrlHeld,
+                    shiftHeld, altHeld);
                 return true;
             }
 
             BindingManager::get()->processKeyEvent(key, true, ctrlHeld,
-                                                     shiftHeld, altHeld);
+                                                    shiftHeld, altHeld);
+            if (uMsg == WM_MOUSEWHEEL) {
+                BindingManager::get()->processKeyEvent(
+                    key, false, ctrlHeld, shiftHeld, altHeld);
+            }
         } else if (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP ||
                    uMsg == WM_MBUTTONUP) {
             int key = wParam;
             BindingManager::get()->processKeyEvent(key, false, ctrlHeld,
-                                                     shiftHeld, altHeld);
+                                                    shiftHeld, altHeld);
         }
 
         if (ImGui::GetIO().WantCaptureMouse) {
@@ -103,33 +117,34 @@ LRESULT CALLBACK h_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             }
 
             BindingManager::get()->processKeyEvent(key, true, ctrlHeld,
-                                                     shiftHeld, altHeld);
+                                                    shiftHeld, altHeld);
+            if (uMsg == WM_MOUSEWHEEL) {
+                BindingManager::get()->processKeyEvent(
+                    key, false, ctrlHeld, shiftHeld, altHeld);
+            }
         } else if (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP ||
                    uMsg == WM_MBUTTONUP) {
             int key = wParam;
             BindingManager::get()->processKeyEvent(key, false, ctrlHeld,
-                                                     shiftHeld, altHeld);
+                                                    shiftHeld, altHeld);
         }
     }
 
     if (uMsg == WM_DROPFILES) {
-        HDROP drop = (HDROP)wParam;
+        const auto drop = reinterpret_cast<HDROP>(wParam);
 
         TCHAR fileName[256];
-        UINT numFiles = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
+        const UINT numFiles = DragQueryFile(drop, 0xFFFFFFFF, nullptr, 0);
 
         for (UINT i = 0; i < numFiles; i++) {
             auto& rs = GrapeEngine::get()->macro();
 
             DragQueryFile(drop, i, fileName, 256);
-            WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-            GetFileAttributesEx(fileName, GetFileExInfoStandard, &fileInfo);
-
             std::filesystem::path path(fileName);
             geode::log::info("Loading file via drag-and-drop: {}", path);
             if (path.extension() != ".grape" &&
                 path.extension() != ".slc") {
-                break;
+                continue;
             }
 
             std::filesystem::path dest =

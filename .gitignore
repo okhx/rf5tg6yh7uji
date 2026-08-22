@@ -1,7 +1,8 @@
 build*/
 output/
-pc/
+pc/.env
 bindings/
 .geode/
 .DS_Store
+*:Zone.Identifier*
 mindguard/

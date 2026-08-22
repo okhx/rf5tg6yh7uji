@@ -18,7 +18,7 @@
 #include <type_traits>
 #include <vector>
 
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
 #include "skrt_ui.hpp"
 #endif
 
@@ -173,7 +173,7 @@ inline bool custom_button(std::string_view label, ImVec2 requested) {
 }
 
 inline bool raw_button(std::string_view label, ImVec2 requested = ImVec2()) {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode) {
         return grape::pc::skrt::button(label, requested);
     }
@@ -201,7 +201,7 @@ inline WidgetState button_selector(std::string_view label, bool selected) {
 }
 
 inline WidgetState checkbox(std::string_view label, bool& value) {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode) {
         return state(grape::pc::skrt::checkbox(label, value));
     }
@@ -268,7 +268,7 @@ WidgetState drag(std::string_view label, T& value, T min = T{}, T max = T{100},
     else if constexpr (std::is_same_v<T, uint64_t>) type = ImGuiDataType_U64;
     else if constexpr (std::is_same_v<T, int64_t>) type = ImGuiDataType_S64;
     else static_assert(sizeof(T) == 0, "Unsupported ImGui drag type");
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().customMode) {
         const char* format;
         if constexpr (std::is_floating_point_v<T>) format = "%.3f";
@@ -295,7 +295,7 @@ WidgetState drag(std::string_view label, T& value, T min = T{}, T max = T{100},
 // 100). Two dividers can be dragged to redistribute between adjacent segments.
 inline WidgetState triple_slider(std::string_view label, float& a, float& b,
                                  float& c) {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode)
         return state(grape::pc::skrt::tripleSlider(label, a, b, c));
 #endif
@@ -380,7 +380,7 @@ inline WidgetState triple_slider(std::string_view label, float& a, float& b,
 
 inline WidgetState input_text(std::string_view label, std::string_view hint,
                               std::string& value) {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode)
         return state(grape::pc::skrt::inputText(label, hint, value));
 #endif
@@ -389,7 +389,7 @@ inline WidgetState input_text(std::string_view label, std::string_view hint,
 }
 
 inline void next_input_full_width() {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode)
         grape::pc::skrt::nextInputFullWidth();
 #endif
@@ -490,7 +490,7 @@ inline WidgetState dropdown(std::string_view label, DropdownState& stateData,
     bool opened = false;
     bool hovered = false;
     bool held = false;
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode) {
         opened = grape::pc::skrt::beginCombo(label, preview);
         hovered = ImGui::IsItemHovered();
@@ -591,7 +591,7 @@ inline WidgetState color(std::string_view label, ColorState& value,
     bool pressed = false;
     bool hovered = false;
     bool held = false;
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode) {
         pressed = grape::pc::skrt::colorButton(label, preview);
         hovered = ImGui::IsItemHovered();
@@ -689,7 +689,7 @@ inline WidgetState color(std::string_view label, ColorState& value,
 }
 
 inline void text(std::string_view value, ImFont* font = nullptr) {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode && font) {
         if (grape::pc::skrt::setSectionTitle(value)) return;
     }
@@ -788,7 +788,7 @@ inline void divider(bool visible = true) {
         ImGui::Separator();
         return;
     }
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (!config.skeetGridStarted && !visible) {
         config.skeetGridStarted = grape::pc::skrt::beginSections();
     } else if (config.skeetGridStarted && visible) {
@@ -797,7 +797,7 @@ inline void divider(bool visible = true) {
 #endif
 }
 inline void hide_section_box() {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode) grape::pc::skrt::hideSectionBox();
 #endif
 }
@@ -842,7 +842,7 @@ template <class T, class F> void tab(T current, T expected, F&& fn) {
     }
     ImGui::PopID();
     if (config.skeetMode && config.skeetGridStarted) {
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
         grape::pc::skrt::endSections();
 #endif
         config.skeetGridStarted = false;
@@ -852,7 +852,7 @@ template <class F>
 void window(ImTextureID logoTex, ImVec2 logoSize, ImVec2 logoUv, F&& fn) {
     const float scale = Config::get().uiScale;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-#ifdef GRAPE_PRIVATE_PC
+#ifdef GRAPE_PC
     if (Config::get().skeetMode) {
         if (grape::pc::skrt::beginWindow()) fn();
         grape::pc::skrt::endWindow();

@@ -12,14 +12,15 @@ using namespace geode::prelude;
 
 #include <Geode/modify/EnhancedGameObject.hpp>
 
-struct GrapeEnhancedGameObject : Modify<GrapeEnhancedGameObject, EnhancedGameObject> {
+struct GrapeEnhancedGameObject
+    : Modify<GrapeEnhancedGameObject, EnhancedGameObject> {
     void activatedByPlayer(PlayerObject* player) {
-        auto bot = GrapeEngine::get();
+        auto* bot = GrapeEngine::get();
         if (bot->trajectory().isFakePlayer(player)) {
-            phys::activateForTrajectory((EffectGameObject*)this, player);
-        } else {
-            EnhancedGameObject::activatedByPlayer(player);
-
+            phys::activateForTrajectory(
+                reinterpret_cast<EffectGameObject*>(this), player);
+            return;
         }
+        EnhancedGameObject::activatedByPlayer(player);
     }
 };

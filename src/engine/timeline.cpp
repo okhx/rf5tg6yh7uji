@@ -147,7 +147,7 @@ static void runFastLockDeltaUpdates(float realDt,
     auto bot = GrapeEngine::get();
     auto& updater = bot->timeline();
 
-    auto& nextInput = GrapeEngine::get()->macro().getCurrentQueuedInput();
+    const auto nextInput = GrapeEngine::get()->macro().peekQueuedInput();
 
     SCOPED_TIMER("fastLockDelta")
     updater.m_allowedToProcessActions = false;
@@ -167,7 +167,7 @@ static void runFastLockDeltaUpdates(float realDt,
         int steps = updater.totalStepCount;
 
         while (steps > 0) {
-            auto& input = GrapeEngine::get()->macro().getCurrentQueuedInput();
+            const auto input = GrapeEngine::get()->macro().peekQueuedInput();
             uint64_t safeSteps =
                 input.has_value() ? input->m_frame - updater.getFrame() : steps;
             safeSteps = std::min(safeSteps, static_cast<uint64_t>(steps));
@@ -350,31 +350,6 @@ void FrameEngine::breakLoop() {
 
 bool FrameEngine::isLockDelta() { return m_lockDelta->inner(); }
 
-void FrameEngine::setFps(double fps) {
-    if (fps <= 0.0) {
-        return;
-    }
-
-    m_fps = fps;
-
-    CCDirector::sharedDirector()->setAnimationInterval(1. / m_fps);
-
-    auto gm = GameManager::sharedState();
-    gm->m_customFPSTarget = m_fps;
-    gm->setGameVariable("0116", true);
-}
-
-void FrameEngine::setSpeed(double speed) {
-    if (speed <= 0.0) {
-        return;
-    }
-
-    CCDirector::sharedDirector()->setAnimationInterval(1. / m_fps);
-    auto gm = GameManager::sharedState();
-    gm->m_customFPSTarget = m_fps;
-    gm->setGameVariable("0116", true);
-}
-
 void FrameEngine::updateAudioSpeedhack() {
     FMOD::ChannelGroup* master;
     FMODAudioEngine::get()->m_system->getMasterChannelGroup(&master);
@@ -402,10 +377,6 @@ void FrameEngine::runFrozenTick() {
         0.0f, true);
 
     m_frozenScheduledFunctions.clear();
-}
-
-inline double FrameEngine::getVisualDt() {
-    return 1. / (m_fps * m_speedhack->inner());
 }
 
 uint32_t FrameEngine::getFrame() {
@@ -531,7 +502,6 @@ void FrameEngine::findBestFrameCandidate() {
     this->backwardsStep(steps);
 
     m_predicting = false;
-
 }
 
 void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
@@ -543,7 +513,6 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
 
     if (!playLayer->m_playerDied) {
         uint32_t logicalSteps = 1;
-#ifdef GEODE_IS_ANDROID
         if (!m_paused->inner()) {
             const double progress = m_tps->inner() * visualDt;
             if (!std::isfinite(progress) || progress <= 0.0) return;
@@ -553,7 +522,6 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
         } else {
             m_portableFrameRemainder = 0.0;
         }
-#endif
 
         if (m_backwardsStepping->inner() &&
             !Renderer::get()->isRecording()) {
@@ -564,15 +532,6 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
             }
         }
 
-#ifndef GEODE_IS_ANDROID
-        if (!m_paused->inner()) {
-            const double steps = m_tps->inner() * visualDt;
-            if (std::isfinite(steps) && steps > 1.0) {
-                logicalSteps = static_cast<uint32_t>(std::clamp(
-                    std::lround(steps), 1l, 1000l));
-            }
-        }
-#endif
         incrementFrame(logicalSteps);
         bot->hitboxes().saveToTrail(playLayer);
     }
@@ -580,8 +539,6 @@ void FrameEngine::portableFrameUpdate(PlayLayer* playLayer, float visualDt) {
     bot->autoclicker().update(playLayer);
     bot->pathfinder().update(playLayer);
 }
-
-
 
 #ifdef GEODE_IS_WINDOWS
 static void earlyUpdateMidhook(SafetyHookContext&) {

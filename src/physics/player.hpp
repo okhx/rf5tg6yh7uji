@@ -16,15 +16,6 @@ void stopDashing(PlayerObject* player);
 
 void ringJump(PlayerObject* player, RingObject* ring);
 
-template <typename T>
-T clamp(T value, T min, T max);
-
-bool playerIsFalling(PlayerObject* player);
-
-void updateJump(PlayerObject* player, float dt);
-
-void playerUpdate(PlayerObject* player, float dt);
-
 void togglePlayerScale(PlayerObject* player, bool smallSize);
 
 void toggleSpiderMode(PlayerObject* player, bool isSpider);

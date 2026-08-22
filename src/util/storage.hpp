@@ -32,12 +32,23 @@ inline const std::filesystem::path& gameRoot() {
 inline const std::filesystem::path& dataRoot() {
     static const std::filesystem::path root = [] {
         auto path = gameRoot() / "Grape";
-        auto legacy = gameRoot() / "Silicate";
-        if (!std::filesystem::exists(path) && std::filesystem::exists(legacy)) {
-            std::error_code error;
+        const auto legacy = gameRoot() / "Silicate";
+        std::error_code error;
+        if (!std::filesystem::exists(path, error) && !error &&
+            std::filesystem::exists(legacy, error) && !error) {
             std::filesystem::rename(legacy, path, error);
+            if (error) {
+                geode::log::warn("Could not migrate Silicate data: {}",
+                                 error.message());
+            }
         }
-        std::filesystem::create_directories(path);
+
+        error.clear();
+        std::filesystem::create_directories(path, error);
+        if (error) {
+            geode::log::error("Could not create Grape data directory: {}",
+                              error.message());
+        }
         return path;
     }();
     return root;
@@ -45,7 +56,11 @@ inline const std::filesystem::path& dataRoot() {
 
 inline std::filesystem::path directory(std::string_view name) {
     auto path = dataRoot() / name;
-    std::filesystem::create_directories(path);
+    std::error_code error;
+    std::filesystem::create_directories(path, error);
+    if (error) {
+        geode::log::error("Could not create {}: {}", path, error.message());
+    }
     return path;
 }
 

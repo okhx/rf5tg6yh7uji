@@ -1,0 +1,8 @@
+slc replay format
+Source: https://github.com/peonii/slc
+Revision: 56ca7e8e088ce3617ddab2fc606ee954bafc9d45
+Copyright: Natalia (peonii) and contributors
+
+This code was originally incorporated by its copyright holder into Silicate,
+a GPLv3 program. This vendored copy is distributed as part of Grape under
+GPLv3; see the repository root LICENSE.

@@ -5,8 +5,6 @@
 
 namespace phys {
 cocos2d::CCArray* getGroup(GJBaseGameLayer* pl, int groupID) {
-    // i'm too lazy to wait for geode to merge a bindings commit so yea
-
     if (groupID < 0) groupID = 0;
     if (groupID > 9999) groupID = 9999;
 
@@ -23,47 +21,32 @@ cocos2d::CCArray* getGroup(GJBaseGameLayer* pl, int groupID) {
 float redirectPlayerForce(PlayerObject* player, float force,
                           float /* forceMod */, float /* forceMin */,
                           float /* forceMax */) {
-    // float forceSmaller = force * 0.01745329;
-    cocos2d::CCPoint velocityCoords = cocos2d::CCPoint{
-        (float)player->m_platformerXVelocity, (float)player->m_yVelocity};
+    cocos2d::CCPoint velocity{
+        static_cast<float>(player->m_platformerXVelocity),
+        static_cast<float>(player->m_yVelocity)};
 
-    cocos2d::CCPoint p;
-
-    float idk =
-        force * 0.017453292 - atan2f(velocityCoords.y, velocityCoords.x);
-    if (idk != 0.0) {
-        float v11 = sin(idk);
-        float v12 = cos(idk);
-
-        p = cocos2d::CCPoint{
-            (float)(velocityCoords.x * v11) - (float)(velocityCoords.y * v12),
-            (float)(velocityCoords.x * v12) + (float)(velocityCoords.y * v11)};
+    const float angle =
+        force * 0.017453292f - std::atan2(velocity.y, velocity.x);
+    if (angle != 0.0f) {
+        const float sine = std::sin(angle);
+        const float cosine = std::cos(angle);
+        velocity = cocos2d::CCPoint{
+            velocity.x * sine - velocity.y * cosine,
+            velocity.x * cosine + velocity.y * sine};
     }
 
-    velocityCoords = p;
+    if (player->m_isSideways) std::swap(velocity.x, velocity.y);
 
-    // float length = velocityCoords.getLength();
-    // if (forceMax > 0.0 && length > forceMax) {
-
-    // }
-
-    if (player->m_isSideways) {
-        float x = velocityCoords.x;
-        velocityCoords.x = velocityCoords.y;
-        velocityCoords.y = x;
-    }
-
-    player->m_yVelocity = velocityCoords.y;
+    player->m_yVelocity = velocity.y;
     player->m_isAccelerating = true;
     if (player->m_isPlatformer) {
-        player->m_platformerXVelocity = velocityCoords.x;
+        player->m_platformerXVelocity = velocity.x;
         player->m_affectedByForces = true;
     }
 
     return player->m_yVelocity;
 }
 
-// this function is a nightmare
 void teleportPlayer(GJBaseGameLayer* pl, TeleportPortalObject* object,
                     PlayerObject* player) {
     if (!player) {
@@ -183,9 +166,9 @@ void teleportPlayer(GJBaseGameLayer* pl, TeleportPortalObject* object,
                 cocos2d::CCPoint p = cocos2d::ccpForAngle(forceMod);
 #else
                 cocos2d::CCPoint p = CCPoint{
-                    (float)std::cos(((float)forceMod)),
-                    (float)std::sin(((float)forceMod)),
-                };  // ccpForAngle isn't defined on macOS fsr
+                    static_cast<float>(std::cos(forceMod)),
+                    static_cast<float>(std::sin(forceMod)),
+                };
 #endif
 
                 float length = p.getLength();

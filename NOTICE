@@ -1,0 +1,47 @@
+Grape
+=====
+
+Grape is a modified version of Silicate:
+https://git.puppy.lgbt/silicate/silicate
+
+The preserved source is based on Silicate v1.0.0-alpha.87, commit
+9b5bcfcc6c23b6c4a0e3f7562fd9bd4bfbb2e715 (2026-06-30). The Grape fork's
+first preserved commit is 05d26958d6deb8e1b5240824cb49cbc26cd089fe
+(2026-07-14).
+
+Silicate identifies peony as its original developer. Silicate, Grape, and the
+vendored slc replay code are distributed under GNU GPL version 3. Copyright
+remains with their respective contributors. See LICENSE.
+
+Third-party components
+----------------------
+
+The distributed package includes these components or resources:
+
+- Dear ImGui 1.92.2 WIP (vendored under lib/tabby/lib/imgui_lib) — MIT —
+  LICENSES/Dear-ImGui-MIT.txt
+- Glaze — MIT — LICENSES/Glaze-MIT.txt
+- fmt, Arc, and QSox — MIT — LICENSES/fmt-MIT.txt,
+  LICENSES/Arc-MIT.txt, and LICENSES/QSox-MIT.txt
+- Geode, Geode Result/JSON, and TulipHook — Boost Software License 1.0 —
+  matching LICENSES/Geode-*.txt and LICENSES/TulipHook-BSL-1.0.txt
+- nontype-functional — BSD-2-Clause —
+  LICENSES/nontype-functional-BSD-2-Clause.txt
+- Dobby — Apache-2.0 — LICENSES/Dobby-Apache-2.0.txt
+- Lua 5.4.8 — MIT — LICENSES/Lua-MIT.txt
+- SafetyHook — BSD-2-Clause — LICENSES/SafetyHook-BSD-2-Clause.txt
+- stb_image — MIT or public domain; distributed here under MIT —
+  LICENSES/stb-LICENSE.txt
+- Zydis and Zycore — MIT — LICENSES/Zydis-MIT.txt and
+  LICENSES/Zycore-MIT.txt
+- Inter 4.0 fonts — SIL Open Font License 1.1 —
+  LICENSES/Inter-OFL-1.1.txt
+- Font Awesome Free 6.7.2 solid font — SIL Open Font License 1.1; upstream
+  icon/code terms are included — LICENSES/Font-Awesome-Free-LICENSE.txt
+
+Exact packaged-font source artifacts and SHA-256 values are recorded in
+LICENSES/FONTS.md.
+
+Source locations and pinned revisions are recorded in CMakeLists.txt,
+pc/CMakeLists.txt, and vendor/slc/NOTICE. Third-party rights are not changed
+by Grape's GPLv3 license.

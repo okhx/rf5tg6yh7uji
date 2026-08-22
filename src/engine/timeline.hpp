@@ -12,11 +12,8 @@
 #include "config/config.hpp"
 #include "shared/value/value.hpp"
 
-constexpr uintptr_t TPS_STEPS_OFFSET = 0x6074e0;
-
 class FrameEngine {
    private:
-    double m_fps = 240.0;
     uint32_t m_frame = 0;
 
     bool _stepOnce = false;
@@ -160,15 +157,8 @@ class FrameEngine {
         m_frozenScheduledFunctions.push_front(func);
     }
 
-    void setFps(double fps);
-    void setSpeed(double speed);
     void setTps(double tps) {
-        if (tps <= 0.0) return;
-
-
-
-
-        m_tps->inner() = tps;
+        if (tps > 0.0) m_tps->inner() = tps;
     }
     void setPaused(bool paused) { m_paused->inner() = paused; }
     void togglePaused() { m_paused->inner() = !m_paused->inner(); }
@@ -184,17 +174,11 @@ class FrameEngine {
     void updateAudioSpeedhack();
 
     inline double getTps() const { return m_tps->inner(); }
-    inline double getDt() { return 1. / m_fps; }
-    inline double getVisualDt();
-    inline double getPhysicsDt() { return 1. / m_tps->inner(); };
+    inline double getPhysicsDt() { return 1. / m_tps->inner(); }
 
     [[nodiscard]] uint32_t getFrame();
     [[nodiscard]] uint32_t getDisplayFrame();
 
-    /**
-     * ONLY USE IF YOU KNOW WHAT YOU ARE DOING.
-     * Incrementing the frame WILL forward time in the macro.
-     */
     void incrementFrame(uint32_t count = 1) { m_frame += count; }
     void resetFrame() {
         m_frame = 0;

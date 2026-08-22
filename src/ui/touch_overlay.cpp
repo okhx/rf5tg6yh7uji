@@ -6,19 +6,18 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 #include <vector>
 
 using namespace geode::prelude;
 
 namespace {
-// Rounded panel in the bottom-left corner.
 constexpr float kBoxWidth = 160.f;
 constexpr float kBoxHeight = 56.f;
 constexpr float kCornerRadius = 10.f;
 constexpr float kBoxX = 8.f;
 constexpr float kBoxY = 8.f;
 
-// Buttons are centered inside the panel, which sits at (kBoxX, kBoxY).
 constexpr float kLeftX = kBoxX + 32.f;
 constexpr float kToggleX = kBoxX + kBoxWidth * 0.5f;
 constexpr float kRightX = kBoxX + kBoxWidth - 32.f;
@@ -27,10 +26,6 @@ constexpr float kCenterY = kBoxY + kBoxHeight * 0.5f;
 constexpr cocos2d::ccColor4F kBoxFill = {0.0f, 0.0f, 0.0f, 0.8f};
 constexpr cocos2d::ccColor4F kTransparent = {0.0f, 0.0f, 0.0f, 0.0f};
 
-constexpr float kPi = 3.14159265358979f;
-
-// Builds the perimeter of a rounded rectangle, tracing each corner arc in
-// order so the straight edges are implied by the connections between arcs.
 std::vector<cocos2d::CCPoint> roundedRectPoints(float w, float h, float r,
                                                 int segments) {
     std::vector<cocos2d::CCPoint> pts;
@@ -41,10 +36,11 @@ std::vector<cocos2d::CCPoint> roundedRectPoints(float w, float h, float r,
                                             cy + r * std::sin(a)));
         }
     };
-    addArc(w - r, h - r, 0.f, kPi * 0.5f);       // top-right
-    addArc(r, h - r, kPi * 0.5f, kPi);           // top-left
-    addArc(r, r, kPi, kPi * 1.5f);               // bottom-left
-    addArc(w - r, r, kPi * 1.5f, kPi * 2.f);     // bottom-right
+    constexpr float pi = std::numbers::pi_v<float>;
+    addArc(w - r, h - r, 0.f, pi * 0.5f);
+    addArc(r, h - r, pi * 0.5f, pi);
+    addArc(r, r, pi, pi * 1.5f);
+    addArc(w - r, r, pi * 1.5f, pi * 2.f);
     return pts;
 }
 }  // namespace
@@ -72,8 +68,6 @@ TouchOverlay* TouchOverlay::create() {
 bool TouchOverlay::init() {
     if (!CCLayer::init()) return false;
 
-    // Semi-transparent black panel with rounded corners, drawn
-    // programmatically so it can't break on missing textures.
     auto* background = CCDrawNode::create();
     auto pts = roundedRectPoints(kBoxWidth, kBoxHeight, kCornerRadius, 6);
     background->drawPolygon(pts.data(), static_cast<unsigned int>(pts.size()),
@@ -83,7 +77,6 @@ bool TouchOverlay::init() {
     background->setPosition(ccp(kBoxX, kBoxY));
     this->addChild(background);
 
-    // Teal navigation arrows, using the standard level-list arrow sprite.
     m_leftArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png");
     m_leftBtn = CCMenuItemSpriteExtra::create(
         m_leftArrow, this, menu_selector(TouchOverlay::onLeft));
@@ -93,7 +86,6 @@ bool TouchOverlay::init() {
     m_rightBtn = CCMenuItemSpriteExtra::create(
         m_rightArrow, this, menu_selector(TouchOverlay::onRight));
 
-    // Editor play/stop button for the pause/play toggle.
     m_toggleSprite =
         CCSprite::createWithSpriteFrameName("GJ_playEditorBtn_001.png");
     m_toggleBtn = CCMenuItemSpriteExtra::create(

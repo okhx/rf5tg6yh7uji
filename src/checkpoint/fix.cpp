@@ -1,7 +1,3 @@
-//
-// Created by peony on 29.10.2024.
-//
-
 #include "fix.hpp"
 
 #include <Geode/Geode.hpp>
@@ -245,9 +241,6 @@ void PracticeFix::clearPlatformer(bool assumeLoaded) {
             m_platformerCheckpoints.back().second->m_checkpointActivated =
                 false;
             m_platformerCheckpoints.back().second->resetCheckpoint();
-
-            // release
-            // m_platformerCheckpoints.top().first->release();
         }
 
         m_platformerCheckpoints.pop_back();
@@ -266,29 +259,6 @@ void PracticeFix::updatePlatformerInputs(
             right = input.m_isPush;
         }
     }
-}
-
-[[maybe_unused]] static std::optional<slc::Action> findLastInputUnused(
-    const std::vector<slc::Action>& inputs, uint32_t frame, PlayerButton btn,
-    bool p2) {
-    const auto& last =
-        std::find_if(inputs.rbegin(), inputs.rend(),
-                     [frame, btn, p2](const slc::Action& input) {
-                         if (input.m_frame < frame &&
-                             static_cast<int>(input.m_type) ==
-                                 static_cast<int>(btn) &&
-                             input.m_player2 == p2) {
-                             return true;
-                         }
-
-                         return false;
-                     });
-
-    if (last == inputs.rend()) {
-        return std::nullopt;
-    }
-
-    return *last;
 }
 
 $execute {

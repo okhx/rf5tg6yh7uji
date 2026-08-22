@@ -1,13 +1,8 @@
-//
-// Created by peony on 29.10.2024.
-//
-
 #ifndef FIX_HPP
 #define FIX_HPP
 
 #include <deque>
 #include <functional>
-#include <optional>
 #include <utility>
 #include <vector>
 
@@ -33,7 +28,6 @@ class PlayLayer;
 bool checkpointPlacementBlocked(PlayLayer* pl);
 
 class PracticeFix {
-   private:
    public:
     struct SavedAdvRand {
         uint64_t* m_randomState;
@@ -55,9 +49,6 @@ class PracticeFix {
         m_platformerCheckpoints;
 
     std::vector<SavedAdvRand> m_advancedRandom;
-
-    // CheckpointObject* m_platformerCheckpoint = nullptr;
-    // CheckpointGameObject* m_platformerCheckpointGame = nullptr;
 
     std::vector<GameObject*> m_brokenObjects;
 

@@ -233,6 +233,7 @@ class Renderer {
     ff_t* ff = 0;
 
    private:
+    void discardDesktopStart();
 
     GRAPE_AV_PTR(AVCodecContext)
     m_videoCodecCtx = {nullptr,

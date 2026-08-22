@@ -184,7 +184,7 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
     void checkIfResetWasExpected(uint64_t deathFrame) {
         auto bot = GrapeEngine::get();
         auto& replay = bot->macro();
-        const auto input = replay.getCurrentQueuedInput();
+        const auto input = replay.peekQueuedInput();
         if (!input.has_value() ||
             input->m_type != slc::Action::ActionType::Death) {
             return;
@@ -297,7 +297,7 @@ struct GrapePlayLayer : Modify<GrapePlayLayer, PlayLayer> {
             }
 
             if (bot->timeline().m_expectsDeath) {
-                while (auto input = bot->macro().getNextQueuedInput()) {
+                while (auto input = bot->macro().peekQueuedInput()) {
 #ifdef GEODE_IS_MOBILE
                     if (input->m_frame <= deathFrame) {
 #else

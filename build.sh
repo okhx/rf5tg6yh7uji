@@ -2,29 +2,13 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-private="$root/pc"
+pc="$root/pc"
 build="${GRAPE_BUILD_DIR:-$root/build-private-win}"
 output="$root/output"
 jobs="${GRAPE_BUILD_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)}"
 
-if [[ ! -f "$private/CMakeLists.txt" ]]; then
-    echo "Private PC source was not found at $private" >&2
-    exit 1
-fi
-
-if [[ -f "$private/.env" ]]; then
-    set -a
-    source "$private/.env"
-    set +a
-fi
-
-if [[ -z "${GRAPE_LICENSE_URL:-}" ]]; then
-    echo "Set GRAPE_LICENSE_URL or copy pc/.env.example to pc/.env" >&2
-    exit 1
-fi
-
-if [[ ! "$GRAPE_LICENSE_URL" =~ ^https:// ]]; then
-    echo "GRAPE_LICENSE_URL must use HTTPS" >&2
+if [[ ! -f "$pc/CMakeLists.txt" ]]; then
+    echo "PC source was not found at $pc" >&2
     exit 1
 fi
 
@@ -41,17 +25,12 @@ for tool in cmake geode; do
 done
 
 configure=(
-    -S "$private"
+    -S "$pc"
     -B "$build"
     -DCMAKE_BUILD_TYPE=Release
     -DGEODE_DONT_INSTALL_MODS=ON
     "-DGEODE_CLI=$(command -v geode)"
-    "-DGRAPE_LICENSE_URL=$GRAPE_LICENSE_URL"
 )
-
-if [[ -n "${GRAPE_VMPROTECT_SDK:-}" ]]; then
-    configure+=("-DGRAPE_VMPROTECT_SDK=$GRAPE_VMPROTECT_SDK")
-fi
 
 if command -v ninja >/dev/null; then
     configure+=(-G Ninja)
@@ -98,15 +77,13 @@ fi
 cmake "${configure[@]}"
 cmake --build "$build" --config Release --parallel "$jobs"
 
-mapfile -d '' packages < <(find "$build" -type f -name '*.geode' -print0)
-if (( ${#packages[@]} == 0 )); then
-    echo "Build finished without a .geode package" >&2
+package="$build/grape/okhx.grape.geode"
+if [[ ! -f "$package" ]]; then
+    echo "Build finished without $package" >&2
     exit 1
 fi
 
 mkdir -p "$output"
-for package in "${packages[@]}"; do
-    cp "$package" "$output/"
-done
-
-printf 'Built: %s\n' "$output"/*.geode
+rm -f "$output"/okhx.grape*.geode
+cp "$package" "$output/"
+printf 'Built: %s\n' "$output/okhx.grape.geode"

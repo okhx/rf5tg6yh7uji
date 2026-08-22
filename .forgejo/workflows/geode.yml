@@ -38,7 +38,7 @@ jobs:
           apt-get install -y --no-install-recommends nodejs git ca-certificates curl
 
       - name: Checkout
-        uses: https://data.forgejo.org/actions/checkout@v4
+        uses: https://data.forgejo.org/actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           submodules: recursive
 
@@ -46,13 +46,13 @@ jobs:
       # cross-tools dir. `geode sdk install-linux` skips re-downloading when the
       # splat/xwin/clang-msvc-sdk are already present.
       - name: Cache cross-compilation tools
-        uses: https://data.forgejo.org/actions/cache@v4
+        uses: https://data.forgejo.org/actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.local/share/Geode/cross-tools
           key: geode-cross-tools-v1
 
       - name: Cache CPM sources
-        uses: https://data.forgejo.org/actions/cache@v4
+        uses: https://data.forgejo.org/actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ${{ github.workspace }}/.cpm-cache
           key: cpm-win64-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake', 'mod.json') }}
@@ -60,7 +60,7 @@ jobs:
             cpm-win64-
 
       - name: Cache sccache
-        uses: https://data.forgejo.org/actions/cache@v4
+        uses: https://data.forgejo.org/actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ${{ github.workspace }}/.sccache
           key: sccache-win64-${{ github.run_id }}
@@ -83,20 +83,22 @@ jobs:
           just --version
           sccache --version
 
-      - name: Install Geode CLI
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}  # github.com PAT; overrides Forgejo's instance token
+      - name: Run standalone tests
         run: |
           set -euxo pipefail
-          # Build the auth header with xtrace off so the token never reaches the
-          # log (defense in depth on top of Forgejo's secret masking).
-          set +x
-          auth=(); [ -n "${GITHUB_TOKEN:-}" ] && auth=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
-          CLI_URL="$(curl -fsSL "${auth[@]}" https://api.github.com/repos/geode-sdk/cli/releases/latest \
-            | jq -r '.assets[] | select(.name | endswith("-linux.zip")) | .browser_download_url' \
-            | head -n1)"
-          set -x
-          curl -fsSL "$CLI_URL" -o /tmp/geode-cli.zip
+          git clone --filter=blob:none https://github.com/stephenberry/glaze.git /tmp/glaze
+          git -C /tmp/glaze checkout 3bfd53e70db09247f3726a65abd7c7c2414a1601
+          g++ -std=c++23 -Wall -Wextra -pedantic -Isrc tests/atomic_file.cpp -o /tmp/atomic-file-test
+          g++ -std=c++23 -Wall -Wextra -pedantic -Isrc -I/tmp/glaze/include tests/keybind.cpp -o /tmp/keybind-test
+          /tmp/atomic-file-test
+          /tmp/keybind-test
+
+      - name: Install Geode CLI
+        run: |
+          set -euxo pipefail
+          cli_url="https://github.com/geode-sdk/cli/releases/download/v3.7.4/geode-cli-v3.7.4-linux.zip"
+          curl -fsSL "$cli_url" -o /tmp/geode-cli.zip
+          echo "f4ed1ff62dcfafdf4c7b1f71214887695ba85b12a309464dec35559d69063f53  /tmp/geode-cli.zip" | sha256sum -c -
           unzip -o /tmp/geode-cli.zip -d /tmp/geode-cli
           install -m755 /tmp/geode-cli/geode /usr/local/bin/geode
           geode --version
@@ -130,7 +132,7 @@ jobs:
 
       - name: Build
         run: |
-          cmake -S . -B build -G "Ninja" \
+          cmake -S pc -B build -G "Ninja" \
             -DCMAKE_TOOLCHAIN_FILE=$HOME/.local/share/Geode/cross-tools/clang-msvc-sdk/clang-cl-msvc.cmake \
             -DSPLAT_DIR=$HOME/.local/share/Geode/cross-tools/splat \
             -DHOST_ARCH=x64 \
@@ -148,7 +150,7 @@ jobs:
           ls -l output
 
       - name: Upload artifact
-        uses: https://data.forgejo.org/forgejo/upload-artifact@v4
+        uses: https://data.forgejo.org/forgejo/upload-artifact@16871d9e8cfcf27ff31822cac382bbb5450f1e1e # v4
         with:
           name: grape-win64
           path: output/*.geode

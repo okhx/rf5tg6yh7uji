@@ -2,15 +2,7 @@
 
 #include <Geode/Geode.hpp>
 
-#ifdef SILICATE_PROTECT
-#include "VMProtect/VMProtectSDK.h"
-#endif
-
 void SavedPlayerCheckpoint::apply(PlayerObject* p) {
-#ifdef SILICATE_PROTECT
-    VMProtectBegin("CheckpointLoading");
-#endif
-
     p->setPosition(m_position);
     p->setRotation(m_ccRotation);
     p->m_wasTeleported = m_wasTeleported;
@@ -25,10 +17,6 @@ void SavedPlayerCheckpoint::apply(PlayerObject* p) {
     p->m_slopeStartTime = m_slopeStartTime;
     p->m_justPlacedStreak = m_justPlacedStreak;
     p->m_maybeLastGroundObject = m_maybeLastGroundObject;
-    // p->m_collisionLogTop = m_collisionLogTop;
-    // p->m_collisionLogBottom = m_collisionLogBottom;
-    // p->m_collisionLogLeft = m_collisionLogLeft;
-    // p->m_collisionLogRight = m_collisionLogRight;
     p->m_lastCollisionBottom = m_lastCollisionBottom;
     p->m_lastCollisionTop = m_lastCollisionTop;
     p->m_lastCollisionLeft = m_lastCollisionLeft;
@@ -252,7 +240,6 @@ void SavedPlayerCheckpoint::apply(PlayerObject* p) {
     p->m_inputsLocked = m_inputsLocked;
     p->m_gv0123 = m_gv0123;
     p->m_iconRequestID = m_iconRequestID;
-    // p->m_unk958 = m_unk958;
     p->m_unkUnused = m_unkUnused;
     p->m_isOutOfBounds = m_isOutOfBounds;
     p->m_fallStartY = m_fallStartY;
@@ -267,18 +254,10 @@ void SavedPlayerCheckpoint::apply(PlayerObject* p) {
     p->m_wasJumpBuffered = m_wasJumpBuffered;
     p->m_stateJumpBuffered = m_stateJumpBuffered;
 
-#ifdef SILICATE_PROTECT
-    VMProtectEnd();
-#endif
 }
 
 SavedPlayerCheckpoint SavedPlayerCheckpoint::create(PlayerObject* p) {
-#ifdef SILICATE_PROTECT
-    VMProtectBegin("CheckpointSaving");
-#endif
-
     SavedPlayerCheckpoint c;
-    // m_ccPosition = p->getPosition();
     c.m_ccRotation = p->getRotation();
     c.m_mainLayer = p->m_mainLayer;
     c.m_wasTeleported = p->m_wasTeleported;
@@ -528,10 +507,6 @@ SavedPlayerCheckpoint SavedPlayerCheckpoint::create(PlayerObject* p) {
     c.m_jumpBuffered = p->m_jumpBuffered;
     c.m_wasJumpBuffered = p->m_wasJumpBuffered;
     c.m_stateJumpBuffered = p->m_stateJumpBuffered;
-
-#ifdef SILICATE_PROTECT
-    VMProtectEnd();
-#endif
 
     return c;
 }
